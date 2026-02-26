@@ -1,6 +1,9 @@
 from enum import IntEnum, Enum
-from pydantic import BaseModel, PositiveInt, Field
 from typing import Literal, Any
+from pandas import DataFrame
+from dataclasses import dataclass, field
+
+from pydantic import BaseModel, PositiveInt, Field, model_validator, FilePath
 
 
 class MNEChanTypes(str, Enum):
@@ -106,8 +109,8 @@ class FilterTypeOptions(str, Enum):
     SOFTWARE = "Software"
 
 
-class DatasetInfo(BaseModel):
-    """Schema defining structure for the dataset_info section of the
+class DatasetMetadata(BaseModel):
+    """Schema defining structure for the dataset_metadata section of the
     machine readable dataset description"""
 
     number_sessions: PositiveInt
@@ -122,18 +125,31 @@ class DatasetInfo(BaseModel):
     institution_dept: str
 
 
-class EEGChannelInfo(BaseModel):
+class Montage(BaseModel):
+    mne_name: str | None = (
+        None  # It might be best to limit this to standard montages in MNE (https://mne.tools/stable/auto_tutorials/intro/40_sensor_locations.html)
+    )
+    path: FilePath | None = None
+
+    @model_validator(mode="after")
+    def check_path_for_other_montages(self) -> "Montage":
+        if self.mne_name is None and self.path is None:
+            raise ValueError("Field 'path' is required when 'mne_name' is not provided")
+        return self
+
+
+class EEGChanSpec(BaseModel):
     """Schema defining structure for the eeg_channels sub-section of the
     machine readable dataset description"""
 
     number: PositiveInt
-    montage: str  # This could be the different options available in MNE, but for now it is left to be as flexible as possible
+    montage: Montage
     ground: str
     reference: str
 
 
-class OtherChannelInfo(BaseModel):
-    """Schema defining structure for the other_channels sub-section of the
+class AuxChanSpec(BaseModel):
+    """Schema defining structure for the aux_channels sub-section of the
     machine readable dataset description"""
 
     mne_type: MNEChanTypes
@@ -145,7 +161,7 @@ class OtherChannelInfo(BaseModel):
     )  # Leaving the location dict relatively free-form here
 
 
-class ImpedanceInfo(BaseModel):
+class AcceptableImpedance(BaseModel):
     """Schema defining structure for the acceptable_impedance sub-section of the
     machine readable dataset description"""
 
@@ -161,7 +177,7 @@ class LightingConditions(BaseModel):
     measurement: str
 
 
-class FilterInfo(BaseModel):
+class FilterSpec(BaseModel):
     """Schema defining structure for the filters sub-section of the
     machine readable dataset description"""
 
@@ -172,7 +188,7 @@ class FilterInfo(BaseModel):
     ]  # This dict will be copied directly to the eeg sidecar, so should contain that info directly
 
 
-class RecordingInfo(BaseModel):
+class AcquisitionSpecs(BaseModel):
     """Schema defining structure for the recording_info section of the
     machine readable dataset description"""
 
@@ -180,11 +196,11 @@ class RecordingInfo(BaseModel):
     acquisition_freq: PositiveInt
     file_format: str
     amplifier_model: str
-    eeg_channels: EEGChannelInfo
-    other_channels: dict[str, OtherChannelInfo]
+    eeg_channels: EEGChanSpec
+    aux_channels: dict[str, AuxChanSpec]
     power_line_freq: LineFreqOptions
-    filters: list[FilterInfo]
-    acceptable_impedance: ImpedanceInfo
+    filters: list[FilterSpec]
+    acceptable_impedance: AcceptableImpedance
     electrode_type: str
     conductive_medium: str
     faraday_cage: bool
@@ -192,20 +208,20 @@ class RecordingInfo(BaseModel):
     lighting_conditions: LightingConditions | None = None
 
 
-class RestingStateCondition(BaseModel):
+class RestingStateTask(BaseModel):
     """Base schema defining structure for different resting state conditions"""
 
     stimulus_description: str | None = None
     duration_secs: PositiveInt
 
 
-class EyesOpenCondition(RestingStateCondition):
+class EyesOpenTask(RestingStateTask):
     """Specific schema defining the structure for the eyes-open RS condition"""
 
     stimulus_description: str  # Description is not optional for eyes-open
 
 
-class EyesClosedCondition(RestingStateCondition):
+class EyesClosedTask(RestingStateTask):
     """Specific schema defining the structure for the eyes-closed RS condition"""
 
     stimulus_description: Literal[None] = Field(
@@ -213,26 +229,35 @@ class EyesClosedCondition(RestingStateCondition):
     )  # No Description for eyes-closed
 
 
-class OtherRSCondition(RestingStateCondition):
+class CustomRestingTask(RestingStateTask):
     """Specific schema defining the structure for any other potential RS conditions"""
 
     condition_name: str
     stimulus_description: str
 
 
-class RestingStateInfo(BaseModel):
+class RestingStateProtocol(BaseModel):
     """Schema defining the structure for all the RS conditions recorded during a dataset"""
 
     instructions: str
-    eyes_open: EyesOpenCondition | Literal[False]
-    eyes_closed: EyesClosedCondition | Literal[False]
-    other_conditions: list[OtherRSCondition] | None = None
+    eyes_open: EyesOpenTask | Literal[False]
+    eyes_closed: EyesClosedTask | Literal[False]
+    other_conditions: list[CustomRestingTask] | None = None
     events: dict[str, str]  # Should be defined as "event code": "event description"
 
 
-class FullDatasetInfo(BaseModel):
+class DatasetSpec(BaseModel):
     """Overarching schema for the dataset description"""
 
-    dataset_info: DatasetInfo
-    recording_info: RecordingInfo
-    resting_state_info: RestingStateInfo
+    metadata: DatasetMetadata
+    conditions: list[str] | None = Field(default=None, min_length=1)
+    sessions: list[str] | None = Field(default=None, min_length=1)
+    acquisition_spec: AcquisitionSpecs
+    resting_state: RestingStateProtocol
+
+@dataclass
+class DatasetDescription:
+
+    spec: DatasetSpec
+    participants: dict[str, DataFrame] = field(default_factory=dict)
+    phenotype: dict[str, DataFrame] = field(default_factory=dict)
