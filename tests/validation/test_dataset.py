@@ -3,7 +3,47 @@ from pathlib import Path
 
 import pytest
 
-from rs_pipeline.validation.dataset import RecordingPath, EEGDatasetCrawler
+from rs_pipeline.validation.dataset import RecordingMetadata, EEGDatasetCrawler
+
+
+class TestRecordingMetadata:
+    def test_recording_path_resolves(self, fs):
+        fake_file = Path("/data/sub-01/ses-01/sub-01.eeg")
+        fs.create_file(fake_file)
+
+        rec = RecordingMetadata(
+            participant="sub-01", condition=None, session="ses-01", path=fake_file
+        )
+
+        assert isinstance(rec.path, Path)
+        assert str(rec.path) == str(fake_file)
+
+    def test_recording_path_fails_on_missing_file(self):
+        fake_file = Path("/non/existent/file.eeg")
+        with pytest.raises(ValidationError):
+            RecordingMetadata(
+                participant="sub-01", condition=None, session=None, path=fake_file
+            )
+
+    @pytest.mark.parametrize(
+        "cond, sess",
+        [
+            (None, None),
+            ("rest", None),
+            (None, "ses-01"),
+            ("task", "ses-01"),
+        ],
+    )
+    def test_recording_path_optional_fields(self, fs, cond, sess):
+        path = Path("/data/test.eeg")
+        fs.create_file(path)
+
+        rec = RecordingMetadata(
+            participant="sub-01", condition=cond, session=sess, path=path
+        )
+        assert rec.condition == cond
+        assert rec.session == sess
+
 
 class TestEEGDatasetCrawler:
     @pytest.mark.parametrize(
