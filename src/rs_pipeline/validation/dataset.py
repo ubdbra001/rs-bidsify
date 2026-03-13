@@ -1,5 +1,13 @@
+import re
 from pathlib import Path
-from pydantic import BaseModel, Field, model_validator, FilePath, DirectoryPath
+from pydantic import (
+    BaseModel,
+    Field,
+    model_validator,
+    FilePath,
+    DirectoryPath,
+    computed_field,
+)
 
 
 class RecordingMetadata(BaseModel):
@@ -7,6 +15,15 @@ class RecordingMetadata(BaseModel):
     condition: str | None
     session: str | None
     path: FilePath
+
+    @computed_field
+    @property
+    def subject(self) -> str:
+        result = re.findall("(?<=[-_])[a-zA-Z0-9]+$", self.participant)
+        if result:
+            return result[0]
+        else:
+            return self.participant
 
 
 class EEGDatasetCrawler(BaseModel):
