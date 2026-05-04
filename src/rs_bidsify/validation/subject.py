@@ -4,7 +4,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field, field_validator, ValidationInfo, computed_field, PositiveInt
 
-from rs_pipeline.config import DEMOGRAPHIC_MAPPINGS as MAPPINGS
+from rs_bidsify.config import DEMOGRAPHIC_MAPPINGS as MAPPINGS
 
 def get_utc_today() -> datetime:
     return datetime.now(timezone.utc)

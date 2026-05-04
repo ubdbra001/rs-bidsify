@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from rs_pipeline.validation import description as rs_desc
+from rs_bidsify.validation import description as rs_desc
 
 class TestMontageInfo():
 

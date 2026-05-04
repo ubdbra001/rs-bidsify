@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from rs_pipeline.validation.dataset import RecordingMetadata, EEGDatasetCrawler
+from rs_bidsify.validation.dataset import RecordingMetadata, EEGDatasetCrawler
 
 
 class TestRecordingMetadata:
