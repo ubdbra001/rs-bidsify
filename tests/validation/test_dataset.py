@@ -134,7 +134,7 @@ class TestEEGDatasetCrawler:
         with pytest.raises(ValidationError):
             EEGDatasetCrawler(**config)
 
-    def test_expected_participants(self, fs, file_list):
+    def test_expected_participants(self, fs):
         config = {
             "root_path": "/data",
             "expected_participants": ["sub-01", "sub-02", "sub-03"],
