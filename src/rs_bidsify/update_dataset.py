@@ -96,6 +96,38 @@ def set_subject_info(eeg_data: BaseRaw, subject_model: SubjectMetadata):
     
     logger.info(f"Updated subject information: {subject_model}")
 
+def set_reference_chan(entries_dict: dict[str, Any], acquisition_spec: AcquisitionSpecs):
+    """Set the reference channel"""
+
+    mapping = {"EEGReference": "reference"}
+    map_spec_to_bids(acquisition_spec.eeg_channels, mapping, entries_dict)
+
+def set_ground_chan(entries_dict: dict[str, Any], acquisition_spec: AcquisitionSpecs):
+    """Set the ground channel"""
+
+    mapping = {"EEGGround": "ground"}
+    map_spec_to_bids(acquisition_spec.eeg_channels, mapping, entries_dict)
+
+def hardware_info(entries_dict: dict[str, Any], acquisition_spec: AcquisitionSpecs):
+
+    mapping = {"ManufacturersModelName": "amplifier_model"}
+    map_spec_to_bids(acquisition_spec, mapping, entries_dict)
+
+def software_info(entries_dict: dict[str, Any], acquisition_spec: AcquisitionSpecs):
+
+    mapping = {"SoftwareVersions": "software"}
+    map_spec_to_bids(acquisition_spec, mapping, entries_dict)
+
+def set_institution_info(entries_dict: dict[str, Any], metadata: DatasetMetadata):
+    """Set the institution name and dept"""
+
+    mapping = {
+        "InstitutionName": "institution_name",
+        "InstitutionalDepartmentName": "institution_dept" 
+    }
+    map_spec_to_bids(metadata, mapping, entries_dict)
+
+def set_extras():
 
 def map_spec_to_bids(source_obj: Any, mapping: dict[str, str], updates: dict[str, Any]):
     for bids_key, attr_name in mapping.items():
