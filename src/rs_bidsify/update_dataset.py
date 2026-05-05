@@ -12,6 +12,25 @@ def set_line_frequency(eeg_data: BaseRaw, acqusition_spec: AcquisitionSpecs):
     eeg_data.info["line_freq"] = acqusition_spec.power_line_freq
     logger.info(f"Set line_freq to {acqusition_spec.power_line_freq} Hz")
 
+def set_aux_channel_types(eeg_data: BaseRaw, aux_chans: dict[str, AuxChanSpec]):
+    """Set the types for the Aux Channels"""
+
+    aux_names = set(aux_chans.keys())
+
+    present_chans = aux_names.intersection(eeg_data.ch_names)
+    logger.info(f"Specified Aux channels found in recording: {', '.join(present_chans)}")
+
+    if missing_chans := aux_names.difference(eeg_data.ch_names):
+        logger.warning(f"Specified Aux channels not present in recording: {', '.join(missing_chans)}")
+
+    chan_types = {key: val.mne_type.value for key, val in aux_chans.items() if key in present_chans}
+
+    eeg_data.set_channel_types(chan_types)
+
+    ch_updates = ", ".join([f"{k} - {v}" for k, v in chan_types.items()])
+    logger.info(f"Specified Aux channel mne types set: {ch_updates}")
+
+
 
 def get_subject_info(recording: RecordingMetadata, participants_df: DataFrame) -> SubjectMetadata:
 
