@@ -1,11 +1,19 @@
+import logging
 from pathlib import Path
 
 from rs_bidsify import data_io
+from rs_bidsify.logging import setup_logging
 from rs_bidsify.config import PARTICIPANT_INFO as part_info, PHENOTYPE_INFO as phen_info
 from rs_bidsify.validation.description import DatasetDescription
 from rs_bidsify.validation.dataset import EEGDatasetCrawler, RecordingMetadata
 from rs_bidsify.utils import find_file
+
+logger = logging.getLogger(__name__)
+
 def process_dataset(raw_path: Path, out_root_path: Path):
+
+    log_path = raw_path.parent / "logs"
+    setup_logging(log_path)
 
     dataset_desc = generate_dataset_description(raw_path)
 
