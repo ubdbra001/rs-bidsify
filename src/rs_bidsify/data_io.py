@@ -9,7 +9,7 @@ from rs_bidsify.validation.dataset import RecordingMetadata
 import pandas as pd
 from mne.io import read_raw, BaseRaw
 
-from mne_bids import BIDSPath, write_raw_bids
+from mne_bids import BIDSPath, write_raw_bids, update_sidecar_json
 
 logger = logging.getLogger(__name__)
 
@@ -75,4 +75,13 @@ def write_bids(bids_root: Path, eeg_data: BaseRaw, recording: RecordingMetadata)
     )
     
     return write_raw_bids(eeg_data, bids_path, overwrite=True, allow_preload=True, format="EDF")
+
+def write_enriched_sidecar(bids_path: BIDSPath, updates: dict[str, Any]):
+    """Write post-creation updates to sidecar"""
+
+    sidecar_path = bids_path.copy().update(
+        extension='.json', suffix="eeg", datatype='eeg'
+    )
+
+    update_sidecar_json(sidecar_path, updates)
 
