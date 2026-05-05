@@ -1,5 +1,6 @@
 import logging
 from mne.io import BaseRaw
+from mne.channels import get_builtin_montages
 from pandas import DataFrame
 from rs_bidsify.validation.dataset import RecordingMetadata
 from rs_bidsify.validation.description import AcquisitionSpecs
@@ -31,6 +32,23 @@ def set_aux_channel_types(eeg_data: BaseRaw, aux_chans: dict[str, AuxChanSpec]):
     logger.info(f"Specified Aux channel mne types set: {ch_updates}")
 
 
+
+def set_electrode_montage(eeg_data: BaseRaw, eeg_spec: EEGChanSpec):
+    """Set the electrode montage for the recording"""
+
+    montage_info = eeg_spec.montage
+    mne_montages = get_builtin_montages()
+
+    if montage_info.mne_name is not None and montage_info.mne_name in mne_montages:
+        eeg_data.set_montage(montage_info.mne_name)
+        logger.info(f"Set EEG montage to built-in mne montage: {montage_info.mne_name}")
+    elif montage_info.path is not None:
+        # This should load the custom locations file and set the montage using it.
+        # .lay files appear to be 2d while MNE expects Montages to be 3D, need to double check this
+        pass
+    else:
+        # No valid montage infomation passed (mne_name doesn't match a valid built-in and no path provided)
+        raise ValueError("No valid montage infomation passed, please check the information provided")
 
 def get_subject_info(recording: RecordingMetadata, participants_df: DataFrame) -> SubjectMetadata:
 
