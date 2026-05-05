@@ -44,6 +44,8 @@ def process_recording(out_root_path: Path, recording: RecordingMetadata, dataset
 
     within_mne_updates(eeg_data, dataset_desc)
 
+    rec_bids_path = data_io.write_bids(out_root_path, eeg_data, recording)
+
 def within_mne_updates(eeg_data: BaseRaw, dataset_desc: DatasetDescription):
     """Update metadata that can placed in MNE objects and saved using MNE-BIDS"""
     acquisition_spec = dataset_desc.spec.acquisition_spec

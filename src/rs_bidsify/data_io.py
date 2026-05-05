@@ -3,11 +3,13 @@ from pathlib import Path
 from typing import Any
 from rs_bidsify.utils import get_utc_today
 from rs_bidsify.validation.description import DatasetSpec
-from rs_bidsify.utils import get_utc_today
+from rs_bidsify.validation.dataset import RecordingMetadata
 
 
 import pandas as pd
 from mne.io import read_raw, BaseRaw
+
+from mne_bids import BIDSPath, write_raw_bids
 
 logger = logging.getLogger(__name__)
 
@@ -61,4 +63,16 @@ def read_eeg_recording(recording_path: Path) -> BaseRaw:
     eeg_data.set_meas_date(get_utc_today())
 
     return eeg_data
+
+def write_bids(bids_root: Path, eeg_data: BaseRaw, recording: RecordingMetadata) -> BIDSPath:
+    """Write EEG recording to BIDS"""
+
+    bids_path = BIDSPath(
+        subject=recording.subject,
+        task=recording.condition,
+        session=recording.session,
+        root=bids_root
+    )
+    
+    return write_raw_bids(eeg_data, bids_path, overwrite=True, allow_preload=True, format="EDF")
 
