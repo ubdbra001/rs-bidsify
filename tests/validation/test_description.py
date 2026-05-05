@@ -14,17 +14,24 @@ class TestMontageInfo():
 
     def test_valid_name(self):
         data = {"mne_name": "standard_1020"}
-        model = rs_desc.MontageInfo(**data)
+        model = rs_desc.Montage(**data)
 
         assert model.mne_name == data["mne_name"]
         assert model.path is None
 
     def test_valid_path(self, shared_file):
         data = {"path": shared_file}
-        model = rs_desc.MontageInfo(**data)
+        model = rs_desc.Montage(**data)
         
         assert model.mne_name is None
         assert model.path == shared_file
+
+    def test_missing_path(self):
+        data = {"path": "missing.file"}
+
+        with pytest.raises(ValidationError):
+            rs_desc.Montage(**data)
+
 
     def test_both_present(self, shared_file):
         data = {
@@ -33,11 +40,11 @@ class TestMontageInfo():
         }
 
         with pytest.raises(ValidationError):
-            rs_desc.MontageInfo(**data)
+            rs_desc.Montage(**data)
 
     def test_both_missing(self):
         with pytest.raises(ValidationError):
-            rs_desc.MontageInfo(mne_name=None, path=None)
+            rs_desc.Montage(mne_name=None, path=None)
 
 
 
