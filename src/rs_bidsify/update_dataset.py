@@ -1,9 +1,12 @@
 import logging
+from typing import Any
+
 from mne.io import BaseRaw
 from mne.channels import get_builtin_montages
 from pandas import DataFrame
+
 from rs_bidsify.validation.dataset import RecordingMetadata
-from rs_bidsify.validation.description import AcquisitionSpecs
+from rs_bidsify.validation.description import AcquisitionSpecs, AuxChanSpec, EEGChanSpec, DatasetMetadata
 from rs_bidsify.validation.subject import SubjectMetadata
 
 logger = logging.getLogger(__name__)
@@ -93,3 +96,12 @@ def set_subject_info(eeg_data: BaseRaw, subject_model: SubjectMetadata):
     
     logger.info(f"Updated subject information: {subject_model}")
 
+
+def map_spec_to_bids(source_obj: Any, mapping: dict[str, str], updates: dict[str, Any]):
+    for bids_key, attr_name in mapping.items():
+        val = getattr(source_obj, attr_name, None)
+        
+        # Only add to the dictionary if a value actually exists
+        if val is not None:
+            updates[bids_key] = val
+            logger.info(f"Queued update - {bids_key}: {val}")
