@@ -42,3 +42,13 @@ def process_recording(out_root_path: Path, recording: RecordingMetadata, dataset
     subject_info = update_dataset.get_subject_info(recording, dataset_desc.participants["dataset"])
     update_dataset.set_subject_info(eeg_data, subject_info)
 
+    within_mne_updates(eeg_data, dataset_desc)
+
+def within_mne_updates(eeg_data: BaseRaw, dataset_desc: DatasetDescription):
+    """Update metadata that can placed in MNE objects and saved using MNE-BIDS"""
+    acquisition_spec = dataset_desc.spec.acquisition_spec
+    update_dataset.set_line_frequency(eeg_data, acquisition_spec)
+    update_dataset.set_aux_channel_types(eeg_data, acquisition_spec.aux_channels)
+    update_dataset.set_electrode_montage(eeg_data, acquisition_spec.eeg_channels)
+    update_dataset.set_events(eeg_data, dataset_desc.spec.resting_state.events)
+
