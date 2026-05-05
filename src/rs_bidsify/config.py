@@ -10,3 +10,25 @@ DEMOGRAPHIC_MAPPINGS = {
         "a": 3, "ambidextrous": 3
     }
 }
+
+PARTICIPANT_INFO = {
+    "dataset": {
+        "sheet_name": 6,
+        "index_col": "participant_id"
+    },
+    "codebook": {
+        "sheet_name": 7,
+        "index_col": "Variable"
+    },
+}
+
+PHENOTYPE_INFO = {
+    "dataset": {
+        "sheet_name": 8,
+        "index_col": "participant_id"
+    },
+    "codebook": {
+        "sheet_name": 9,
+        "index_col": "Variable"
+    },
+}
