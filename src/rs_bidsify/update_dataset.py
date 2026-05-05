@@ -13,6 +13,27 @@ def set_line_frequency(eeg_data: BaseRaw, acqusition_spec: AcquisitionSpecs):
     eeg_data.info["line_freq"] = acqusition_spec.power_line_freq
     logger.info(f"Set line_freq to {acqusition_spec.power_line_freq} Hz")
 
+def set_events(eeg_data: BaseRaw, event_info: dict[str, str]):
+    """Set the events in the Recording"""
+
+    rec_annotations = set(eeg_data.annotations.description)
+
+    present_annotations = rec_annotations.intersection(event_info.keys())
+    logger.info(f"Specified Events found in recording: {', '.join(present_annotations)}")
+
+    if missing_events := set(event_info.keys()).difference(present_annotations):
+        logger.warning(f"Events specified in metadata but not present in recording: {', '.join(missing_events)}")
+
+    if extra_events := rec_annotations.difference(event_info.keys()):
+        logger.warning(f"Events present in recording, but not specified in metadata: {', '.join(extra_events)}")
+
+    update_events = {key: value for key, value in event_info.items() if key in present_annotations}
+
+    eeg_data.annotations.rename(update_events)
+
+    ev_updates = ", ".join([f"{k} -> {v}" for k, v in update_events.items()])
+    logger.info(f"Events renamed: {ev_updates}")
+
 def set_aux_channel_types(eeg_data: BaseRaw, aux_chans: dict[str, AuxChanSpec]):
     """Set the types for the Aux Channels"""
 
