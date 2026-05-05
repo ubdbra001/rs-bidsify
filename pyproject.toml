@@ -5,6 +5,7 @@ description = "'BIDS-ifys' raw resting-state EEG data"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
+    "colorlog>=6.10.1",
     "mne>=1.12.1",
     "mne-bids[full]>=0.18.0",
     "pandas[excel]>=3.0.2",
