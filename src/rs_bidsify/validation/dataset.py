@@ -1,3 +1,4 @@
+import logging
 import re
 from pathlib import Path
 from pydantic import (
@@ -9,7 +10,7 @@ from pydantic import (
     computed_field,
 )
 
-
+logger = logging.getLogger(__name__)
 class RecordingMetadata(BaseModel):
     participant: str
     condition: str | None
@@ -40,6 +41,9 @@ class EEGDatasetCrawler(BaseModel):
         conditions = self.expected_conditions or [None]
         sessions = self.expected_sessions or [None]
 
+        logger.info(f"Crawling recordings in {self.root_path}")
+
+
         for p_id in self.expected_participants:
             p_path = self.root_path / p_id
             if not p_path.is_dir():
@@ -66,6 +70,7 @@ class EEGDatasetCrawler(BaseModel):
                         )
                     )
 
+        logger.info(f"Recording crawl complete, found {len(self.found_recordings)} valid recordings")
         return self
 
     def _check_leaf_node(self, path: Path, p_id: str) -> Path:
@@ -77,7 +82,7 @@ class EEGDatasetCrawler(BaseModel):
 
             raise ValueError(
                 f"Structure broken for {p_id}."
-                f"Found {current}, but expected to find {last_missing} within"
+                f"Found {current}, but expected to find {last_missing} within" # type: ignore
             )
 
             # Look for EEG files
