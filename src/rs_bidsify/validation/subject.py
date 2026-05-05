@@ -1,13 +1,11 @@
-from datetime import datetime, date, timedelta, timezone
+from datetime import datetime, date
 from enum import IntEnum
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field, field_validator, ValidationInfo, computed_field, PositiveInt
 
 from rs_bidsify.config import DEMOGRAPHIC_MAPPINGS as MAPPINGS
-
-def get_utc_today() -> datetime:
-    return datetime.now(timezone.utc)
+from rs_bidsify.utils import get_utc_today
 
 class SubjectMetadata(BaseModel):
     age: PositiveInt = Field(exclude=True)
@@ -21,7 +19,7 @@ class SubjectMetadata(BaseModel):
         if isinstance(value, str):
             val_lower = value.lower()
             
-            mapping_dict = MAPPINGS.get(info.field_name, {})  # ty:ignore[no-matching-overload]
+            mapping_dict = MAPPINGS.get(info.field_name, {}) # type: ignore
             
             if val_lower in mapping_dict:
                 return mapping_dict[val_lower]
