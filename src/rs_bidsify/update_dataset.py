@@ -2,9 +2,15 @@ import logging
 from mne.io import BaseRaw
 from pandas import DataFrame
 from rs_bidsify.validation.dataset import RecordingMetadata
+from rs_bidsify.validation.description import AcquisitionSpecs
 from rs_bidsify.validation.subject import SubjectMetadata
 
 logger = logging.getLogger(__name__)
+
+def set_line_frequency(eeg_data: BaseRaw, acqusition_spec: AcquisitionSpecs):
+    """Set the frequency for line noise"""
+    eeg_data.info["line_freq"] = acqusition_spec.power_line_freq
+    logger.info(f"Set line_freq to {acqusition_spec.power_line_freq} Hz")
 
 
 def get_subject_info(recording: RecordingMetadata, participants_df: DataFrame) -> SubjectMetadata:
