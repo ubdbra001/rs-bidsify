@@ -136,15 +136,14 @@ def set_ground_chan(entries_dict: dict[str, Any], acquisition_spec: AcquisitionS
     mapping = {"EEGGround": "ground"}
     map_spec_to_bids(acquisition_spec.eeg_channels, mapping, entries_dict)
 
-def hardware_info(entries_dict: dict[str, Any], acquisition_spec: AcquisitionSpecs):
+def set_device_info(entries_dict: dict[str, Any], acquisition_spec: AcquisitionSpecs):
 
-    mapping = {"ManufacturersModelName": "amplifier_model"}
+    mapping = {
+        "ManufacturersModelName": "amplifier_model",
+        "SoftwareVersions": "software"
+    }
     map_spec_to_bids(acquisition_spec, mapping, entries_dict)
 
-def software_info(entries_dict: dict[str, Any], acquisition_spec: AcquisitionSpecs):
-
-    mapping = {"SoftwareVersions": "software"}
-    map_spec_to_bids(acquisition_spec, mapping, entries_dict)
 
 def set_institution_info(entries_dict: dict[str, Any], metadata: DatasetMetadata):
     """Set the institution name and dept"""
