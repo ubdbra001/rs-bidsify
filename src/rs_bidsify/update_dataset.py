@@ -96,6 +96,34 @@ def set_subject_info(eeg_data: BaseRaw, subject_model: SubjectMetadata):
     
     logger.info(f"Updated subject information: {subject_model}")
 
+def set_hardware_filters(entries_dict: dict[str, Any], filter_list: list[FilterSpec]):
+    """Set the hardware filters used in the recording"""
+
+    bids_key = "HardwareFilters"
+
+    hw_filters = get_filters(filter_list, FilterTypeOptions.HARDWARE)
+    add_filters(entries_dict, hw_filters, bids_key)
+
+
+def set_software_filters(entries_dict: dict[str, Any], filter_list: list[FilterSpec]):
+    """Set the software filters used in the recording"""
+
+    bids_key = "SoftwareFilters"
+
+    sw_filters = get_filters(filter_list, FilterTypeOptions.SOFTWARE)
+    add_filters(entries_dict, sw_filters, bids_key)
+
+
+def get_filters(filter_list: list[FilterSpec], filter_type: FilterTypeOptions) -> dict[str, Any]:
+    """Generic function for finding filters of specific type"""
+    return {f.name: f.info for f in filter_list if f.type == filter_type}
+
+def add_filters(entries_dict: dict[str, Any], filters: dict[str, Any], bids_key):
+    """Set the filters in the update dictionary"""
+    if filters:
+        entries_dict.update({bids_key: filters})
+        logger.info(f"Queued update - {bids_key}: {','.join(filters.keys())}")
+
 def set_reference_chan(entries_dict: dict[str, Any], acquisition_spec: AcquisitionSpecs):
     """Set the reference channel"""
 
