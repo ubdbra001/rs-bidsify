@@ -158,10 +158,14 @@ def set_institution_info(entries_dict: dict[str, Any], metadata: DatasetMetadata
 def set_extras():
 
 def map_spec_to_bids(source_obj: Any, mapping: dict[str, str], updates: dict[str, Any]):
-    for bids_key, attr_name in mapping.items():
-        val = getattr(source_obj, attr_name, None)
-        
+    """Generic function that maps the data in metadata models to specific BIDS keys ready
+    to be written to a sidecar file"""
+    model_dict = source_obj.model_dump(include=set(mapping.values()))
+
+    for bids_key, metadata_key in mapping.items():
+
         # Only add to the dictionary if a value actually exists
-        if val is not None:
+        if (val := model_dict.get(metadata_key, None)) is not None:
             updates[bids_key] = val
             logger.info(f"Queued update - {bids_key}: {val}")
+
