@@ -155,7 +155,19 @@ def set_institution_info(entries_dict: dict[str, Any], metadata: DatasetMetadata
     }
     map_spec_to_bids(metadata, mapping, entries_dict)
 
-def set_extras():
+def set_extras(entries_dict: dict[str, Any], acquisition_spec: AcquisitionSpecs):
+    """Set extra metadata not typically recorded in BIDS"""
+
+    mapping = {
+        "AcceptableImpedence": "acceptable_impedance",
+        "ConductiveMedium": "conductive_medium",
+        "FaradayCage": "faraday_cage",
+        "SoundProofing": "sound_proof",
+        "LightingConditions": "lighting_conditions"
+    }
+
+    map_spec_to_bids(acquisition_spec, mapping, entries_dict)
+
 
 def map_spec_to_bids(source_obj: Any, mapping: dict[str, str], updates: dict[str, Any]):
     """Generic function that maps the data in metadata models to specific BIDS keys ready
