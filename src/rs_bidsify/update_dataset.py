@@ -3,7 +3,7 @@ from typing import Any
 
 from mne.io import BaseRaw
 from mne.channels import get_builtin_montages
-from pandas import DataFrame
+from pandas import DataFrame, isna
 
 from rs_bidsify.validation.dataset import RecordingMetadata
 from rs_bidsify.validation.description import (
@@ -219,3 +219,22 @@ def map_spec_to_bids(source_obj: Any, mapping: dict[str, str], updates: dict[str
             updates[bids_key] = val
             logger.info(f"Queued update - {bids_key}: {val}")
 
+
+def set_channels_tsv(channels: dict[str, AuxChanSpec], channel_tsv: DataFrame):
+    """Update the existing channel information using metadata"""
+
+    valid_keys = set(channels.keys()).intersection(channel_tsv.index)
+
+    for chan in valid_keys:
+        info = channels[chan]
+
+        if info.bids_type is not None and channel_tsv.loc[chan, "type"] == "MISC":
+            channel_tsv.loc[chan, "type"] = info.bids_type.value
+
+            logger.info(f"Updated type for {chan} to {info.bids_type.value}")
+            if info.description is not None:
+                channel_tsv.loc[chan, "description"] = info.description
+
+        if info.units is not None and isna(channel_tsv.loc[chan, "units"]):
+            channel_tsv.loc[chan, "units"] = info.units
+            logger.info(f"Updated units for {chan} to {info.units}")
