@@ -135,10 +135,12 @@ class Montage(BaseModel):
     def check_path_for_other_montages(self) -> "Montage":
         if self.mne_name is None and self.path is None:
             raise ValueError("Need to provide either 'mne_name' or 'path' fields")
-        
+
         if self.mne_name is not None and self.path is not None:
-            raise ValueError("Only one of either 'mne_name' or 'path' fields need to be provided")
-        
+            raise ValueError(
+                "Only one of either 'mne_name' or 'path' fields need to be provided"
+            )
+
         return self
 
 
@@ -261,7 +263,6 @@ class DatasetSpec(BaseModel):
 
 @dataclass
 class DatasetDescription:
-
     spec: DatasetSpec
     participants: dict[str, DataFrame] = field(default_factory=dict)
     phenotype: dict[str, DataFrame] = field(default_factory=dict)
@@ -272,7 +273,5 @@ class DatasetDescription:
             "expected_participants": self.participants["dataset"].index.to_list(),
             "expected_conditions": self.spec.conditions,
             "expected_sessions": self.spec.sessions,
-            "extension": self.spec.acquisition_spec.file_format
+            "extension": self.spec.acquisition_spec.file_format,
         }
-
-

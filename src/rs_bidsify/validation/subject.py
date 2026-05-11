@@ -1,13 +1,22 @@
 from datetime import datetime, date
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field, field_validator, ValidationInfo, computed_field, PositiveInt, ConfigDict
+from pydantic import (
+    BaseModel,
+    Field,
+    field_validator,
+    ValidationInfo,
+    computed_field,
+    PositiveInt,
+    ConfigDict,
+)
 
 from rs_bidsify.config import DEMOGRAPHIC_MAPPINGS as MAPPINGS
 from rs_bidsify.utils import get_utc_today
 
+
 class SubjectMetadata(BaseModel):
-    model_config = ConfigDict(extra='allow')  
+    model_config = ConfigDict(extra="allow")
 
     age: PositiveInt
     sex: Literal[0, 1, 2]
@@ -20,9 +29,9 @@ class SubjectMetadata(BaseModel):
         """Convert sex and handedness strings to integers"""
         if isinstance(value, str):
             val_lower = value.lower()
-            
-            mapping_dict = MAPPINGS.get(info.field_name, {}) # type: ignore
-            
+
+            mapping_dict = MAPPINGS.get(info.field_name, {})  # type: ignore
+
             if val_lower in mapping_dict:
                 return mapping_dict[val_lower]
             else:
@@ -43,10 +52,10 @@ class SubjectMetadata(BaseModel):
             return meas_date.replace(year=meas_date.year - self.age)
         except ValueError:
             return meas_date.replace(year=meas_date.year - self.age, day=28)
-        
+
     def subject_info_dump(self):
         """Model dump only including items used in MNE subject_info dict"""
-        return self.model_dump(include={'sex', 'hand', 'birthday'})
+        return self.model_dump(include={"sex", "hand", "birthday"})
 
     def __str__(self) -> str:
         return f"Age = {self.age}, Birthday = {self.birthday.strftime('%d/%m/%y')}, Sex = {self.sex}, Hand = {self.hand}"

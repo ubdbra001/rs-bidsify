@@ -13,6 +13,7 @@ from mne_bids import BIDSPath, write_raw_bids, update_sidecar_json
 
 logger = logging.getLogger(__name__)
 
+
 def read_description_json(file_path: Path) -> DatasetSpec:
     """Reads and validates the description json file.
 
@@ -33,7 +34,10 @@ def read_description_json(file_path: Path) -> DatasetSpec:
 
     return validated_model
 
-def read_description_spreadsheet(sheet_path: Path, sheet_info: dict[str, Any], sheet_type: str) -> dict[str, pd.DataFrame]:
+
+def read_description_spreadsheet(
+    sheet_path: Path, sheet_info: dict[str, Any], sheet_type: str
+) -> dict[str, pd.DataFrame]:
     """Read sheets from the description spreadsheet
 
     Parameters
@@ -47,10 +51,12 @@ def read_description_spreadsheet(sheet_path: Path, sheet_info: dict[str, Any], s
     -------
     dict[str, pd.DataFrame]
         Dictionary containing the loaded sheet(s), will typically consist of a datasheet and a codebook for the datasheet
-    """    
-    
-    sheet_dict = {key: pd.read_excel(sheet_path, **val) for key, val in sheet_info.items()}
-    
+    """
+
+    sheet_dict = {
+        key: pd.read_excel(sheet_path, **val) for key, val in sheet_info.items()
+    }
+
     logger.info(f"Loaded {sheet_type} info from {sheet_path}")
 
     return sheet_dict
@@ -64,23 +70,29 @@ def read_eeg_recording(recording_path: Path) -> BaseRaw:
 
     return eeg_data
 
-def write_bids(bids_root: Path, eeg_data: BaseRaw, recording: RecordingMetadata) -> BIDSPath:
+
+def write_bids(
+    bids_root: Path, eeg_data: BaseRaw, recording: RecordingMetadata
+) -> BIDSPath:
     """Write EEG recording to BIDS"""
 
     bids_path = BIDSPath(
         subject=recording.subject,
         task=recording.condition,
         session=recording.session,
-        root=bids_root
+        root=bids_root,
     )
-    
-    return write_raw_bids(eeg_data, bids_path, overwrite=True, allow_preload=True, format="EDF")
+
+    return write_raw_bids(
+        eeg_data, bids_path, overwrite=True, allow_preload=True, format="EDF"
+    )
+
 
 def write_enriched_sidecar(bids_path: BIDSPath, updates: dict[str, Any]):
     """Write post-creation updates to sidecar"""
 
     sidecar_path = bids_path.copy().update(
-        extension='.json', suffix="eeg", datatype='eeg'
+        extension=".json", suffix="eeg", datatype="eeg"
     )
 
     update_sidecar_json(sidecar_path, updates)

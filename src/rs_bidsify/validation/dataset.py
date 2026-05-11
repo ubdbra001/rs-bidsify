@@ -11,6 +11,8 @@ from pydantic import (
 )
 
 logger = logging.getLogger(__name__)
+
+
 class RecordingMetadata(BaseModel):
     participant: str
     condition: str | None
@@ -34,7 +36,9 @@ class EEGDatasetCrawler(BaseModel):
     expected_sessions: list[str] | None = Field(default=None, min_length=1)
     extension: str
 
-    found_recordings: list[RecordingMetadata] = Field(default_factory=list, exclude=True)
+    found_recordings: list[RecordingMetadata] = Field(
+        default_factory=list, exclude=True
+    )
 
     @model_validator(mode="after")
     def verify_structure(self) -> "EEGDatasetCrawler":
@@ -42,7 +46,6 @@ class EEGDatasetCrawler(BaseModel):
         sessions = self.expected_sessions or [None]
 
         logger.info(f"Crawling recordings in {self.root_path}")
-
 
         for p_id in self.expected_participants:
             p_path = self.root_path / p_id
@@ -70,7 +73,9 @@ class EEGDatasetCrawler(BaseModel):
                         )
                     )
 
-        logger.info(f"Recording crawl complete, found {len(self.found_recordings)} valid recordings")
+        logger.info(
+            f"Recording crawl complete, found {len(self.found_recordings)} valid recordings"
+        )
         return self
 
     def _check_leaf_node(self, path: Path, p_id: str) -> Path:
@@ -82,7 +87,7 @@ class EEGDatasetCrawler(BaseModel):
 
             raise ValueError(
                 f"Structure broken for {p_id}."
-                f"Found {current}, but expected to find {last_missing} within" # type: ignore
+                f"Found {current}, but expected to find {last_missing} within"  # type: ignore
             )
 
             # Look for EEG files
