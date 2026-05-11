@@ -72,3 +72,24 @@ def within_mne_updates(eeg_data: BaseRaw, dataset_desc: DatasetDescription):
     update_dataset.set_electrode_montage(eeg_data, acquisition_spec.eeg_channels)
     update_dataset.set_events(eeg_data, dataset_desc.spec.resting_state.events)
 
+
+def enrich_eeg_sidecar(
+    rec_bids_path: BIDSPath, dataset_desc: DatasetDescription, add_extras: bool = True
+):
+    """Enrich the eeg sidecar with information from the metadata that cannot be saved directly using MNE-BIDS"""
+
+    entries_dict = {}
+    acquisition_spec = dataset_desc.spec.acquisition_spec
+
+    update_dataset.set_reference_chan(entries_dict, acquisition_spec)
+    update_dataset.set_ground_chan(entries_dict, acquisition_spec)
+    update_dataset.set_hardware_filters(entries_dict, acquisition_spec.filters)
+    update_dataset.set_software_filters(entries_dict, acquisition_spec.filters)
+    update_dataset.set_device_info(entries_dict, acquisition_spec)
+    update_dataset.set_institution_info(entries_dict, dataset_desc.spec.metadata)
+
+    if add_extras:
+        update_dataset.set_extras(entries_dict, acquisition_spec)
+
+    data_io.write_enriched_sidecar(rec_bids_path, entries_dict)
+
