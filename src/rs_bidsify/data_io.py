@@ -108,3 +108,14 @@ def write_bids_tsv(tsv_path: BIDSPath, tsv_df: pd.DataFrame):
     tsv_df.to_csv(tsv_path, sep="\t")
 
 
+def write_phenotype_data(phenotype_data: dict[str, pd.DataFrame], root_path: Path):
+    """write the phenotype data and codebook to the correct location"""
+
+    phenotype_path = root_path / "phenotype"
+
+    phenotype_path.mkdir(parents=True, exist_ok=True)
+
+    phenotype_data["dataset"].to_csv(phenotype_path / "phenotype.tsv", sep="\t")
+    phenotype_data["codebook"].to_json(phenotype_path / "phenotype.json", orient="index")
+
+    logger.info(f"Phenotype data written to {phenotype_path}")
