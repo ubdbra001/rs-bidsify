@@ -86,9 +86,9 @@ def set_subject_info(eeg_data: BaseRaw, subject_model: SubjectMetadata):
     """Set the information about the subject"""
 
     if eeg_data.info["subject_info"] is None:
-        eeg_data.info["subject_info"] = subject_model.model_dump()
+        eeg_data.info["subject_info"] = subject_model.subject_info_dump()
     elif isinstance(eeg_data.info["subject_info"], dict):
-        eeg_data.info["subject_info"].update(subject_model.model_dump())
+        eeg_data.info["subject_info"].update(subject_model.subject_info_dump())
     else:
         # may want to raise a warning here if there is something in
         # subject_info, but it is not of an expected type
