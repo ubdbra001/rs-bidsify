@@ -71,6 +71,11 @@ def read_eeg_recording(recording_path: Path) -> BaseRaw:
     return eeg_data
 
 
+def read_bids_tsv(tsv_path: BIDSPath):
+    """Read BIDS tsv file"""
+    return pd.read_csv(tsv_path, sep="\t", index_col=0)
+
+
 def write_bids(
     bids_root: Path, eeg_data: BaseRaw, recording: RecordingMetadata
 ) -> BIDSPath:
@@ -96,4 +101,10 @@ def write_enriched_sidecar(bids_path: BIDSPath, updates: dict[str, Any]):
     )
 
     update_sidecar_json(sidecar_path, updates)
+
+
+def write_bids_tsv(tsv_path: BIDSPath, tsv_df: pd.DataFrame):
+    """Write BIDS tsv file"""
+    tsv_df.to_csv(tsv_path, sep="\t")
+
 
