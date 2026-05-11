@@ -64,6 +64,10 @@ def process_recording(
 
     rec_bids_path = data_io.write_bids(out_root_path, eeg_data, recording)
 
+    enrich_eeg_sidecar(rec_bids_path, dataset_desc)
+    enrich_channel_tsv(rec_bids_path, dataset_desc.spec.acquisition_spec.aux_channels)
+
+
 def within_mne_updates(eeg_data: BaseRaw, dataset_desc: DatasetDescription):
     """Update metadata that can placed in MNE objects and saved using MNE-BIDS"""
     acquisition_spec = dataset_desc.spec.acquisition_spec
