@@ -1,10 +1,6 @@
----
-icon: lucide/rocket
----
-
 # Introduction
 
-The `RS-BIDSify` package is designed to take resting-state EEG (RS-EEG) datasets and metadata that do not follow a standard structure, and to standardise them via conversion to the [Brain Imaging Data Structure (BIDS)]().
+The `RS-BIDSify` package is designed to take resting-state EEG (RS-EEG) datasets and metadata that do not follow a standard structure, and to standardise them via conversion to the [Brain Imaging Data Structure (BIDS)](https://bids.neuroimaging.io/).
 
 ## Background
 
