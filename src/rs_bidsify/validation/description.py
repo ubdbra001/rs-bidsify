@@ -155,7 +155,7 @@ class EEGChanSpec(BaseModel):
     number: PositiveInt
     montage: Montage
     ground: str
-    reference: str
+    reference: str | Literal["VARIES"]
 
 
 class AuxChanSpec(BaseModel):
