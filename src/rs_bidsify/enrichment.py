@@ -3,9 +3,9 @@ from typing import Any
 
 from mne.io import BaseRaw
 from mne.channels import get_builtin_montages
+from mne_bids import BIDSPath
 from pandas import DataFrame, isna
 
-from rs_bidsify.validation.dataset import RecordingMetadata
 from rs_bidsify.validation.description import (
     AcquisitionSpecs,
     AuxChanSpec,
@@ -14,6 +14,8 @@ from rs_bidsify.validation.description import (
     FilterSpec,
     FilterTypeOptions,
 )
+from rs_bidsify import io
+from rs_bidsify.validation.description import DescriptionSpec
 from rs_bidsify.validation.subject import SubjectMetadata
 
 logger = logging.getLogger(__name__)
@@ -101,17 +103,6 @@ def set_electrode_montage(eeg_data: BaseRaw, eeg_spec: EEGChanSpec):
             "No valid montage infomation passed, please check the information provided"
         )
 
-
-def get_subject_info(
-    recording: RecordingMetadata, participants_df: DataFrame
-) -> SubjectMetadata:
-
-    part_id = recording.participant
-    subject_info = participants_df.loc[part_id].to_dict()
-
-    return SubjectMetadata(**subject_info)  # type: ignore
-
-
 def set_subject_info(eeg_data: BaseRaw, subject_model: SubjectMetadata):
     """Set the information about the subject"""
 
@@ -133,7 +124,7 @@ def set_hardware_filters(entries_dict: dict[str, Any], filter_list: list[FilterS
     bids_key = "HardwareFilters"
 
     hw_filters = get_filters(filter_list, FilterTypeOptions.HARDWARE)
-    add_filters(entries_dict, hw_filters, bids_key)
+    set_filters(entries_dict, hw_filters, bids_key)
 
 
 def set_software_filters(entries_dict: dict[str, Any], filter_list: list[FilterSpec]):
@@ -142,7 +133,7 @@ def set_software_filters(entries_dict: dict[str, Any], filter_list: list[FilterS
     bids_key = "SoftwareFilters"
 
     sw_filters = get_filters(filter_list, FilterTypeOptions.SOFTWARE)
-    add_filters(entries_dict, sw_filters, bids_key)
+    set_filters(entries_dict, sw_filters, bids_key)
 
 
 def get_filters(
@@ -152,7 +143,7 @@ def get_filters(
     return {f.name: f.info for f in filter_list if f.type == filter_type}
 
 
-def add_filters(entries_dict: dict[str, Any], filters: dict[str, Any], bids_key):
+def set_filters(entries_dict: dict[str, Any], filters: dict[str, Any], bids_key):
     """Set the filters in the update dictionary"""
     if filters:
         entries_dict.update({bids_key: filters})
@@ -238,3 +229,45 @@ def set_channels_tsv(channels: dict[str, AuxChanSpec], channel_tsv: DataFrame):
         if info.units is not None and isna(channel_tsv.loc[chan, "units"]):
             channel_tsv.loc[chan, "units"] = info.units
             logger.info(f"Updated units for {chan} to {info.units}")
+
+
+def enrich_mne_object(eeg_data: BaseRaw, dataset_spec: DescriptionSpec):
+    """Update metadata that can placed in MNE objects and saved using MNE-BIDS"""
+    acquisition_spec = dataset_spec.acquisition_spec
+    set_line_frequency(eeg_data, acquisition_spec)
+    set_aux_channel_types(eeg_data, acquisition_spec.aux_channels)
+    set_electrode_montage(eeg_data, acquisition_spec.eeg_channels)
+    set_events(eeg_data, dataset_spec.resting_state.events)
+
+
+def enrich_eeg_sidecar(
+    rec_bids_path: BIDSPath, dataset_spec: DescriptionSpec, add_extras: bool = True
+):
+    """Enrich the eeg sidecar with information from the metadata that cannot be saved directly using MNE-BIDS"""
+
+    entries_dict = {}
+    acquisition_spec = dataset_spec.acquisition_spec
+
+    set_reference_chan(entries_dict, acquisition_spec)
+    set_ground_chan(entries_dict, acquisition_spec)
+    set_hardware_filters(entries_dict, acquisition_spec.filters)
+    set_software_filters(entries_dict, acquisition_spec.filters)
+    set_device_info(entries_dict, acquisition_spec)
+    set_institution_info(entries_dict, dataset_spec.metadata)
+
+    if add_extras:
+        set_extras(entries_dict, acquisition_spec)
+
+    io.write_enriched_sidecar(rec_bids_path, entries_dict)
+
+
+def enrich_channel_tsv(rec_bids_path: BIDSPath, channel_info: dict[str, AuxChanSpec]):
+    """Enrich the channel tsv file with information from the metadata"""
+
+    channel_tsv_path = rec_bids_path.copy().update(suffix="channels", extension="tsv")
+
+    channel_tsv = io.read_bids_tsv(channel_tsv_path)
+    set_channels_tsv(channel_info, channel_tsv)
+    io.write_bids_tsv(channel_tsv_path, channel_tsv)
+
+    logger.info(f"Updated channel tsv written to {channel_tsv_path}")
