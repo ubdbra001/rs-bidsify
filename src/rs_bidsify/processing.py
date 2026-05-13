@@ -49,7 +49,7 @@ def process_recording(
 
     dataset_spec, participants = dataset_desc
     logger.info(
-        f"Processing Recording - Sub: {recording.subject}, Task: {recording.condition}, Session: {recording.session}"
+        f"Processing Recording - Sub: {recording.subject}, Task: {recording.condition}"
     )
 
     subject_info = SubjectMetadata.from_dataframe(recording, participants["dataset"])

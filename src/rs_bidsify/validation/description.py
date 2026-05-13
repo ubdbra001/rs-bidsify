@@ -271,7 +271,6 @@ class DescriptionSpec(BaseModel):
 
     metadata: DatasetMetadata
     conditions: list[str] | None = Field(default=None, min_length=1)
-    sessions: list[str] | None = Field(default=None, min_length=1)
     acquisition_spec: AcquisitionSpecs
     resting_state: RestingStateProtocol
     variable_fields: dict[str, str] | None = Field(default=None)
@@ -280,7 +279,6 @@ class DescriptionSpec(BaseModel):
     def crawler_info(self):
         return {
             "expected_conditions": self.conditions,
-            "expected_sessions": self.sessions,
             "extension": self.acquisition_spec.file_format,
         }
 
