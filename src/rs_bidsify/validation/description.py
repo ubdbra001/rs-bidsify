@@ -259,3 +259,11 @@ class DescriptionSpec(BaseModel):
     acquisition_spec: AcquisitionSpecs
     resting_state: RestingStateProtocol
 
+    @property
+    def crawler_info(self):
+        return {
+            "expected_conditions": self.conditions,
+            "expected_sessions": self.sessions,
+            "extension": self.acquisition_spec.file_format,
+        }
+
