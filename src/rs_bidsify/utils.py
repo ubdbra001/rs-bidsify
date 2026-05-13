@@ -1,18 +1,38 @@
 from datetime import datetime, timezone
-from pathlib import Path
+from typing import Any
 
 def get_utc_today() -> datetime:
     return datetime.now(timezone.utc)
 
 
-def find_file(path: Path, ext: str):
-    found_path = list(path.glob(f"*.{ext}"))
+def locate_dynamic_fields(
+    input_obj: dict, target: str = "VARIES", current_path: list | None = None
+) -> list:
+    """Recursively searches through dictionaries to find 'path' to instances of the target"""
 
-    if len(found_path) != 1:
-        raise ValueError(
-            f"Expected single {ext} file in {path}, instead found {len(found_path)}"
-        )
+    if current_path is None:
+        current_path = []
 
-    return found_path[0]
+    paths = []
+
+    if isinstance(input_obj, dict):
+        for key, val in input_obj.items():
+            new_path = current_path + [key]
+
+            if val == target:
+                paths.append(new_path)
+            elif isinstance(val, dict):
+                paths.extend(locate_dynamic_fields(val, target, new_path))
+
+    return paths
 
 
+def apply_dynamic_value(data: dict[str, Any], path: list[str], new_value: Any):
+    """Insert a new value in the nested dictionary by following the 'path'"""
+    try:
+        current = data
+        for key in path[:-1]:
+            current = current[key]
+        current[path[-1]] = new_value
+    except (KeyError, TypeError):
+        print(f"Error: Path {path} could not be followed.")
