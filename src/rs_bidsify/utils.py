@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from typing import Any
 
+
 def get_utc_today() -> datetime:
     return datetime.now(timezone.utc)
 
@@ -34,5 +35,5 @@ def apply_dynamic_value(data: dict[str, Any], path: list[str], new_value: Any):
         for key in path[:-1]:
             current = current[key]
         current[path[-1]] = new_value
-    except (KeyError, TypeError):
+    except KeyError, TypeError:
         print(f"Error: Path {path} could not be followed.")

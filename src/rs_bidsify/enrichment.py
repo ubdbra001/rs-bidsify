@@ -104,6 +104,7 @@ def set_electrode_montage(eeg_data: BaseRaw, eeg_spec: EEGChanSpec):
             "No valid montage infomation passed, please check the information provided"
         )
 
+
 def set_subject_info(eeg_data: BaseRaw, subject_model: SubjectMetadata):
     """Set the information about the subject"""
 
@@ -231,9 +232,12 @@ def set_channels_tsv(channels: dict[str, AuxChanSpec], channel_tsv: DataFrame):
             channel_tsv.loc[chan, "units"] = info.units
             logger.info(f"Updated units for {chan} to {info.units}")
 
+
 def enrich_dataset_description(metadata: DatasetMetadata, out_root_path: Path):
     """Update the existing dataset description with additional supplied metadata"""
-    make_dataset_description(path=out_root_path, **metadata.create_dict(), overwrite=True)
+    make_dataset_description(
+        path=out_root_path, **metadata.create_dict(), overwrite=True
+    )
 
 
 def enrich_mne_object(eeg_data: BaseRaw, dataset_spec: DescriptionSpec):

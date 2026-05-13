@@ -10,6 +10,7 @@ from rs_bidsify.validation.subject import SubjectMetadata
 
 logger = logging.getLogger(__name__)
 
+
 class MNEChanTypes(str, Enum):
     """Enum listing all of the different channel types available in MNE"""
 
@@ -134,7 +135,7 @@ class DatasetMetadata(BaseModel):
             "data_license": self.license,
             "authors": self.authors,
             "references_and_links": self.references_links,
-            "funding": self.funding
+            "funding": self.funding,
         }
 
 
@@ -282,9 +283,14 @@ class DescriptionSpec(BaseModel):
             "expected_sessions": self.sessions,
             "extension": self.acquisition_spec.file_format,
         }
-    
+
     @classmethod
-    def from_template(cls, template: DescriptionSpec, varies_paths: list, subject_info: SubjectMetadata) -> DescriptionSpec:
+    def from_template(
+        cls,
+        template: DescriptionSpec,
+        varies_paths: list,
+        subject_info: SubjectMetadata,
+    ) -> DescriptionSpec:
 
         subject_spec = template.model_dump()
 
@@ -294,9 +300,10 @@ class DescriptionSpec(BaseModel):
                 subject_loc_key = var_fields[item_key]
                 subject_value = getattr(subject_info, subject_loc_key)
 
-                logger.info(f"Updating variable metadata: {".".join(path)} = {subject_value}")
+                logger.info(
+                    f"Updating variable metadata: {'.'.join(path)} = {subject_value}"
+                )
 
                 apply_dynamic_value(subject_spec, path, subject_value)
 
         return cls(**subject_spec)
-
