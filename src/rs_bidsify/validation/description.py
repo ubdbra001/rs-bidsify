@@ -252,7 +252,7 @@ class RestingStateProtocol(BaseModel):
     events: dict[str, str]  # Should be defined as "event code": "event description"
 
 
-class DatasetSpec(BaseModel):
+class DescriptionSpec(BaseModel):
     """Overarching schema for the dataset description"""
 
     metadata: DatasetMetadata

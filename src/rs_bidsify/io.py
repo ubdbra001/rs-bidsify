@@ -2,7 +2,7 @@ import logging
 from pathlib import Path
 from typing import Any
 from rs_bidsify.utils import get_utc_today
-from rs_bidsify.validation.description import DatasetSpec
+from rs_bidsify.validation.description import DescriptionSpec
 from rs_bidsify.validation.dataset import RecordingMetadata
 
 
@@ -14,7 +14,7 @@ from mne_bids import BIDSPath, write_raw_bids, update_sidecar_json
 logger = logging.getLogger(__name__)
 
 
-def read_description_json(file_path: Path) -> DatasetSpec:
+def read_description_json(file_path: Path) -> DescriptionSpec:
     """Reads and validates the description json file.
 
     Parameters
@@ -24,11 +24,11 @@ def read_description_json(file_path: Path) -> DatasetSpec:
 
     Returns
     -------
-    DatasetSpec
+    DescriptionSpec
         Validated JSON file in a Pydantic Model
     """
     raw_description = Path(file_path).read_text()
-    validated_model = DatasetSpec.model_validate_json(raw_description)
+    validated_model = DescriptionSpec.model_validate_json(raw_description)
 
     logger.info(f"Loaded and validated description JSON: {file_path}")
 
