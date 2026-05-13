@@ -1,7 +1,5 @@
 from enum import IntEnum, Enum
 from typing import Literal, Any
-from pandas import DataFrame
-from dataclasses import dataclass, field
 
 from pydantic import BaseModel, PositiveInt, Field, model_validator, FilePath
 
@@ -261,17 +259,3 @@ class DescriptionSpec(BaseModel):
     acquisition_spec: AcquisitionSpecs
     resting_state: RestingStateProtocol
 
-@dataclass
-class DatasetDescription:
-    spec: DatasetSpec
-    participants: dict[str, DataFrame] = field(default_factory=dict)
-    phenotype: dict[str, DataFrame] = field(default_factory=dict)
-
-    @property
-    def crawler_info(self):
-        return {
-            "expected_participants": self.participants["dataset"].index.to_list(),
-            "expected_conditions": self.spec.conditions,
-            "expected_sessions": self.spec.sessions,
-            "extension": self.spec.acquisition_spec.file_format,
-        }
