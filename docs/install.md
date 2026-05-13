@@ -1,7 +1,3 @@
----
-icon: lucide/rocket
----
-
 # Installation
 
 `RS-BIDSify` is not currently available on PyPI, so it needs to be installed directly from github.
