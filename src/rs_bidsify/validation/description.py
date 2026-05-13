@@ -128,6 +128,15 @@ class DatasetMetadata(BaseModel):
     institution_name: str
     institution_dept: str
 
+    def create_dict(self) -> dict:
+        return {
+            "name": self.dataset_name,
+            "data_license": self.license,
+            "authors": self.authors,
+            "references_and_links": self.references_links,
+            "funding": self.funding
+        }
+
 
 class Montage(BaseModel):
     mne_name: str | None = (

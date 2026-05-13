@@ -1,9 +1,10 @@
 import logging
+from pathlib import Path
 from typing import Any
 
 from mne.io import BaseRaw
 from mne.channels import get_builtin_montages
-from mne_bids import BIDSPath
+from mne_bids import BIDSPath, make_dataset_description
 from pandas import DataFrame, isna
 
 from rs_bidsify.validation.description import (
@@ -229,6 +230,10 @@ def set_channels_tsv(channels: dict[str, AuxChanSpec], channel_tsv: DataFrame):
         if info.units is not None and isna(channel_tsv.loc[chan, "units"]):
             channel_tsv.loc[chan, "units"] = info.units
             logger.info(f"Updated units for {chan} to {info.units}")
+
+def enrich_dataset_description(metadata: DatasetMetadata, out_root_path: Path):
+    """Update the existing dataset description with additional supplied metadata"""
+    make_dataset_description(path=out_root_path, **metadata.create_dict(), overwrite=True)
 
 
 def enrich_mne_object(eeg_data: BaseRaw, dataset_spec: DescriptionSpec):
