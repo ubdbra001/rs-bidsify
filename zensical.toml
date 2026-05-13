@@ -44,11 +44,21 @@ Copyright &copy; 2026 The authors
 # can be defined using TOML syntax.
 #
 # Read more: https://zensical.org/docs/setup/navigation/
-# nav = [
-#   { "Intro" = "index.md" },
-#   { "Installation" = "install.md" },
-#   { "Usage" = "usage.md" },
-# ]
+nav = [
+  { "About" = "index.md" },
+  { "Installation" = "install.md" },
+  { "Usage" = [
+      "usage/index.md",
+      "usage/inputs.md",
+      "usage/outputs.md",
+  ]},
+  { "Workflow" = [
+      "workflow/index.md",
+      "workflow/validation.md",
+      "workflow/conversion.md",
+      "workflow/enrichment.md",
+  ]}
+]
 
 # With the "extra_css" option you can add your own CSS styling to customize
 # your Zensical project according to your needs. You can add any number of
@@ -211,7 +221,7 @@ features = [
     # When sections are enabled, top-level sections are rendered as groups in
     # the sidebar for viewports above 1220px, but remain as-is on mobile.
     # https://zensical.org/docs/setup/navigation/#navigation-sections
-    "navigation.sections",
+    # "navigation.sections",
 
     # When tabs are enabled, top-level sections are rendered in a menu layer
     # below the header for viewports above 1220px, but remain as-is on mobile.
