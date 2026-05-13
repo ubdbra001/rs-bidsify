@@ -61,10 +61,11 @@ class SubjectMetadata(BaseModel):
 
     def __str__(self) -> str:
         return f"Age = {self.age}, Birthday = {self.birthday.strftime('%d/%m/%y')}, Sex = {self.sex}, Hand = {self.hand}"
-    
+
     @classmethod
-    def from_dataframe(cls, recording: RecordingMetadata, df: DataFrame) -> SubjectMetadata:
+    def from_dataframe(
+        cls, recording: RecordingMetadata, df: DataFrame
+    ) -> SubjectMetadata:
         """Generates a SubjectMetadata class from a dataframe"""
         subject_row = df.loc[recording.participant].to_dict()
-        return cls(**subject_row) #type: ignore
-
+        return cls(**subject_row)  # type: ignore

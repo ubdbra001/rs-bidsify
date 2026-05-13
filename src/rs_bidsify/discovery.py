@@ -22,16 +22,16 @@ def find_description_spec(raw_path: Path, extension: str = "json") -> Descriptio
     return io.read_description_json(json_path)
 
 
-def find_dataset_spreadsheets(raw_path: Path, extension: str = "ods") -> tuple[dict, dict]:
-    """Find and load the dataset """
+def find_dataset_spreadsheets(
+    raw_path: Path, extension: str = "ods"
+) -> tuple[dict, dict]:
+    """Find and load the dataset"""
 
     sheet_path = find_file(raw_path, extension)
 
     participant_data = io.read_description_spreadsheet(
         sheet_path, part_info, "participant"
     )
-    phenotype_data = io.read_description_spreadsheet(
-        sheet_path, phen_info, "phenotype"
-    )
+    phenotype_data = io.read_description_spreadsheet(sheet_path, phen_info, "phenotype")
 
     return participant_data, phenotype_data

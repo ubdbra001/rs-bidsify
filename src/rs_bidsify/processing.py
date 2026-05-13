@@ -28,7 +28,7 @@ def process_dataset(raw_path: Path, out_root_path: Path):
     crawler = EEGDatasetCrawler(
         root_path=raw_path,
         expected_participants=expected_participants,
-        **dataset_spec.crawler_info
+        **dataset_spec.crawler_info,
     )
 
     dataset_desc = (dataset_spec, participant_data)
@@ -41,7 +41,10 @@ def process_dataset(raw_path: Path, out_root_path: Path):
 
 
 def process_recording(
-    out_root_path: Path, recording: RecordingMetadata, dataset_desc: tuple[DescriptionSpec, dict], dynamic_paths: list
+    out_root_path: Path,
+    recording: RecordingMetadata,
+    dataset_desc: tuple[DescriptionSpec, dict],
+    dynamic_paths: list,
 ):
 
     dataset_spec, participants = dataset_desc
@@ -49,12 +52,12 @@ def process_recording(
         f"Processing Recording - Sub: {recording.subject}, Task: {recording.condition}, Session: {recording.session}"
     )
 
-    subject_info = SubjectMetadata.from_dataframe(
-        recording, participants["dataset"]
-    )
+    subject_info = SubjectMetadata.from_dataframe(recording, participants["dataset"])
 
     if dynamic_paths:
-        subject_spec = DescriptionSpec.from_template(dataset_spec, dynamic_paths, subject_info)
+        subject_spec = DescriptionSpec.from_template(
+            dataset_spec, dynamic_paths, subject_info
+        )
     else:
         subject_spec = dataset_spec
 
@@ -67,5 +70,6 @@ def process_recording(
     rec_bids_path = io.write_bids(out_root_path, eeg_data, recording)
 
     enrichment.enrich_eeg_sidecar(rec_bids_path, subject_spec)
-    enrichment.enrich_channel_tsv(rec_bids_path, subject_spec.acquisition_spec.aux_channels)
-
+    enrichment.enrich_channel_tsv(
+        rec_bids_path, subject_spec.acquisition_spec.aux_channels
+    )
