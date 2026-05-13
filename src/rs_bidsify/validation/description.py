@@ -1,8 +1,14 @@
+import logging
+
 from enum import IntEnum, Enum
 from typing import Literal, Any
 
 from pydantic import BaseModel, PositiveInt, Field, model_validator, FilePath
 
+from rs_bidsify.utils import apply_dynamic_value
+from rs_bidsify.validation.subject import SubjectMetadata
+
+logger = logging.getLogger(__name__)
 
 class MNEChanTypes(str, Enum):
     """Enum listing all of the different channel types available in MNE"""
@@ -258,6 +264,7 @@ class DescriptionSpec(BaseModel):
     sessions: list[str] | None = Field(default=None, min_length=1)
     acquisition_spec: AcquisitionSpecs
     resting_state: RestingStateProtocol
+    variable_fields: dict[str, str] | None = Field(default=None)
 
     @property
     def crawler_info(self):
@@ -266,4 +273,21 @@ class DescriptionSpec(BaseModel):
             "expected_sessions": self.sessions,
             "extension": self.acquisition_spec.file_format,
         }
+    
+    @classmethod
+    def from_template(cls, template: DescriptionSpec, varies_paths: list, subject_info: SubjectMetadata) -> DescriptionSpec:
+
+        subject_spec = template.model_dump()
+
+        if (var_fields := subject_spec.get("variable_fields")) is not None:
+            for path in varies_paths:
+                item_key = path[-1]
+                subject_loc_key = var_fields[item_key]
+                subject_value = getattr(subject_info, subject_loc_key)
+
+                logger.info(f"Updating variable metadata: {".".join(path)} = {subject_value}")
+
+                apply_dynamic_value(subject_spec, path, subject_value)
+
+        return cls(**subject_spec)
 
