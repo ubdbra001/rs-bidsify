@@ -36,9 +36,8 @@ def process_dataset(raw_path: Path, out_root_path: Path):
     for recording in crawler.found_recordings:
         process_recording(out_root_path, recording, dataset_desc, dynamic_paths)
 
-    # Update dataset description file
+    enrichment.enrich_dataset_description(dataset_spec.metadata, out_root_path)
     io.write_phenotype_data(phenotype_data, out_root_path)
-
 
 
 def process_recording(
