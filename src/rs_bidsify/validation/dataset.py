@@ -16,7 +16,6 @@ logger = logging.getLogger(__name__)
 class RecordingMetadata(BaseModel):
     participant: str
     condition: str | None
-    session: str | None
     path: FilePath
 
     @computed_field
@@ -33,7 +32,6 @@ class EEGDatasetCrawler(BaseModel):
     root_path: DirectoryPath
     expected_participants: list[str] = Field(min_length=1)
     expected_conditions: list[str] | None = Field(default=None, min_length=1)
-    expected_sessions: list[str] | None = Field(default=None, min_length=1)
     extension: str
 
     found_recordings: list[RecordingMetadata] = Field(
@@ -43,7 +41,6 @@ class EEGDatasetCrawler(BaseModel):
     @model_validator(mode="after")
     def verify_structure(self) -> "EEGDatasetCrawler":
         conditions = self.expected_conditions or [None]
-        sessions = self.expected_sessions or [None]
 
         logger.info(f"Crawling recordings in {self.root_path}")
 
@@ -53,14 +50,11 @@ class EEGDatasetCrawler(BaseModel):
                 raise ValueError(f"Expected participant directory missing: {p_id}")
 
             for cond in conditions:
-                for sess in sessions:
                     current_path = p_path
 
                     if cond:
                         current_path /= cond
 
-                    if sess:
-                        current_path /= sess
 
                     eeg_file = self._check_leaf_node(current_path, p_id)
 
@@ -68,7 +62,6 @@ class EEGDatasetCrawler(BaseModel):
                         RecordingMetadata(
                             participant=p_id,
                             condition=cond,
-                            session=sess,
                             path=eeg_file,
                         )
                     )
