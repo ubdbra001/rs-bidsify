@@ -77,7 +77,7 @@ def read_bids_tsv(tsv_path: BIDSPath):
 
 
 def write_bids(
-    bids_root: Path, eeg_data: BaseRaw, recording: RecordingMetadata
+    bids_root: Path, eeg_data: BaseRaw, recording: RecordingMetadata, format: str = "EDF"
 ) -> BIDSPath:
     """Write EEG recording to BIDS"""
 
@@ -88,7 +88,7 @@ def write_bids(
     )
 
     return write_raw_bids(
-        eeg_data, bids_path, overwrite=True, allow_preload=True, format="EDF"
+        eeg_data, bids_path, overwrite=True, allow_preload=True, format=format
     )
 
 
