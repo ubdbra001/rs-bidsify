@@ -10,6 +10,7 @@ dependencies = [
     "mne-bids[full]>=0.18.0",
     "pandas[excel]>=3.0.2",
     "pydantic>=2.13.3",
+    "typer>=0.25.1",
 ]
 
 [dependency-groups]
@@ -18,6 +19,9 @@ dev = [
     "pyfakefs>=6.2.0",
     "pytest>=9.0.3",
 ]
+
+[project.scripts]
+rs-bidsify = "rs_bidsify.main:app"
 
 [build-system]
 requires = ["uv_build>=0.11.8,<0.12"]

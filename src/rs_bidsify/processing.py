@@ -3,7 +3,6 @@ import logging
 from pathlib import Path
 
 from rs_bidsify import enrichment, io, discovery
-from rs_bidsify.app_logging import setup_logging
 from rs_bidsify.validation.description import DescriptionSpec
 from rs_bidsify.validation.dataset import EEGDatasetCrawler, RecordingMetadata
 from rs_bidsify.validation.subject import SubjectMetadata
@@ -14,9 +13,6 @@ logger = logging.getLogger(__name__)
 
 def process_dataset(raw_path: Path, out_root_path: Path):
     """Main function for processing a dataset"""
-
-    log_path = raw_path.parent / "logs"
-    setup_logging(log_path)
 
     dataset_spec = discovery.find_description_spec(raw_path)
     participant_data, phenotype_data = discovery.find_dataset_spreadsheets(raw_path)
