@@ -12,7 +12,6 @@ from pydantic import (
     ConfigDict,
 )
 
-from rs_bidsify.config import DEMOGRAPHIC_MAPPINGS as MAPPINGS
 from rs_bidsify.validation.dataset import RecordingMetadata
 from rs_bidsify.utils import get_utc_today
 
@@ -29,12 +28,12 @@ class SubjectMetadata(BaseModel):
     @classmethod
     def map_string_to_int(cls, value: Any, info: ValidationInfo) -> Any:
         """Convert sex and handedness strings to integers"""
+        context = info.context or {}
+        mapping_dict = context.get("mappings", {}).get(info.field_name, {})
+
         if isinstance(value, str):
-            val_lower = value.lower()
 
-            mapping_dict = MAPPINGS.get(info.field_name, {})  # type: ignore
-
-            if val_lower in mapping_dict:
+            if (val_lower := value.lower()) in mapping_dict:
                 return mapping_dict[val_lower]
             else:
                 allowed_strings = ", ".join(f"'{k}'" for k in mapping_dict.keys())
@@ -64,8 +63,8 @@ class SubjectMetadata(BaseModel):
 
     @classmethod
     def from_dataframe(
-        cls, recording: RecordingMetadata, df: DataFrame
+        cls, recording: RecordingMetadata, df: DataFrame, mapping: dict[str, Any]
     ) -> SubjectMetadata:
         """Generates a SubjectMetadata class from a dataframe"""
         subject_row = df.loc[recording.participant].to_dict()
-        return cls(**subject_row)  # type: ignore
+        return cls.model_validate(**subject_row, context={"mappings": mapping})  # type: ignore
