@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 
 from rs_bidsify import enrichment, io, discovery
-from rs_bidsify.logging import setup_logging
+from rs_bidsify.app_logging import setup_logging
 from rs_bidsify.validation.description import DescriptionSpec
 from rs_bidsify.validation.dataset import EEGDatasetCrawler, RecordingMetadata
 from rs_bidsify.validation.subject import SubjectMetadata
