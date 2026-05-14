@@ -17,6 +17,7 @@ dev = [
     "ipykernel>=7.2.0",
     "pyfakefs>=6.2.0",
     "pytest>=9.0.3",
+    "zensical>=0.0.41",
 ]
 
 [build-system]
