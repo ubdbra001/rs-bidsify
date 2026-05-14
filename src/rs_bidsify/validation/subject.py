@@ -1,5 +1,5 @@
 from datetime import datetime, date
-from typing import Any, Literal
+from typing import Any, Literal, Self
 
 from pandas import DataFrame
 from pydantic import (
@@ -32,7 +32,6 @@ class SubjectMetadata(BaseModel):
         mapping_dict = context.get("mappings", {}).get(info.field_name, {})
 
         if isinstance(value, str):
-
             if (val_lower := value.lower()) in mapping_dict:
                 return mapping_dict[val_lower]
             else:
@@ -64,7 +63,7 @@ class SubjectMetadata(BaseModel):
     @classmethod
     def from_dataframe(
         cls, recording: RecordingMetadata, df: DataFrame, mapping: dict[str, Any]
-    ) -> SubjectMetadata:
+    ) -> Self:
         """Generates a SubjectMetadata class from a dataframe"""
         subject_row = df.loc[recording.participant].to_dict()
         return cls.model_validate(**subject_row, context={"mappings": mapping})  # type: ignore

@@ -50,21 +50,20 @@ class EEGDatasetCrawler(BaseModel):
                 raise ValueError(f"Expected participant directory missing: {p_id}")
 
             for cond in conditions:
-                    current_path = p_path
+                current_path = p_path
 
-                    if cond:
-                        current_path /= cond
+                if cond:
+                    current_path /= cond
 
+                eeg_file = self._check_leaf_node(current_path, p_id)
 
-                    eeg_file = self._check_leaf_node(current_path, p_id)
-
-                    self.found_recordings.append(
-                        RecordingMetadata(
-                            participant=p_id,
-                            condition=cond,
-                            path=eeg_file,
-                        )
+                self.found_recordings.append(
+                    RecordingMetadata(
+                        participant=p_id,
+                        condition=cond,
+                        path=eeg_file,
                     )
+                )
 
         logger.info(
             f"Recording crawl complete, found {len(self.found_recordings)} valid recordings"

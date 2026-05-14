@@ -1,7 +1,7 @@
 import logging
 
 from enum import IntEnum, Enum
-from typing import Literal, Any
+from typing import Literal, Any, Self
 
 from pydantic import BaseModel, PositiveInt, Field, model_validator, FilePath
 
@@ -285,10 +285,10 @@ class DescriptionSpec(BaseModel):
     @classmethod
     def from_template(
         cls,
-        template: DescriptionSpec,
+        template: Self,
         varies_paths: list,
         subject_info: SubjectMetadata,
-    ) -> DescriptionSpec:
+    ) -> Self:
 
         subject_spec = template.model_dump()
 

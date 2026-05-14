@@ -77,7 +77,10 @@ def read_bids_tsv(tsv_path: BIDSPath):
 
 
 def write_bids(
-    bids_root: Path, eeg_data: BaseRaw, recording: RecordingMetadata, format: str = "EDF"
+    bids_root: Path,
+    eeg_data: BaseRaw,
+    recording: RecordingMetadata,
+    format: str = "EDF",
 ) -> BIDSPath:
     """Write EEG recording to BIDS"""
 

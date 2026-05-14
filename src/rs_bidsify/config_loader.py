@@ -1,9 +1,11 @@
 import yaml
 from importlib import resources
 
+
 def get_default_config():
     with resources.open_text("rs_bidsify", "defaults.yaml") as f:
         return yaml.safe_load(f)
+
 
 def deep_merge(base: dict, overrides: dict) -> dict:
     """Recursively merges overrides into base."""
@@ -13,6 +15,7 @@ def deep_merge(base: dict, overrides: dict) -> dict:
         else:
             base[key] = value
     return base
+
 
 DEMOGRAPHIC_MAPPINGS = {
     "sex": {"u": 0, "unknown": 0, "m": 1, "male": 1, "f": 2, "female": 2},

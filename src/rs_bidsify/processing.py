@@ -12,7 +12,9 @@ from rs_bidsify.utils import locate_dynamic_fields
 logger = logging.getLogger(__name__)
 
 
-def process_dataset(raw_path: Path, out_root_path: Path, config_override: dict | None = None):
+def process_dataset(
+    raw_path: Path, out_root_path: Path, config_override: dict | None = None
+):
     """Main function for processing a dataset"""
 
     config = get_default_config()
@@ -20,12 +22,13 @@ def process_dataset(raw_path: Path, out_root_path: Path, config_override: dict |
     if config_override:
         config = deep_merge(config, config_override)
 
-    dataset_spec = discovery.find_description_spec(raw_path, extension=config["metadata_ext"])
+    dataset_spec = discovery.find_description_spec(
+        raw_path, extension=config["metadata_ext"]
+    )
 
     participant_data, phenotype_data = discovery.find_dataset_spreadsheets(
-        raw_path,
-        sheet_info=config["sheet_info"],
-        extension=config["spreadsheet_ext"])
+        raw_path, sheet_info=config["sheet_info"], extension=config["spreadsheet_ext"]
+    )
 
     dynamic_paths = locate_dynamic_fields(dataset_spec.model_dump())
 
@@ -39,8 +42,19 @@ def process_dataset(raw_path: Path, out_root_path: Path, config_override: dict |
 
     rec_config = {k: config[k] for k in ("output_EEG_format", "include_extras")}
     for recording in crawler.found_recordings:
-        subject_info = SubjectMetadata.from_dataframe(recording, participant_data["dataset"], mapping=config["demographic_mappings"])
-        process_recording(out_root_path, recording, dataset_spec, subject_info, dynamic_paths, rec_config)
+        subject_info = SubjectMetadata.from_dataframe(
+            recording,
+            participant_data["dataset"],
+            mapping=config["demographic_mappings"],
+        )
+        process_recording(
+            out_root_path,
+            recording,
+            dataset_spec,
+            subject_info,
+            dynamic_paths,
+            rec_config,
+        )
 
     enrichment.enrich_dataset_description(dataset_spec.metadata, out_root_path)
     if phenotype_data:
@@ -53,12 +67,12 @@ def process_recording(
     dataset_spec: DescriptionSpec,
     subject_info: SubjectMetadata,
     dynamic_paths: list,
-    config: dict
+    config: dict,
 ):
 
     format = config["output_EEG_format"]
     include_extras = config["include_extras"]
-    
+
     logger.info(
         f"Processing Recording - Sub: {recording.subject}, Task: {recording.condition}"
     )
