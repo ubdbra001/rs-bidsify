@@ -24,8 +24,11 @@ class RecordingMetadata(BaseModel):
         result = re.findall("(?<=[-_])[a-zA-Z0-9]+$", self.participant)
         if result:
             return result[0]
-        else:
-            return self.participant
+        
+        if not self.participant.isalnum():
+            raise ValueError(f"Participant ID must be alphanumeric: {self.participant}")
+        
+        return self.participant
 
 
 class EEGDatasetCrawler(BaseModel):
@@ -74,8 +77,9 @@ class EEGDatasetCrawler(BaseModel):
         if not path.exists():
             current = path
             while not current.exists() and current != self.root_path:
-                last_missing = current.name
                 current = current.parent
+
+            last_missing = path.relative_to(current)
 
             raise ValueError(
                 f"Structure broken for {p_id}."
