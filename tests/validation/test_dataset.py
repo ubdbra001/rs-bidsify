@@ -35,6 +35,51 @@ class TestRecordingMetadata:
         rec = RecordingMetadata(participant="sub-01", condition=cond, path=path)
         assert rec.condition == cond
 
+    @pytest.mark.parametrize(
+        "participant, expected_subject",
+        [
+            ("sub-01", "01"),
+            ("participant_A1", "A1"),
+            ("001", "001"),
+            ("experiment-group-S01", "S01"),
+            ("sub-01-rest", "rest"),
+            ("sub_01_session_A", "A"),
+        ],
+    )
+    def test_subject_regex_extraction(self, fs, participant, expected_subject):
+        path = Path("/data/test.eeg")
+        fs.create_file(path)
+        
+        rec = RecordingMetadata(
+            participant=participant, 
+            condition=None, 
+            path=path
+        )
+        
+        assert rec.subject == expected_subject
+
+    @pytest.mark.parametrize(
+        "invalid_participant",
+        [
+            "sub-01!",
+            "part_#1",
+            "sub-01-",
+            "!!!",
+        ],
+    )
+    def test_subject_fails_on_non_alphanumeric(self, fs, invalid_participant):
+        path = Path("/data/test.eeg")
+        fs.create_file(path)
+        
+        rec = RecordingMetadata(
+            participant=invalid_participant, 
+            condition=None, 
+            path=path
+        )
+        
+        with pytest.raises(ValueError, match="must be alphanumeric"):
+            _ = rec.subject
+
 
 class TestEEGDatasetCrawler:
     @pytest.mark.parametrize(
