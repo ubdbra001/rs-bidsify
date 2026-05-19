@@ -208,6 +208,14 @@ class FilterSpec(BaseModel):
     ]  # This dict will be copied directly to the eeg sidecar, so should contain that info directly
 
 
+class ExtraSpec(BaseModel):
+    acceptable_impedance: AcceptableImpedance | None = None
+    electrode_type: str | None = None
+    conductive_medium: str | None = None
+    faraday_cage: bool | None = None
+    sound_proof: bool | None = None
+    lighting_conditions: LightingConditions | None = None
+
 class AcquisitionSpecs(BaseModel):
     """Schema defining structure for the recording_info section of the
     machine readable dataset description"""
@@ -220,12 +228,7 @@ class AcquisitionSpecs(BaseModel):
     aux_channels: dict[str, AuxChanSpec]
     power_line_freq: LineFreqOptions
     filters: list[FilterSpec]
-    acceptable_impedance: AcceptableImpedance
-    electrode_type: str
-    conductive_medium: str
-    faraday_cage: bool
-    sound_proof: bool
-    lighting_conditions: LightingConditions | None = None
+    extras: ExtraSpec | None = None
 
 
 class RestingStateTask(BaseModel):
