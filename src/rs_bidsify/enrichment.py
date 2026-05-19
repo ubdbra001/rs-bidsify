@@ -11,6 +11,7 @@ from rs_bidsify.validation.description import (
     AcquisitionSpecs,
     AuxChanSpec,
     EEGChanSpec,
+    ExtraSpec,
     DatasetMetadata,
     FilterSpec,
     FilterTypeOptions,
@@ -108,7 +109,7 @@ def set_electrode_montage(eeg_data: BaseRaw, eeg_spec: EEGChanSpec):
 def set_subject_info(eeg_data: BaseRaw, subject_model: SubjectMetadata):
     """Set the information about the subject"""
 
-    if eeg_data.info["subject_info"] is None:
+    if eeg_data.info.get("subject_info") is None:
         eeg_data.info["subject_info"] = subject_model.subject_info_dump()
     elif isinstance(eeg_data.info["subject_info"], dict):
         eeg_data.info["subject_info"].update(subject_model.subject_info_dump())
@@ -153,19 +154,19 @@ def set_filters(entries_dict: dict[str, Any], filters: dict[str, Any], bids_key)
 
 
 def set_reference_chan(
-    entries_dict: dict[str, Any], acquisition_spec: AcquisitionSpecs
+    entries_dict: dict[str, Any], eeg_chan_spec: EEGChanSpec
 ):
     """Set the reference channel"""
 
     mapping = {"EEGReference": "reference"}
-    map_spec_to_bids(acquisition_spec.eeg_channels, mapping, entries_dict)
+    map_spec_to_bids(eeg_chan_spec, mapping, entries_dict)
 
 
-def set_ground_chan(entries_dict: dict[str, Any], acquisition_spec: AcquisitionSpecs):
+def set_ground_chan(entries_dict: dict[str, Any], eeg_chan_spec: EEGChanSpec):
     """Set the ground channel"""
 
     mapping = {"EEGGround": "ground"}
-    map_spec_to_bids(acquisition_spec.eeg_channels, mapping, entries_dict)
+    map_spec_to_bids(eeg_chan_spec, mapping, entries_dict)
 
 
 def set_device_info(entries_dict: dict[str, Any], acquisition_spec: AcquisitionSpecs):
@@ -187,7 +188,7 @@ def set_institution_info(entries_dict: dict[str, Any], metadata: DatasetMetadata
     map_spec_to_bids(metadata, mapping, entries_dict)
 
 
-def set_extras(entries_dict: dict[str, Any], acquisition_spec: AcquisitionSpecs):
+def set_extras(entries_dict: dict[str, Any], extra_spec: ExtraSpec):
     """Set extra metadata not typically recorded in BIDS"""
 
     mapping = {
@@ -198,13 +199,13 @@ def set_extras(entries_dict: dict[str, Any], acquisition_spec: AcquisitionSpecs)
         "LightingConditions": "lighting_conditions",
     }
 
-    map_spec_to_bids(acquisition_spec, mapping, entries_dict)
+    map_spec_to_bids(extra_spec, mapping, entries_dict)
 
 
 def map_spec_to_bids(source_obj: Any, mapping: dict[str, str], updates: dict[str, Any]):
     """Generic function that maps the data in metadata models to specific BIDS keys ready
     to be written to a sidecar file"""
-    model_dict = source_obj.model_dump(include=set(mapping.values()))
+    model_dict = source_obj.model_dump(include=set(mapping.values()), exclude_none=True)
 
     for bids_key, metadata_key in mapping.items():
         # Only add to the dictionary if a value actually exists
@@ -257,15 +258,15 @@ def enrich_eeg_sidecar(
     entries_dict = {}
     acquisition_spec = dataset_spec.acquisition_spec
 
-    set_reference_chan(entries_dict, acquisition_spec)
-    set_ground_chan(entries_dict, acquisition_spec)
+    set_reference_chan(entries_dict, acquisition_spec.eeg_channels)
+    set_ground_chan(entries_dict, acquisition_spec.eeg_channels)
     set_hardware_filters(entries_dict, acquisition_spec.filters)
     set_software_filters(entries_dict, acquisition_spec.filters)
     set_device_info(entries_dict, acquisition_spec)
     set_institution_info(entries_dict, dataset_spec.metadata)
 
-    if add_extras:
-        set_extras(entries_dict, acquisition_spec)
+    if acquisition_spec.extras is not None and add_extras:
+        set_extras(entries_dict, acquisition_spec.extras)
 
     io.write_enriched_sidecar(rec_bids_path, entries_dict)
 
