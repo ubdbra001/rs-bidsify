@@ -1,0 +1,30 @@
+[project]
+name = "rs-bidsify"
+version = "0.1.0"
+description = "'BIDS-ifys' raw resting-state EEG data"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "colorlog>=6.10.1",
+    "mne>=1.12.1",
+    "mne-bids[full]>=0.18.0",
+    "pandas[excel]>=3.0.2",
+    "pydantic>=2.13.3",
+    "pyyaml>=6.0.3",
+    "typer>=0.25.1",
+]
+
+[dependency-groups]
+dev = [
+    "ipykernel>=7.2.0",
+    "pyfakefs>=6.2.0",
+    "pytest>=9.0.3",
+    "pytest-mock>=3.15.1",
+]
+
+[project.scripts]
+rs-bidsify = "rs_bidsify.main:app"
+
+[build-system]
+requires = ["uv_build>=0.11.8,<0.12"]
+build-backend = "uv_build"
