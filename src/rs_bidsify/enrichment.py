@@ -17,6 +17,7 @@ from rs_bidsify.validation.description import (
     FilterTypeOptions,
 )
 from rs_bidsify import io
+from rs_bidsify.consistency import check_mapping_alignment
 from rs_bidsify.validation.description import DescriptionSpec
 from rs_bidsify.validation.subject import SubjectMetadata
 
@@ -32,58 +33,39 @@ def set_line_frequency(eeg_data: BaseRaw, acqusition_spec: AcquisitionSpecs):
 def set_events(eeg_data: BaseRaw, event_info: dict[str, str]):
     """Set the events in the Recording"""
 
-    rec_annotations = set(eeg_data.annotations.description)
-
-    present_annotations = rec_annotations.intersection(event_info.keys())
-    logger.info(
-        f"Specified Events found in recording: {', '.join(present_annotations)}"
+    valid_events = check_mapping_alignment(
+        actual=eeg_data.annotations.description,
+        expected=event_info,
+        context="Events",
+        strict_symmetry=True
     )
 
-    if missing_events := set(event_info.keys()).difference(present_annotations):
-        logger.warning(
-            f"Events specified in metadata but not present in recording: {', '.join(missing_events)}"
-        )
+    if valid_events:
+        eeg_data.annotations.rename(valid_events)
 
-    if extra_events := rec_annotations.difference(event_info.keys()):
-        logger.warning(
-            f"Events present in recording, but not specified in metadata: {', '.join(extra_events)}"
-        )
-
-    update_events = {
-        key: value for key, value in event_info.items() if key in present_annotations
-    }
-
-    eeg_data.annotations.rename(update_events)
-
-    ev_updates = ", ".join([f"{k} -> {v}" for k, v in update_events.items()])
-    logger.info(f"Events renamed: {ev_updates}")
+        ev_updates = ", ".join([f"{k} -> {v}" for k, v in valid_events.items()])
+        logger.info(f"Events renamed: {ev_updates}")
 
 
 def set_aux_channel_types(eeg_data: BaseRaw, aux_chans: dict[str, AuxChanSpec]):
     """Set the types for the Aux Channels"""
 
-    aux_names = set(aux_chans.keys())
+    type_map = {k: v.mne_type.value for k, v in aux_chans.items()}
 
-    present_chans = aux_names.intersection(eeg_data.ch_names)
-    logger.info(
-        f"Specified Aux channels found in recording: {', '.join(present_chans)}"
+    valid_chans = check_mapping_alignment(
+        actual=eeg_data.ch_names,
+        expected=type_map,
+        context="Aux Channels",
+        strict_symmetry=False
     )
+ 
+    if valid_chans:
+        eeg_data.set_channel_types(valid_chans)
 
-    if missing_chans := aux_names.difference(eeg_data.ch_names):
-        logger.warning(
-            f"Specified Aux channels not present in recording: {', '.join(missing_chans)}"
-        )
+        ch_updates = ", ".join([f"{k} - {v}" for k, v in valid_chans.items()])
+        logger.info(f"Specified Aux channel MNE types set: {ch_updates}")
 
-    chan_types = {
-        key: val.mne_type.value
-        for key, val in aux_chans.items()
-        if key in present_chans
-    }
-
-    eeg_data.set_channel_types(chan_types)
-
-    ch_updates = ", ".join([f"{k} - {v}" for k, v in chan_types.items()])
-    logger.info(f"Specified Aux channel mne types set: {ch_updates}")
+    logger.warning("No valid channels found to update")
 
 
 def set_electrode_montage(eeg_data: BaseRaw, eeg_spec: EEGChanSpec):
@@ -100,7 +82,7 @@ def set_electrode_montage(eeg_data: BaseRaw, eeg_spec: EEGChanSpec):
         # .lay files appear to be 2d while MNE expects Montages to be 3D, need to double check this
         pass
     else:
-        # No valid montage infomation passed (mne_name doesn't match a valid built-in and no path provided)
+        # No valid montage information passed (mne_name doesn't match a valid built-in and no path provided)
         raise ValueError(
             "No valid montage infomation passed, please check the information provided"
         )
@@ -146,7 +128,7 @@ def get_filters(
     return {f.name: f.info for f in filter_list if f.type == filter_type}
 
 
-def set_filters(entries_dict: dict[str, Any], filters: dict[str, Any], bids_key):
+def set_filters(entries_dict: dict[str, Any], filters: dict[str, Any], bids_key: str):
     """Set the filters in the update dictionary"""
     if filters:
         entries_dict.update({bids_key: filters})
