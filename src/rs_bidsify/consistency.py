@@ -3,6 +3,7 @@ from typing import Any, Iterable
 
 logger = logging.getLogger(__name__)
 
+
 def loc_in_participant_data(locations: dict[str, str], part_data_cols: list[str]):
     """Check to ensure that any locations mentioned in the variable fields map are present in the participant data"""
 
@@ -16,12 +17,11 @@ def loc_in_participant_data(locations: dict[str, str], part_data_cols: list[str]
         )
 
 
-
 def check_mapping_alignment(
     actual: Iterable[str],
     expected: dict[str, Any],
     context: str,
-    strict_symmetry: bool = False
+    strict_symmetry: bool = False,
 ) -> dict[str, Any]:
     """
     Checks if the expected metadata keys align with the actual data present.

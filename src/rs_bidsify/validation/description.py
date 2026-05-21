@@ -3,7 +3,14 @@ import logging
 from enum import IntEnum, Enum
 from typing import Literal, Any, Self
 
-from pydantic import BaseModel, PositiveInt, Field, model_validator, field_validator, FilePath
+from pydantic import (
+    BaseModel,
+    PositiveInt,
+    Field,
+    model_validator,
+    field_validator,
+    FilePath,
+)
 
 from rs_bidsify.utils import apply_dynamic_value
 from rs_bidsify.validation.subject import SubjectMetadata
@@ -149,8 +156,10 @@ class Montage(BaseModel):
     @classmethod
     def block_unsupported_files(cls, v: FilePath | None) -> FilePath | None:
         if v is not None:
-            raise NotImplementedError("Custom montage loading is not implimented yet," \
-            "please use a standard montage specified in MNE.")
+            raise NotImplementedError(
+                "Custom montage loading is not implimented yet,"
+                "please use a standard montage specified in MNE."
+            )
 
     @model_validator(mode="after")
     def check_input_exclusivity(self) -> Self:
@@ -222,6 +231,7 @@ class ExtraSpec(BaseModel):
     faraday_cage: bool | None = None
     sound_proof: bool | None = None
     lighting_conditions: LightingConditions | None = None
+
 
 class AcquisitionSpecs(BaseModel):
     """Schema defining structure for the recording_info section of the
