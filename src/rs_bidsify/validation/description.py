@@ -376,4 +376,4 @@ class DescriptionSpec(BaseModel):
 
                 apply_dynamic_value(subject_spec, path, subject_value)
 
-        return cls(**subject_spec)
+        return cls.model_validate(subject_spec)
