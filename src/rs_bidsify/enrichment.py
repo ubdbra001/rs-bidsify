@@ -251,13 +251,12 @@ def enrich_eeg_sidecar(
     io.write_enriched_sidecar(rec_bids_path, entries_dict)
 
 
-def enrich_channel_tsv(rec_bids_path: BIDSPath, channel_info: dict[str, AuxChanSpec]):
-    """Enrich the channel tsv file with information from the metadata"""
+def enrich_channels_tsv_with_aux(rec_bids_path: BIDSPath, aux_info: dict[str, AuxChanSpec]):
 
     channel_tsv_path = rec_bids_path.copy().update(suffix="channels", extension="tsv")
 
     channel_tsv = io.read_bids_tsv(channel_tsv_path)
-    set_channels_tsv(channel_info, channel_tsv)
+    set_channels_tsv(aux_info, channel_tsv)
     io.write_bids_tsv(channel_tsv_path, channel_tsv)
 
     logger.info(f"Updated channel tsv written to {channel_tsv_path}")

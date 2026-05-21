@@ -462,7 +462,7 @@ class TestEnrichmentOrchestration:
 
         mock_read.return_value = mock_existing_data
 
-        enrichment.enrich_channel_tsv(mock_path, mock_info)
+        enrichment.enrich_channels_tsv_with_aux(mock_path, mock_info)
 
         mock_path.copy().update.assert_called_with(suffix="channels", extension="tsv")
 

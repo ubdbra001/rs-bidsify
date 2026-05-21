@@ -147,6 +147,6 @@ def process_recording(
     rec_bids_path = io.write_bids(out_root_path, eeg_data, recording, format)
 
     enrichment.enrich_eeg_sidecar(rec_bids_path, subject_spec, include_extras)
-    enrichment.enrich_channel_tsv(
+    enrichment.enrich_channels_tsv_with_aux(
         rec_bids_path, subject_spec.acquisition_spec.aux_channels
     )
