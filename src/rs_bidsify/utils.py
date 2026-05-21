@@ -1,7 +1,11 @@
+import logging
+
 from datetime import UTC, datetime
 from typing import Any
 
 import pandas as pd
+
+logger = logging.getLogger(__name__)
 
 
 def get_utc_today() -> datetime:
@@ -77,7 +81,8 @@ def apply_dynamic_value(data: dict[str, Any], path: list[str], new_value: Any):
             current = current[key]
         current[path[-1]] = new_value
     except (KeyError, TypeError):
-        print(f"Error: Path {path} could not be followed.")
+        logger.error(f"Error: Path {'.'.join(path)} could not be followed.")
+        raise
 
 
 def filter_dataframe_by_valid_ids(df: pd.DataFrame, missing_ids: list[str]) -> pd.DataFrame:
