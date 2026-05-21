@@ -5,9 +5,35 @@ from pathlib import Path
 
 
 def setup_file_handler(
-    log_dir: Path, logger: logging.Logger, level: str | int = "INFO"
+    log_dir: Path, logger: logging.Logger, level: str | int = logging.INFO
 ):
-    """Setup file logging"""
+    """
+    Configure and attach a timestamped file handler to a logger.
+
+    Creates a log directory if it does not exist and initializes a file 
+    handler with a standardized formatting string. The log file is 
+    automatically named using the current system timestamp in 
+    'log_YYYYMMDD_HHMMSS.log' format.
+
+    Parameters
+    ----------
+    log_dir : Path
+        The directory path where log files should be stored.
+    logger : logging.Logger
+        The logger instance to which the file handler will be added.
+    level : str or int, optional
+        The logging level for the file handler. By default logging.INFO.
+
+    Returns
+    -------
+    None
+        This function modifies the `logger` object in-place.
+
+    Notes
+    -----
+    The log format used is: 
+    '%(asctime)s | %(levelname)-8s | [%(name)s:%(lineno)d] | %(message)s'
+    """
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     log_filename = f"log_{timestamp}.log"
@@ -26,7 +52,31 @@ def setup_file_handler(
 
 
 def setup_stream_handler(logger: logging.Logger, level: str | int = logging.INFO):
-    """Setup coluored console logging"""
+    """
+    Configure and attach a colorized console stream handler to a logger.
+
+    Utilizes the `colorlog` library to provide visually distinguished log 
+    levels in the terminal. The handler is initialized with a standardized 
+    format string including timestamps and source line numbers.
+
+    Parameters
+    ----------
+    logger : logging.Logger
+        The logger instance to which the stream handler will be added.
+    level : str or int, optional
+        The logging level for the stream handler. By default logging.INFO.
+
+    Returns
+    -------
+    None
+        This function modifies the `logger` object in-place.
+
+    Notes
+    -----
+    This function requires the `colorlog` package. The console output 
+    uses the following format:
+    '%(asctime)s | %(log_color)s%(levelname)-8s%(reset)s | [%(name)s:%(lineno)d] | %(message)s'
+    """
 
     stream_formatter = colorlog.ColoredFormatter(
         "%(asctime)s | %(log_color)s%(levelname)-8s%(reset)s | [%(name)s:%(lineno)d] | %(message)s",
@@ -38,8 +88,25 @@ def setup_stream_handler(logger: logging.Logger, level: str | int = logging.INFO
     logger.addHandler(stream_handler)
 
 
-def adjust_mne_logger(level):
-    """Make MNE log to the root logger"""
+def adjust_mne_logger(level: str | int = logging.INFO):
+    """
+    Redirect MNE-Python logging to the root logger.
+
+    Clears any existing handlers assigned to the 'mne' logger and enables 
+    propagation. This ensures that MNE log messages are handled by the 
+    root logger's configurations (e.g., custom formatters or file handlers) 
+    rather than MNE's default internal logging.
+
+    Parameters
+    ----------
+    level : str or int, optional
+        The logging level to set for the MNE logger. By default logging.INFO.
+
+    Returns
+    -------
+    None
+        This function modifies the 'mne' logger instance in-place.
+    """
     mne_logger = logging.getLogger("mne")
     mne_logger.handlers = []
     mne_logger.propagate = True
@@ -47,8 +114,27 @@ def adjust_mne_logger(level):
 
 
 def setup_logging(root_path: Path, level: str | int = logging.INFO):
-    """High level function to setup root logger"""
+    """
+    Initialize and configure the root logger with file and stream handlers.
 
+    This high-level utility synchronizes MNE logging, sets the global 
+    logging level, redirects Python warnings to the logging system, 
+    and attaches both a timestamped file handler and a colorized 
+    console handler.
+
+    Parameters
+    ----------
+    root_path : Path
+        The base directory where the 'logs' subdirectory will be created.
+    level : str or int, optional
+        The logging level to apply globally across all configured 
+        handlers. By default logging.INFO.
+
+    Returns
+    -------
+    None
+        Configures the global logging environment in-place.
+    """
     adjust_mne_logger(level)
 
     logger = logging.getLogger()
