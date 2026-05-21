@@ -48,6 +48,30 @@ def main(
         ),
     ] = None,
 ):
+    """
+    RS-BIDSify: Convert raw EEG dataset into BIDS-compliant format.
+
+    This CLI tool manages the full conversion pipeline: initializing logging,
+    validating paths, loading optional configuration overrides, and executing
+    the dataset processing logic.
+
+    Parameters
+    ----------
+    raw_data_path : Path
+        The source directory containing raw data to be converted.
+    bids_data_path : Path
+        The destination directory for the BIDS dataset. Created if it doesn't exist.
+    config_file : FileText, optional
+        A user-provided YAML file containing configuration overrides.
+    log_path : Path, optional
+        The directory for log files. Defaults to a 'logs' folder adjacent to
+        the raw data path.
+
+    Returns
+    -------
+    None
+        Orchestrates the conversion process and logs progress to the console/file.
+    """
     if log_path is None:
         log_path = raw_data_path.parent / "logs"
 

@@ -15,8 +15,30 @@ logger = logging.getLogger(__name__)
 def process_dataset(
     raw_path: Path, out_root_path: Path, config_override: dict | None = None
 ):
-    """Main function for processing a dataset"""
+    """
+    Orchestrate the conversion of a full raw dataset into BIDS format.
 
+    This function manages the end-to-end workflow: merging configurations,
+    discovering metadata, and crawling for EEG recordings. It assumes the
+    source directory contains a valid metadata spreadsheet and description file.
+
+    The process will automatically create the output BIDS directory if it
+    does not exist and will overwrite existing files during the conversion.
+
+    Parameters
+    ----------
+    raw_path : Path
+        The directory containing the source raw data and metadata files.
+    out_root_path : Path
+        The destination directory where the BIDS structure will be built.
+    config_override : dict, optional
+        User-defined settings to override the default package configuration.
+
+    Returns
+    -------
+    None
+        Executes the conversion pipeline and writes the output to disk.
+    """
     config = get_default_config()
 
     if config_override:
@@ -69,7 +91,39 @@ def process_recording(
     dynamic_paths: list,
     config: dict,
 ):
+    """
+    Process and export a single recording instance to BIDS format.
 
+    This function handles the transformation of an individual EEG file
+    (one task/run). It specializes the dataset-level template for the
+    specific subject, enriches the MNE object, and writes the resulting
+    files to the BIDS structure. Post-export, it enriches the task-specific
+    JSON sidecar and channels TSV.
+
+    Parameters
+    ----------
+    out_root_path : Path
+        The root directory of the BIDS dataset.
+    recording : RecordingMetadata
+        Metadata for this specific recording session (e.g., file path,
+        subject ID, and task name).
+    dataset_spec : DescriptionSpec
+        The base metadata specification for the entire dataset.
+    subject_info : SubjectMetadata
+        Demographic and clinical metadata for the subject associated
+        with this recording.
+    dynamic_paths : list
+        A list of keys within the metadata that should be dynamically
+        populated using subject-specific values.
+    config : dict
+        Configuration settings, including 'output_EEG_format' and
+        'include_extras'.
+
+    Returns
+    -------
+    None
+        Writes the processed recording and task-specific metadata to disk.
+    """
     format = config["output_EEG_format"]
     include_extras = config["include_extras"]
 
@@ -93,6 +147,6 @@ def process_recording(
     rec_bids_path = io.write_bids(out_root_path, eeg_data, recording, format)
 
     enrichment.enrich_eeg_sidecar(rec_bids_path, subject_spec, include_extras)
-    enrichment.enrich_channel_tsv(
+    enrichment.enrich_channels_tsv_with_aux(
         rec_bids_path, subject_spec.acquisition_spec.aux_channels
     )

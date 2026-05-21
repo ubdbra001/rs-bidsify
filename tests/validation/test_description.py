@@ -1,20 +1,21 @@
 import pytest
+from pathlib import Path
 from pydantic import ValidationError
 
 from rs_bidsify.validation import description as rs_desc
 
 
-class TestMontageInfo:
-    @pytest.fixture(scope="class")
-    def shared_file(self, tmp_path_factory):
-        temp_dir = tmp_path_factory.mktemp("data")
-        f = temp_dir / "test_file.loc"
-        f.write_text("dummy content")
-        return f
+@pytest.fixture
+def shared_file(fs) -> Path:
+    file_path = Path("data") / "test_file.loc"
+    fs.create_file(file_path, contents="dummy content")
+    return file_path
 
+
+class TestMontageInfo:
     def test_valid_name(self):
         data = {"mne_name": "standard_1020"}
-        model = rs_desc.Montage(**data)  # type: ignore
+        model = rs_desc.Montage.model_validate(data)
 
         assert model.mne_name == data["mne_name"]
         assert model.path is None
@@ -31,7 +32,7 @@ class TestMontageInfo:
         data = {"path": "missing.file"}
 
         with pytest.raises(ValidationError):
-            rs_desc.Montage(**data)  # type: ignore
+            rs_desc.Montage.model_validate(data)
 
     @pytest.mark.xfail
     def test_both_present(self, shared_file):

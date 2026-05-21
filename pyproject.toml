@@ -30,3 +30,25 @@ rs-bidsify = "rs_bidsify.main:app"
 [build-system]
 requires = ["uv_build>=0.11.8,<0.12"]
 build-backend = "uv_build"
+
+[tool.ruff]
+extend-exclude = [
+    "notebooks",
+]
+
+[tool.ruff.lint]
+extend-select = ["D"]
+
+ignore = [
+    "D100",
+    "D104",
+    "D105",
+    "D107",
+
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["D"]
