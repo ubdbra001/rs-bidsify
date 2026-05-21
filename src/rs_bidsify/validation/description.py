@@ -19,7 +19,12 @@ logger = logging.getLogger(__name__)
 
 
 class MNEChanTypes(str, Enum):
-    """Enum listing all of the different channel types available in MNE"""
+    """
+    Standard channel types recognized by MNE-Python.
+
+    Lower-case strings corresponding to the types allowed in 
+    mne.io.Raw.set_channel_types.
+    """
 
     # This list could probably be reduced to channels specifically relevant to EEG
     BIO = "bio"
@@ -47,7 +52,11 @@ class MNEChanTypes(str, Enum):
 
 
 class BIDSChanTypes(str, Enum):
-    """Enum listing all of the different channel types available in BIDS"""
+    """
+    Channel types defined by the BIDS specification.
+
+    Upper-case strings used in the 'type' column of BIDS channels.tsv files.
+    """
 
     # This list could probably be reduced to channels specifically relevant to EEG
     ACCEL = "ACCEL"
@@ -101,14 +110,14 @@ class BIDSChanTypes(str, Enum):
 
 
 class LineFreqOptions(IntEnum):
-    """Worldwide powerline frequency options"""
+    """Supported powerline frequencies for MNE and BIDS metadata."""
 
     FIFTY = 50
     SIXTY = 60
 
 
 class EthicsApprovalOptions(str, Enum):
-    """Options for ethical approval"""
+    """Status options for institutional ethical approval."""
 
     APPROVED = "Approved"
     NOT_REQUIRED = "Not Required"
@@ -122,10 +131,13 @@ class FilterTypeOptions(str, Enum):
 
 
 class DatasetMetadata(BaseModel):
-    """Schema defining structure for the dataset_metadata section of the
-    machine readable dataset description"""
+    """
+    Schema for top-level BIDS dataset metadata.
 
-    number_sessions: PositiveInt
+    Defines the global information required for the dataset description, 
+    including institutional details, funding, and ethical approval status.
+    """
+
     population: str
     dataset_name: str
     authors: list[str]
@@ -137,6 +149,11 @@ class DatasetMetadata(BaseModel):
     institution_dept: str
 
     def create_dict(self) -> dict:
+        """
+        Generate a dictionary formatted for BIDS dataset_description.json.
+
+        Maps internal model fields to official BIDS-compliant keys.
+        """
         return {
             "name": self.dataset_name,
             "data_license": self.license,
@@ -147,6 +164,13 @@ class DatasetMetadata(BaseModel):
 
 
 class Montage(BaseModel):
+    """
+    Configuration for sensor locations and coordinate frames.
+
+    Ensures that a valid electrode montage is provided, either by 
+    referencing a built-in MNE montage name or providing a path to 
+    a custom sensor file.
+    """
     mne_name: str | None = (
         None  # It might be best to limit this to standard montages in MNE (https://mne.tools/stable/auto_tutorials/intro/40_sensor_locations.html)
     )
@@ -155,6 +179,7 @@ class Montage(BaseModel):
     @field_validator("path")
     @classmethod
     def block_unsupported_files(cls, v: FilePath | None) -> FilePath | None:
+        """Prevent the use of custom files until support is fully implemented."""
         if v is not None:
             raise NotImplementedError(
                 "Custom montage loading is not implimented yet,"
@@ -163,6 +188,7 @@ class Montage(BaseModel):
 
     @model_validator(mode="after")
     def check_input_exclusivity(self) -> Self:
+        """Ensure exactly one source for the montage is provided."""
         if self.mne_name is None and self.path is None:
             raise ValueError("Need to provide either 'mne_name' or 'path' fields")
 
@@ -175,8 +201,13 @@ class Montage(BaseModel):
 
 
 class EEGChanSpec(BaseModel):
-    """Schema defining structure for the eeg_channels sub-section of the
-    machine readable dataset description"""
+    """
+    Configuration for the EEG electrode array and referencing.
+
+    Defines the physical properties of the EEG acquisition, including the 
+    number of sensors, their spatial arrangement, and the electrical 
+    referencing scheme.
+    """
 
     number: PositiveInt
     montage: Montage
@@ -185,8 +216,13 @@ class EEGChanSpec(BaseModel):
 
 
 class AuxChanSpec(BaseModel):
-    """Schema defining structure for the aux_channels sub-section of the
-    machine readable dataset description"""
+    """
+    Metadata specification for auxiliary channels.
+
+    Defines how non-EEG channels (e.g., ECG, triggers, or motion sensors) 
+    should be categorized in both MNE and BIDS, including their physical 
+    units and sensor locations.
+    """
 
     mne_type: MNEChanTypes
     bids_type: BIDSChanTypes
@@ -198,24 +234,21 @@ class AuxChanSpec(BaseModel):
 
 
 class AcceptableImpedance(BaseModel):
-    """Schema defining structure for the acceptable_impedance sub-section of the
-    machine readable dataset description"""
+    """Threshold and units for acceptable sensor impedance levels."""
 
     value: int
     units: str
 
 
 class LightingConditions(BaseModel):
-    """Schema defining structure for the lighting_conditions sub-section of the
-    machine readable dataset description"""
+    """Environmental lighting metadata for the recording session."""
 
     description: str
     measurement: str
 
 
 class FilterSpec(BaseModel):
-    """Schema defining structure for the filters sub-section of the
-    machine readable dataset description"""
+    """Configuration for signal filters applied to the dataset."""
 
     name: str
     type: FilterTypeOptions
@@ -225,6 +258,7 @@ class FilterSpec(BaseModel):
 
 
 class ExtraSpec(BaseModel):
+    """Optional metadata for experimental environment and recording quality."""
     acceptable_impedance: AcceptableImpedance | None = None
     electrode_type: str | None = None
     conductive_medium: str | None = None
@@ -234,8 +268,12 @@ class ExtraSpec(BaseModel):
 
 
 class AcquisitionSpecs(BaseModel):
-    """Schema defining structure for the recording_info section of the
-    machine readable dataset description"""
+    """
+    Comprehensive hardware and software specifications for a recording.
+
+    Aggregates channel configurations, filter settings, and environmental 
+    details into a single schema used to populate BIDS sidecar files.
+    """
 
     software: str
     acquisition_freq: PositiveInt
@@ -249,24 +287,28 @@ class AcquisitionSpecs(BaseModel):
 
 
 class BaseRestingTask(BaseModel):
+    """Core duration requirements for a resting state segment."""
     duration_secs: PositiveInt
 
 
 class RestingStateTask(BaseRestingTask):
-    """Base schema defining structure for different resting state conditions"""
-
+    """Standard resting state condition with optional stimulus info."""
     stimulus_description: str | None = None
 
 
 class CustomRestingTask(BaseRestingTask):
-    """Specific schema defining the structure for any other potential RS conditions"""
-
+    """Named resting state condition with required stimulus description."""
     condition_name: str
     stimulus_description: str
 
 
 class RestingStateProtocol(BaseModel):
-    """Schema defining the structure for all the RS conditions recorded during a dataset"""
+    """
+    Comprehensive resting state protocol and event mapping.
+
+    Defines instructions, standard conditions, and custom segments, 
+    along with a dictionary mapping trigger codes to event descriptions.
+    """
 
     instructions: str
     eyes_open: RestingStateTask | Literal[False]
@@ -276,8 +318,12 @@ class RestingStateProtocol(BaseModel):
 
 
 class DescriptionSpec(BaseModel):
-    """Overarching schema for the dataset description"""
+    """
+    Root schema for the machine-readable dataset description.
 
+    Aggregates global metadata, acquisition hardware settings, 
+    resting-state protocols, and logic for handling subject-variable fields.
+    """
     metadata: DatasetMetadata
     conditions: list[str] | None = Field(default=None, min_length=1)
     acquisition_spec: AcquisitionSpecs
@@ -286,6 +332,7 @@ class DescriptionSpec(BaseModel):
 
     @property
     def crawler_info(self):
+        """Metadata for the directory crawler to filter files."""
         return {
             "expected_conditions": self.conditions,
             "extension": self.acquisition_spec.file_format,
@@ -298,7 +345,23 @@ class DescriptionSpec(BaseModel):
         varies_paths: list,
         subject_info: SubjectMetadata,
     ) -> Self:
+        """
+        Create a subject-specific specification from a base template.
 
+        Parameters
+        ----------
+        template : Self
+            The base configuration model to use as a template.
+        varies_paths : list of list of str
+            Nested dictionary paths to fields requiring dynamic updates.
+        subject_info : SubjectMetadata
+            Source object containing subject-specific values to inject.
+
+        Returns
+        -------
+        Self
+            A new instance of DescriptionSpec with resolved variable fields.
+        """
         subject_spec = template.model_dump()
 
         if (var_fields := subject_spec.get("variable_fields")) is not None:
