@@ -248,28 +248,17 @@ class AcquisitionSpecs(BaseModel):
     extras: ExtraSpec | None = None
 
 
-class RestingStateTask(BaseModel):
-    """Base schema defining structure for different resting state conditions"""
-
-    stimulus_description: str | None = None
+class BaseRestingTask(BaseModel):
     duration_secs: PositiveInt
 
 
-class EyesOpenTask(RestingStateTask):
-    """Specific schema defining the structure for the eyes-open RS condition"""
+class RestingStateTask(BaseRestingTask):
+    """Base schema defining structure for different resting state conditions"""
 
-    stimulus_description: str  # Description is not optional for eyes-open
-
-
-class EyesClosedTask(RestingStateTask):
-    """Specific schema defining the structure for the eyes-closed RS condition"""
-
-    stimulus_description: Literal[None] = Field(
-        default=None, exclude=True
-    )  # No Description for eyes-closed
+    stimulus_description: str | None = None
 
 
-class CustomRestingTask(RestingStateTask):
+class CustomRestingTask(BaseRestingTask):
     """Specific schema defining the structure for any other potential RS conditions"""
 
     condition_name: str
@@ -280,8 +269,8 @@ class RestingStateProtocol(BaseModel):
     """Schema defining the structure for all the RS conditions recorded during a dataset"""
 
     instructions: str
-    eyes_open: EyesOpenTask | Literal[False]
-    eyes_closed: EyesClosedTask | Literal[False]
+    eyes_open: RestingStateTask | Literal[False]
+    eyes_closed: RestingStateTask | Literal[False]
     other_conditions: list[CustomRestingTask] | None = None
     events: dict[str, str]  # Should be defined as "event code": "event description"
 
