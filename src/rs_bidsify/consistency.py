@@ -5,8 +5,7 @@ logger = logging.getLogger(__name__)
 
 
 def loc_in_participant_data(locations: dict[str, str], part_data_cols: list[str]):
-    """Check to ensure that any locations mentioned in the variable fields map are present in the participant data"""
-
+    """Check to ensure that any locations mentioned in the variable fields map are present in the participant data."""
     expected_cols = set(locations.values())
     missing_cols = expected_cols.difference(part_data_cols)
 
@@ -26,7 +25,7 @@ def check_mapping_alignment(
     """
     Validate alignment between metadata specifications and actual data content.
 
-    Compares expected keys from metadata against labels physically present in the 
+    Compares expected keys from metadata against labels physically present in the
     recording to identify overlaps, missing entries, and unexpected extras.
 
     Parameters
@@ -38,13 +37,13 @@ def check_mapping_alignment(
     context : str
         Label used for logging (e.g., "Channels", "Events").
     strict_symmetry : bool, default False
-        If False, only warns about metadata keys missing from the data. 
+        If False, only warns about metadata keys missing from the data.
         If True, also warns about data labels missing from the metadata.
 
     Returns
     -------
     dict[str, Any]
-        A subset of the `expected` dictionary containing only the keys 
+        A subset of the `expected` dictionary containing only the keys
         found in the `actual` data.
     """
     actual_set = set(actual)

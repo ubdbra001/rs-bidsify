@@ -22,7 +22,7 @@ class MNEChanTypes(str, Enum):
     """
     Standard channel types recognized by MNE-Python.
 
-    Lower-case strings corresponding to the types allowed in 
+    Lower-case strings corresponding to the types allowed in
     mne.io.Raw.set_channel_types.
     """
 
@@ -124,7 +124,7 @@ class EthicsApprovalOptions(str, Enum):
 
 
 class FilterTypeOptions(str, Enum):
-    """Options for different online filtering sources"""
+    """Options for different online filtering sources."""
 
     HARDWARE = "Hardware"
     SOFTWARE = "Software"
@@ -134,7 +134,7 @@ class DatasetMetadata(BaseModel):
     """
     Schema for top-level BIDS dataset metadata.
 
-    Defines the global information required for the dataset description, 
+    Defines the global information required for the dataset description,
     including institutional details, funding, and ethical approval status.
     """
 
@@ -167,10 +167,11 @@ class Montage(BaseModel):
     """
     Configuration for sensor locations and coordinate frames.
 
-    Ensures that a valid electrode montage is provided, either by 
-    referencing a built-in MNE montage name or providing a path to 
+    Ensures that a valid electrode montage is provided, either by
+    referencing a built-in MNE montage name or providing a path to
     a custom sensor file.
     """
+
     mne_name: str | None = (
         None  # It might be best to limit this to standard montages in MNE (https://mne.tools/stable/auto_tutorials/intro/40_sensor_locations.html)
     )
@@ -204,8 +205,8 @@ class EEGChanSpec(BaseModel):
     """
     Configuration for the EEG electrode array and referencing.
 
-    Defines the physical properties of the EEG acquisition, including the 
-    number of sensors, their spatial arrangement, and the electrical 
+    Defines the physical properties of the EEG acquisition, including the
+    number of sensors, their spatial arrangement, and the electrical
     referencing scheme.
     """
 
@@ -219,8 +220,8 @@ class AuxChanSpec(BaseModel):
     """
     Metadata specification for auxiliary channels.
 
-    Defines how non-EEG channels (e.g., ECG, triggers, or motion sensors) 
-    should be categorized in both MNE and BIDS, including their physical 
+    Defines how non-EEG channels (e.g., ECG, triggers, or motion sensors)
+    should be categorized in both MNE and BIDS, including their physical
     units and sensor locations.
     """
 
@@ -259,6 +260,7 @@ class FilterSpec(BaseModel):
 
 class ExtraSpec(BaseModel):
     """Optional metadata for experimental environment and recording quality."""
+
     acceptable_impedance: AcceptableImpedance | None = None
     electrode_type: str | None = None
     conductive_medium: str | None = None
@@ -271,7 +273,7 @@ class AcquisitionSpecs(BaseModel):
     """
     Comprehensive hardware and software specifications for a recording.
 
-    Aggregates channel configurations, filter settings, and environmental 
+    Aggregates channel configurations, filter settings, and environmental
     details into a single schema used to populate BIDS sidecar files.
     """
 
@@ -288,16 +290,19 @@ class AcquisitionSpecs(BaseModel):
 
 class BaseRestingTask(BaseModel):
     """Core duration requirements for a resting state segment."""
+
     duration_secs: PositiveInt
 
 
 class RestingStateTask(BaseRestingTask):
     """Standard resting state condition with optional stimulus info."""
+
     stimulus_description: str | None = None
 
 
 class CustomRestingTask(BaseRestingTask):
     """Named resting state condition with required stimulus description."""
+
     condition_name: str
     stimulus_description: str
 
@@ -306,7 +311,7 @@ class RestingStateProtocol(BaseModel):
     """
     Comprehensive resting state protocol and event mapping.
 
-    Defines instructions, standard conditions, and custom segments, 
+    Defines instructions, standard conditions, and custom segments,
     along with a dictionary mapping trigger codes to event descriptions.
     """
 
@@ -321,9 +326,10 @@ class DescriptionSpec(BaseModel):
     """
     Root schema for the machine-readable dataset description.
 
-    Aggregates global metadata, acquisition hardware settings, 
+    Aggregates global metadata, acquisition hardware settings,
     resting-state protocols, and logic for handling subject-variable fields.
     """
+
     metadata: DatasetMetadata
     conditions: list[str] | None = Field(default=None, min_length=1)
     acquisition_spec: AcquisitionSpecs

@@ -6,7 +6,7 @@ def get_default_config():
     """
     Load the default configuration settings from the package resources.
 
-    Reads and parses the 'defaults.yaml' file bundled within the 
+    Reads and parses the 'defaults.yaml' file bundled within the
     'rs_bidsify' package.
 
     Returns
@@ -22,8 +22,8 @@ def deep_merge(base: dict, overrides: dict) -> dict:
     """
     Recursively merge the contents of the overrides dictionary into the base dictionary.
 
-    For keys that exist in both dictionaries, if both values are dictionaries, 
-    the function calls itself recursively. Otherwise, the value from the 
+    For keys that exist in both dictionaries, if both values are dictionaries,
+    the function calls itself recursively. Otherwise, the value from the
     overrides dictionary replaces the value in the base dictionary.
 
     Parameters

@@ -20,8 +20,8 @@ class SubjectMetadata(BaseModel):
     """
     Data model for participant demographic information.
 
-    Handles the conversion of human-readable strings (e.g., 'male', 'right') 
-    into BIDS-compliant integers and calculates a proxy birthday required 
+    Handles the conversion of human-readable strings (e.g., 'male', 'right')
+    into BIDS-compliant integers and calculates a proxy birthday required
     by MNE for age internal calculations.
 
     Attributes
@@ -35,6 +35,7 @@ class SubjectMetadata(BaseModel):
     meas_date : datetime
         The date of the recording, defaults to UTC today.
     """
+
     model_config = ConfigDict(extra="allow")
 
     age: PositiveInt
@@ -48,7 +49,7 @@ class SubjectMetadata(BaseModel):
         """
         Convert sex and handedness strings to BIDS-compliant integers.
 
-        Uses a mapping dictionary provided via validation context to translate 
+        Uses a mapping dictionary provided via validation context to translate
         strings like 'female' to their integer representation.
         """
         context = info.context or {}
@@ -72,8 +73,8 @@ class SubjectMetadata(BaseModel):
         """
         Calculate a surrogate birthday based on age and measurement date.
 
-        MNE requires a 'birthday' field to store age in its internal 
-        subject_info. This computes a date exactly 'age' years prior to 
+        MNE requires a 'birthday' field to store age in its internal
+        subject_info. This computes a date exactly 'age' years prior to
         the recording date.
         """
         meas_date = self.meas_date.date()
@@ -106,7 +107,7 @@ class SubjectMetadata(BaseModel):
         Parameters
         ----------
         recording : RecordingMetadata
-            Metadata for the current recording session, used to find 
+            Metadata for the current recording session, used to find
             the participant ID index.
         df : DataFrame
             The dataframe containing demographic data.

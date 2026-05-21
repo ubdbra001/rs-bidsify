@@ -33,10 +33,9 @@ def locate_dynamic_fields(
     Returns
     -------
     list of list of str
-        A list of paths, where each path is represented as a list of keys 
+        A list of paths, where each path is represented as a list of keys
         leading to an instance of the target.
     """
-
     if current_path is None:
         current_path = []
 

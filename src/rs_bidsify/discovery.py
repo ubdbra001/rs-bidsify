@@ -12,8 +12,8 @@ def find_file(path: Path, ext: str):
     """
     Locate a single file with a specific extension within a directory.
 
-    This function searches the specified directory for files matching the 
-    provided extension. It enforces a strict requirement that exactly one 
+    This function searches the specified directory for files matching the
+    provided extension. It enforces a strict requirement that exactly one
     matching file must exist.
 
     Parameters
@@ -21,7 +21,7 @@ def find_file(path: Path, ext: str):
     path : Path
         The directory path to search within.
     ext : str
-        The file extension to look for (e.g., 'json', 'nii.gz'). 
+        The file extension to look for (e.g., 'json', 'nii.gz').
         Do not include the leading dot.
 
     Returns
@@ -32,7 +32,7 @@ def find_file(path: Path, ext: str):
     Raises
     ------
     ValueError
-        If no files or multiple files with the given extension are found 
+        If no files or multiple files with the given extension are found
         in the directory.
     """
     found_path = list(path.glob(f"*.{ext}"))
@@ -49,7 +49,7 @@ def find_description_spec(raw_path: Path, extension: str = "json") -> Descriptio
     """
     Locate and load the dataset description metadata file.
 
-    Utilizes file discovery to find a unique metadata file with the 
+    Utilizes file discovery to find a unique metadata file with the
     specified extension and parses its content into a DescriptionSpec object.
 
     Parameters
@@ -66,7 +66,7 @@ def find_description_spec(raw_path: Path, extension: str = "json") -> Descriptio
 
     Notes
     -----
-    This function relies on `find_file`, which will raise a ValueError if 
+    This function relies on `find_file`, which will raise a ValueError if
     zero or multiple files matching the extension are found.
     """
     json_path = find_file(raw_path, extension)
@@ -79,9 +79,9 @@ def find_dataset_spreadsheets(
     """
     Locate and parse participant and phenotype data from a spreadsheet.
 
-    Searches for a unique spreadsheet file and attempts to extract two 
-    distinct datasets based on the provided sheet information. If the 
-    phenotype data fails to load, it is returned as None while 
+    Searches for a unique spreadsheet file and attempts to extract two
+    distinct datasets based on the provided sheet information. If the
+    phenotype data fails to load, it is returned as None while
     logging an error.
 
     Parameters
@@ -89,7 +89,7 @@ def find_dataset_spreadsheets(
     raw_path : Path
         The directory path to search for the spreadsheet file.
     sheet_info : dict[str, dict]
-        A dictionary containing configuration details for the sheets 
+        A dictionary containing configuration details for the sheets
         to be read (e.g., sheet names or column mappings).
     extension : str, optional
         The file extension to search for, by default "ods".
@@ -103,7 +103,7 @@ def find_dataset_spreadsheets(
 
     Notes
     -----
-    This function utilizes `find_file`, which raises a ValueError if 
+    This function utilizes `find_file`, which raises a ValueError if
     the spreadsheet is not uniquely identified.
     """
     sheet_path = find_file(raw_path, extension)
