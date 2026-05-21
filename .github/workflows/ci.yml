@@ -8,8 +8,11 @@ on:
 
 jobs:
   static-analysis:
-    name: Static Analysis
+    name: Static Analysis - ${{ matrix.tool }}
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        tool: [ruff, pyright]
     steps:
       - name: Checkout Code
         uses: actions/checkout@v6.0.2
@@ -22,13 +25,13 @@ jobs:
       - name: Install Dependencies
         run: uv sync --dev
 
-      - name: Run Ruff (Lint & Formatting)
+      - name: Run ${{ matrix.tool }}
         run: |
-          uv run ruff check .
-          uv run ruff format --check .
-
-      - name: Run Type Checking
-        run: uv run pyright src/
+          if [ "${{ matrix.tool }}" == "ruff" ]; then
+            uv run ruff check . && uv run ruff format --check .
+          else
+            uv run pyright src/
+          fi
 
   test:
     name: Test (Python ${{ matrix.python-version }} - ${{ matrix.os }})
