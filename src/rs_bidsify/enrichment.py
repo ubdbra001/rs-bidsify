@@ -37,7 +37,7 @@ def set_events(eeg_data: BaseRaw, event_info: dict[str, str]):
         actual=eeg_data.annotations.description,
         expected=event_info,
         context="Events",
-        strict_symmetry=True
+        strict_symmetry=True,
     )
 
     if valid_events:
@@ -56,9 +56,9 @@ def set_aux_channel_types(eeg_data: BaseRaw, aux_chans: dict[str, AuxChanSpec]):
         actual=eeg_data.ch_names,
         expected=type_map,
         context="Aux Channels",
-        strict_symmetry=False
+        strict_symmetry=False,
     )
- 
+
     if valid_chans:
         eeg_data.set_channel_types(valid_chans)
 
@@ -135,9 +135,7 @@ def set_filters(entries_dict: dict[str, Any], filters: dict[str, Any], bids_key:
         logger.info(f"Queued update - {bids_key}: {','.join(filters.keys())}")
 
 
-def set_reference_chan(
-    entries_dict: dict[str, Any], eeg_chan_spec: EEGChanSpec
-):
+def set_reference_chan(entries_dict: dict[str, Any], eeg_chan_spec: EEGChanSpec):
     """Set the reference channel"""
 
     mapping = {"EEGReference": "reference"}

@@ -24,10 +24,10 @@ class RecordingMetadata(BaseModel):
         result = re.findall("(?<=[-_])[a-zA-Z0-9]+$", self.participant)
         if result:
             return result[0]
-        
+
         if not self.participant.isalnum():
             raise ValueError(f"Participant ID must be alphanumeric: {self.participant}")
-        
+
         return self.participant
 
 

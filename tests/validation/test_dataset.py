@@ -49,13 +49,9 @@ class TestRecordingMetadata:
     def test_subject_regex_extraction(self, fs, participant, expected_subject):
         path = Path("/data/test.eeg")
         fs.create_file(path)
-        
-        rec = RecordingMetadata(
-            participant=participant, 
-            condition=None, 
-            path=path
-        )
-        
+
+        rec = RecordingMetadata(participant=participant, condition=None, path=path)
+
         assert rec.subject == expected_subject
 
     @pytest.mark.parametrize(
@@ -70,13 +66,11 @@ class TestRecordingMetadata:
     def test_subject_fails_on_non_alphanumeric(self, fs, invalid_participant):
         path = Path("/data/test.eeg")
         fs.create_file(path)
-        
+
         rec = RecordingMetadata(
-            participant=invalid_participant, 
-            condition=None, 
-            path=path
+            participant=invalid_participant, condition=None, path=path
         )
-        
+
         with pytest.raises(ValueError, match="must be alphanumeric"):
             _ = rec.subject
 

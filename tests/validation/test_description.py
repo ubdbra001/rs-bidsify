@@ -14,7 +14,7 @@ class TestMontageInfo:
 
     def test_valid_name(self):
         data = {"mne_name": "standard_1020"}
-        model = rs_desc.Montage(**data) # type: ignore
+        model = rs_desc.Montage(**data)  # type: ignore
 
         assert model.mne_name == data["mne_name"]
         assert model.path is None
@@ -31,7 +31,7 @@ class TestMontageInfo:
         data = {"path": "missing.file"}
 
         with pytest.raises(ValidationError):
-            rs_desc.Montage(**data) # type: ignore
+            rs_desc.Montage(**data)  # type: ignore
 
     @pytest.mark.xfail
     def test_both_present(self, shared_file):

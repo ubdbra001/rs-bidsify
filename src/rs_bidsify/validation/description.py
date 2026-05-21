@@ -3,7 +3,14 @@ import logging
 from enum import IntEnum, Enum
 from typing import Literal, Any, Self
 
-from pydantic import BaseModel, PositiveInt, Field, model_validator, field_validator, FilePath
+from pydantic import (
+    BaseModel,
+    PositiveInt,
+    Field,
+    model_validator,
+    field_validator,
+    FilePath,
+)
 
 from rs_bidsify.utils import apply_dynamic_value
 from rs_bidsify.validation.subject import SubjectMetadata
@@ -149,8 +156,10 @@ class Montage(BaseModel):
     @classmethod
     def block_unsupported_files(cls, v: FilePath | None) -> FilePath | None:
         if v is not None:
-            raise NotImplementedError("Custom montage loading is not implimented yet," \
-            "please use a standard montage specified in MNE.")
+            raise NotImplementedError(
+                "Custom montage loading is not implimented yet,"
+                "please use a standard montage specified in MNE."
+            )
 
     @model_validator(mode="after")
     def check_input_exclusivity(self) -> Self:
@@ -223,6 +232,7 @@ class ExtraSpec(BaseModel):
     sound_proof: bool | None = None
     lighting_conditions: LightingConditions | None = None
 
+
 class AcquisitionSpecs(BaseModel):
     """Schema defining structure for the recording_info section of the
     machine readable dataset description"""
@@ -238,28 +248,17 @@ class AcquisitionSpecs(BaseModel):
     extras: ExtraSpec | None = None
 
 
-class RestingStateTask(BaseModel):
-    """Base schema defining structure for different resting state conditions"""
-
-    stimulus_description: str | None = None
+class BaseRestingTask(BaseModel):
     duration_secs: PositiveInt
 
 
-class EyesOpenTask(RestingStateTask):
-    """Specific schema defining the structure for the eyes-open RS condition"""
+class RestingStateTask(BaseRestingTask):
+    """Base schema defining structure for different resting state conditions"""
 
-    stimulus_description: str  # Description is not optional for eyes-open
-
-
-class EyesClosedTask(RestingStateTask):
-    """Specific schema defining the structure for the eyes-closed RS condition"""
-
-    stimulus_description: Literal[None] = Field(
-        default=None, exclude=True
-    )  # No Description for eyes-closed
+    stimulus_description: str | None = None
 
 
-class CustomRestingTask(RestingStateTask):
+class CustomRestingTask(BaseRestingTask):
     """Specific schema defining the structure for any other potential RS conditions"""
 
     condition_name: str
@@ -270,8 +269,8 @@ class RestingStateProtocol(BaseModel):
     """Schema defining the structure for all the RS conditions recorded during a dataset"""
 
     instructions: str
-    eyes_open: EyesOpenTask | Literal[False]
-    eyes_closed: EyesClosedTask | Literal[False]
+    eyes_open: RestingStateTask | Literal[False]
+    eyes_closed: RestingStateTask | Literal[False]
     other_conditions: list[CustomRestingTask] | None = None
     events: dict[str, str]  # Should be defined as "event code": "event description"
 
