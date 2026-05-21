@@ -257,7 +257,7 @@ class TestEEGDatasetCrawler:
         error_str = str(excinfo.value)
         assert f"Structure broken for {p_id}" in error_str
         assert f"Found {expected_found}" in error_str
-        assert f"expected to find {expected_missing}" in error_str
+        assert f"expected to find {Path(expected_missing)}" in error_str
 
     @pytest.mark.parametrize(
         "root_path, expected_error",

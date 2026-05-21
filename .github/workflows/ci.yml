@@ -31,7 +31,7 @@ jobs:
         run: uv run pyright src/
 
   test:
-    name: Test (Python ${{ matrix.python-version }})
+    name: Test (Python ${{ matrix.python-version }} - ${{ matrix.os }})
     needs: static-analysis
     runs-on: ${{ matrix.os }}
     strategy:
