@@ -18,9 +18,13 @@ dev = [
     {include-group = "lint"},
     {include-group = "test"},
     {include-group = "type_check"},
+    {include-group = "nox"},
 ]
 lint = [
     "ruff>=0.15.13",
+]
+nox = [
+    "nox-uv>=0.8.0",
 ]
 test = [
     "pyfakefs>=6.2.0",
@@ -49,6 +53,7 @@ build-backend = "uv_build"
 [tool.ruff]
 extend-exclude = [
     "notebooks",
+    "noxfile.py",
 ]
 
 [tool.ruff.lint]
