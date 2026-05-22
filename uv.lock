@@ -1718,39 +1718,64 @@ dependencies = [
     { name = "pandas", extra = ["excel"] },
     { name = "pydantic" },
     { name = "pyyaml" },
+]
+
+[package.optional-dependencies]
+cli = [
     { name = "typer" },
+]
+notebook = [
+    { name = "ipykernel" },
 ]
 
 [package.dev-dependencies]
 dev = [
-    { name = "ipykernel" },
     { name = "pyfakefs" },
     { name = "pyright" },
     { name = "pytest" },
     { name = "pytest-mock" },
     { name = "ruff" },
 ]
+lint = [
+    { name = "ruff" },
+]
+test = [
+    { name = "pyfakefs" },
+    { name = "pytest" },
+    { name = "pytest-mock" },
+]
+type-check = [
+    { name = "pyright" },
+]
 
 [package.metadata]
 requires-dist = [
     { name = "colorlog", specifier = ">=6.10.1" },
+    { name = "ipykernel", marker = "extra == 'notebook'", specifier = ">=7.2.0" },
     { name = "mne", specifier = ">=1.12.1" },
     { name = "mne-bids", extras = ["full"], specifier = ">=0.18.0" },
     { name = "pandas", extras = ["excel"], specifier = ">=3.0.2" },
     { name = "pydantic", specifier = ">=2.13.3" },
     { name = "pyyaml", specifier = ">=6.0.3" },
-    { name = "typer", specifier = ">=0.25.1" },
+    { name = "typer", marker = "extra == 'cli'", specifier = ">=0.25.1" },
 ]
+provides-extras = ["cli", "notebook"]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "ipykernel", specifier = ">=7.2.0" },
     { name = "pyfakefs", specifier = ">=6.2.0" },
     { name = "pyright", specifier = ">=1.1.409" },
     { name = "pytest", specifier = ">=9.0.3" },
     { name = "pytest-mock", specifier = ">=3.15.1" },
     { name = "ruff", specifier = ">=0.15.13" },
 ]
+lint = [{ name = "ruff", specifier = ">=0.15.13" }]
+test = [
+    { name = "pyfakefs", specifier = ">=6.2.0" },
+    { name = "pytest", specifier = ">=9.0.3" },
+    { name = "pytest-mock", specifier = ">=3.15.1" },
+]
+type-check = [{ name = "pyright", specifier = ">=1.1.409" }]
 
 [[package]]
 name = "ruff"

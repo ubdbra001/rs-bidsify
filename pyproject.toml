@@ -11,21 +11,36 @@ dependencies = [
     "pandas[excel]>=3.0.2",
     "pydantic>=2.13.3",
     "pyyaml>=6.0.3",
-    "typer>=0.25.1",
 ]
 
 [dependency-groups]
 dev = [
-    "ipykernel>=7.2.0",
+    {include-group = "lint"},
+    {include-group = "test"},
+    {include-group = "type_check"},
+]
+lint = [
+    "ruff>=0.15.13",
+]
+test = [
     "pyfakefs>=6.2.0",
-    "pyright>=1.1.409",
     "pytest>=9.0.3",
     "pytest-mock>=3.15.1",
-    "ruff>=0.15.13",
+]
+type_check = [
+    "pyright>=1.1.409",
 ]
 
 [project.scripts]
 rs-bidsify = "rs_bidsify.main:app"
+
+[project.optional-dependencies]
+cli = [
+    "typer>=0.25.1",
+]
+notebook = [
+    "ipykernel>=7.2.0",
+]
 
 [build-system]
 requires = ["uv_build>=0.11.8,<0.12"]
@@ -37,7 +52,7 @@ extend-exclude = [
 ]
 
 [tool.ruff.lint]
-extend-select = ["D"]
+extend-select = ["A", "D"]
 
 ignore = [
     "D100",
