@@ -1,7 +1,15 @@
 import logging
 
 from enum import IntEnum, Enum
+from functools import cached_property
 from typing import Literal, Any, Self
+
+from mne.channels import (
+    get_builtin_montages,
+    make_standard_montage,
+    read_custom_montage,
+    DigMontage,
+)
 
 from pydantic import (
     BaseModel,
@@ -170,26 +178,64 @@ class Montage(BaseModel):
     Ensures that a valid electrode montage is provided, either by
     referencing a built-in MNE montage name or providing a path to
     a custom sensor file.
+
+    Attributes
+    ----------
+    mne_name : str or None
+        Name of a built-in MNE montage (e.g., 'standard_1020'). If provided,
+        must be a recognized string in MNE's built-in montages.
+    path : FilePath or None
+        Valid path to a custom sensor location file on the local system.
     """
 
-    mne_name: str | None = (
-        None  # It might be best to limit this to standard montages in MNE (https://mne.tools/stable/auto_tutorials/intro/40_sensor_locations.html)
-    )
+    mne_name: str | None = None
     path: FilePath | None = None
 
-    @field_validator("path")
+    @field_validator("mne_name")
     @classmethod
-    def block_unsupported_files(cls, v: FilePath | None) -> FilePath | None:
-        """Prevent the use of custom files until support is fully implemented."""
+    def validate_mne_name(cls, v: str | None) -> str | None:
+        """
+        Validate that the provided montage name is built into MNE.
+
+        Parameters
+        ----------
+        v : str or None
+            The standard montage name to check.
+
+        Returns
+        -------
+        str or None
+            The validated montage name.
+
+        Raises
+        ------
+        ValueError
+            If the provided name is not found in MNE's built-in montages.
+        """
         if v is not None:
-            raise NotImplementedError(
-                "Custom montage loading is not implimented yet,"
-                "please use a standard montage specified in MNE."
-            )
+            valid_montages = get_builtin_montages()
+            if v not in valid_montages:
+                raise ValueError(f"'{v}' is not a valid built-in MNE montage. ")
+        return v
 
     @model_validator(mode="after")
     def check_input_exclusivity(self) -> Self:
-        """Ensure exactly one source for the montage is provided."""
+        """
+        Ensure exactly one source for the montage is provided.
+
+        Validates that either an MNE name or a custom file path is defined,
+        but strictly prevents providing both or neither.
+
+        Returns
+        -------
+        Self
+            The validated model instance.
+
+        Raises
+        ------
+        ValueError
+            If both `mne_name` and `path` are provided, or if neither are provided.
+        """
         if self.mne_name is None and self.path is None:
             raise ValueError("Need to provide either 'mne_name' or 'path' fields")
 
@@ -199,6 +245,33 @@ class Montage(BaseModel):
             )
 
         return self
+
+    @cached_property
+    def montage(self) -> DigMontage:
+        """
+        Lazily generate and return the MNE DigMontage object.
+
+        Uses cached_property to ensure the file or standard library is
+        only read once upon the first access, improving performance.
+
+        Returns
+        -------
+        DigMontage
+            The constructed or loaded MNE montage object.
+
+        Raises
+        ------
+        RuntimeError
+            If the class reaches an invalid state lacking both a name and a path.
+        """
+        if self.mne_name:
+            return make_standard_montage(self.mne_name)
+        elif self.path:
+            return read_custom_montage(self.path)
+
+        raise RuntimeError(
+            "Invalid state: Montage requires either 'mne_name' or 'path'."
+        )
 
 
 class EEGChanSpec(BaseModel):

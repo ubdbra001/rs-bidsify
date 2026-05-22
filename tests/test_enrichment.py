@@ -54,19 +54,32 @@ class TestMNEEnrichment:
 
         assert mock_raw.info["subject_info"] == expected_result
 
-    def test_set_electrode_montage_success(self, mocker, mock_raw):
-        mocker.patch(
-            "rs_bidsify.enrichment.get_builtin_montages",
-            return_value=["standard_1020", "biosemi32"],
-        )
-
+    @pytest.mark.parametrize(
+        "mne_name, path, expected_source",
+        [
+            ("standard_1020", None, "standard_1020"),
+            (None, "/path/to/custom_montage.lay", "/path/to/custom_montage.lay"),
+        ],
+    )
+    def test_set_electrode_montage_success(
+        self, mocker, mock_raw, caplog, mne_name, path, expected_source
+    ):
         mock_spec = mocker.MagicMock()
-        mock_spec.montage.mne_name = "standard_1020"
-        mock_spec.montage.path = None
+        mock_dig_montage = mocker.MagicMock()
 
-        enrichment.set_electrode_montage(mock_raw, mock_spec)
+        mock_spec.montage.mne_name = mne_name
+        mock_spec.montage.path = path
+        mock_spec.montage.montage = mock_dig_montage
 
-        mock_raw.set_montage.assert_called_once_with("standard_1020")
+        with caplog.at_level(logging.INFO):
+            enrichment.set_electrode_montage(mock_raw, mock_spec)
+
+        mock_raw.set_montage.assert_called_once_with(mock_dig_montage)
+
+        assert (
+            f"Successfully applied montage from source: {expected_source}"
+            in caplog.text
+        )
 
     def test_set_aux_channel_types(self, mocker, mock_raw):
         real_spec = AuxChanSpec.model_construct(mne_type=MNEChanTypes.ECG)
