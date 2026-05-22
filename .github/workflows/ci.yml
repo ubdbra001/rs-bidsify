@@ -8,11 +8,11 @@ on:
 
 jobs:
   static-analysis:
-    name: Static Analysis - ${{ matrix.tool }}
+    name: Check - ${{ matrix.options }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        tool: [ruff, pyright]
+        options: [lint, type_check]
     steps:
       - name: Checkout Code
         uses: actions/checkout@v6.0.2
@@ -22,16 +22,11 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Install Dependencies
-        run: uv sync --dev
+      - name: Install nox
+        run: uv tool install nox --with nox-uv
 
-      - name: Run ${{ matrix.tool }}
-        run: |
-          if [ "${{ matrix.tool }}" == "ruff" ]; then
-            uv run ruff check . && uv run ruff format --check .
-          else
-            uv run pyright src/
-          fi
+      - name: Run ${{ matrix.options }}
+        run: nox -s ${{matrix.options}}
 
   test:
     name: Test (Python ${{ matrix.python-version }} - ${{ matrix.os }})
@@ -54,9 +49,9 @@ jobs:
 
       - name: Set up Python ${{ matrix.python-version }}
         run: uv python install ${{ matrix.python-version }}
-
-      - name: Install Dependencies
-        run: uv sync --dev
+      
+      - name: Install nox
+        run: uv tool install nox --with nox-uv
 
       - name: Run Tests
-        run: uv run pytest
+        run: nox -s test --python ${{ matrix.python-version }}
