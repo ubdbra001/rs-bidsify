@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import Any
 
 from mne.io import BaseRaw
-from mne.channels import get_builtin_montages
 from mne_bids import BIDSPath, make_dataset_description
 from pandas import DataFrame, isna
 
@@ -130,43 +129,36 @@ def set_electrode_montage(eeg_data: BaseRaw, eeg_spec: EEGChanSpec):
     """
     Apply a physical electrode coordinate system (montage) to the EEG data.
 
-    Coordinates the assignment of electrode locations by first checking for
-    standard MNE built-in montages. If a standard name is not provided or
-    found, it attempts to load a custom montage from a specified file path.
+    Utilizes the pre-validated montage configuration from the EEG specification
+    to assign 3D sensor locations to the MNE Raw object.
 
     Parameters
     ----------
     eeg_data : BaseRaw
         The MNE Raw object to which the montage will be applied.
     eeg_spec : EEGChanSpec
-        The EEG channel specification containing a montage name or file path.
+        The EEG channel specification containing the resolved Montage model.
 
     Returns
     -------
     None
-        Updates the `eeg_data` object's sensor locations in-place.
+        The `eeg_data` object is modified in-place.
 
     Raises
     ------
-    ValueError
-        If the provided montage name is not in MNE's built-in library and
-        no valid file path is provided for a custom montage.
+    Exception
+        Re-raises any exception encountered during montage application,
+        typically due to channel name mismatches between the data and montage.
     """
     montage_info = eeg_spec.montage
-    mne_montages = get_builtin_montages()
 
-    if montage_info.mne_name is not None and montage_info.mne_name in mne_montages:
-        eeg_data.set_montage(montage_info.mne_name)
-        logger.info(f"Set EEG montage to built-in mne montage: {montage_info.mne_name}")
-    elif montage_info.path is not None:
-        # This should load the custom locations file and set the montage using it.
-        # .lay files appear to be 2d while MNE expects Montages to be 3D, need to double check this
-        pass
-    else:
-        # No valid montage information passed (mne_name doesn't match a valid built-in and no path provided)
-        raise ValueError(
-            "No valid montage infomation passed, please check the information provided"
-        )
+    try:
+        eeg_data.set_montage(montage_info.montage)
+        source = montage_info.mne_name or montage_info.path
+        logger.info(f"Successfully applied montage from source: {source}")
+    except Exception as e:
+        logger.error(f"failed to apply montage {e}")
+        raise
 
 
 def set_subject_info(eeg_data: BaseRaw, subject_model: SubjectMetadata):
