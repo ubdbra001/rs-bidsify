@@ -95,12 +95,12 @@ class SubjectMetadata(BaseModel):
         return self.model_dump(include={"sex", "hand", "birthday"})
 
     def __str__(self) -> str:
-        return f"Age = {self.age}, Birthday = {self.birthday.strftime('%d/%m/%y')}, Sex = {self.sex}, Hand = {self.hand}"
+        return (
+            f"Age = {self.age}, Birthday = {self.birthday.strftime('%d/%m/%y')}, Sex = {self.sex}, Hand = {self.hand}"
+        )
 
     @classmethod
-    def from_dataframe(
-        cls, recording: RecordingMetadata, df: DataFrame, mapping: dict[str, Any]
-    ) -> Self:
+    def from_dataframe(cls, recording: RecordingMetadata, df: DataFrame, mapping: dict[str, Any]) -> Self:
         """
         Initialize the model using a row from a pandas DataFrame.
 

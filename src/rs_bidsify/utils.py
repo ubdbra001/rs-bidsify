@@ -14,9 +14,7 @@ def get_utc_today() -> datetime:
     return datetime.now(UTC)
 
 
-def locate_dynamic_fields(
-    input_obj: dict, target: str = "VARIES", current_path: list | None = None
-) -> list:
+def locate_dynamic_fields(input_obj: dict, target: str = "VARIES", current_path: list | None = None) -> list:
     """
     Recursively search a dictionary for paths to a specific target value.
 

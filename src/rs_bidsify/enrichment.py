@@ -246,9 +246,7 @@ def set_software_filters(entries_dict: dict[str, Any], filter_list: list[FilterS
     set_filters(entries_dict, sw_filters, bids_key)
 
 
-def get_filters(
-    filter_list: list[FilterSpec], filter_type: FilterTypeOptions
-) -> dict[str, Any]:
+def get_filters(filter_list: list[FilterSpec], filter_type: FilterTypeOptions) -> dict[str, Any]:
     """
     Extract filters of a specific type from a list of specifications.
 
@@ -511,9 +509,7 @@ def enrich_dataset_description(metadata: DatasetMetadata, out_root_path: Path):
     None
         Writes or overwrites the `dataset_description.json` file on disk.
     """
-    make_dataset_description(
-        path=out_root_path, **metadata.create_dict(), overwrite=True
-    )
+    make_dataset_description(path=out_root_path, **metadata.create_dict(), overwrite=True)
 
 
 def enrich_mne_object(eeg_data: BaseRaw, dataset_spec: DescriptionSpec):
@@ -544,9 +540,7 @@ def enrich_mne_object(eeg_data: BaseRaw, dataset_spec: DescriptionSpec):
     set_events(eeg_data, dataset_spec.resting_state.events)
 
 
-def enrich_eeg_sidecar(
-    rec_bids_path: BIDSPath, dataset_spec: DescriptionSpec, add_extras: bool = True
-):
+def enrich_eeg_sidecar(rec_bids_path: BIDSPath, dataset_spec: DescriptionSpec, add_extras: bool = True):
     """
     Enrich the BIDS EEG sidecar with metadata not captured by standard MNE-BIDS.
 
@@ -585,9 +579,7 @@ def enrich_eeg_sidecar(
     io.write_enriched_sidecar(rec_bids_path, entries_dict)
 
 
-def enrich_channels_tsv_with_aux(
-    rec_bids_path: BIDSPath, aux_info: dict[str, AuxChanSpec]
-):
+def enrich_channels_tsv_with_aux(rec_bids_path: BIDSPath, aux_info: dict[str, AuxChanSpec]):
     """
     Update the recording's channels.tsv file using auxiliary channel specifications.
 

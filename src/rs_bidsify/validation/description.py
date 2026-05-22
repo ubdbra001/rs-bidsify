@@ -238,9 +238,7 @@ class Montage(BaseModel):
             raise ValueError("Need to provide either 'mne_name' or 'path' fields")
 
         if self.mne_name is not None and self.path is not None:
-            raise ValueError(
-                "Only one of either 'mne_name' or 'path' fields need to be provided"
-            )
+            raise ValueError("Only one of either 'mne_name' or 'path' fields need to be provided")
 
         return self
 
@@ -267,9 +265,7 @@ class Montage(BaseModel):
         elif self.path:
             return read_custom_montage(self.path)
 
-        raise RuntimeError(
-            "Invalid state: Montage requires either 'mne_name' or 'path'."
-        )
+        raise RuntimeError("Invalid state: Montage requires either 'mne_name' or 'path'.")
 
 
 class EEGChanSpec(BaseModel):
@@ -300,9 +296,7 @@ class AuxChanSpec(BaseModel):
     bids_type: BIDSChanTypes
     description: str | None = None  # Optional
     units: str | None = None  # Optional
-    location: (
-        str | dict[str, str]
-    )  # Leaving the location dict relatively free-form here
+    location: str | dict[str, str]  # Leaving the location dict relatively free-form here
 
 
 class AcceptableImpedance(BaseModel):
@@ -324,9 +318,7 @@ class FilterSpec(BaseModel):
 
     name: str
     type: FilterTypeOptions
-    info: dict[
-        str, Any
-    ]  # This dict will be copied directly to the eeg sidecar, so should contain that info directly
+    info: dict[str, Any]  # This dict will be copied directly to the eeg sidecar, so should contain that info directly
 
 
 class ExtraSpec(BaseModel):
@@ -447,9 +439,7 @@ class DescriptionSpec(BaseModel):
                 subject_loc_key = var_fields[item_key]
                 subject_value = getattr(subject_info, subject_loc_key)
 
-                logger.info(
-                    f"Updating variable metadata: {'.'.join(path)} = {subject_value}"
-                )
+                logger.info(f"Updating variable metadata: {'.'.join(path)} = {subject_value}")
 
                 apply_dynamic_value(subject_spec, path, subject_value)
 

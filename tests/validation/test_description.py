@@ -23,9 +23,7 @@ class TestMontageInfo:
 
     def test_invalid_name(self):
         data = {"mne_name": "not_a_real_montage"}
-        with pytest.raises(
-            ValidationError, match="is not a valid built-in MNE montage"
-        ):
+        with pytest.raises(ValidationError, match="is not a valid built-in MNE montage"):
             rs_desc.Montage.model_validate(data)
 
     def test_valid_path(self, shared_file):
@@ -52,12 +50,8 @@ class TestMontageInfo:
             rs_desc.Montage(mne_name=None, path=None)
 
     def test_montage_property_logic(self, mocker, shared_file):
-        mock_make = mocker.patch(
-            "rs_bidsify.validation.description.make_standard_montage"
-        )
-        mock_read = mocker.patch(
-            "rs_bidsify.validation.description.read_custom_montage"
-        )
+        mock_make = mocker.patch("rs_bidsify.validation.description.make_standard_montage")
+        mock_read = mocker.patch("rs_bidsify.validation.description.read_custom_montage")
 
         data_name = {"mne_name": "standard_1020"}
         m_builtin = rs_desc.Montage.model_validate(data_name)
@@ -72,9 +66,7 @@ class TestMontageInfo:
         mock_read.assert_called_once_with(custom_file)
 
     def test_montage_property_is_cached(self, mocker):
-        mock_make = mocker.patch(
-            "rs_bidsify.validation.description.make_standard_montage"
-        )
+        mock_make = mocker.patch("rs_bidsify.validation.description.make_standard_montage")
         m = rs_desc.Montage.model_validate({"mne_name": "standard_1020"})
 
         _ = m.montage

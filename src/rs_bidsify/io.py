@@ -72,9 +72,7 @@ def read_description_spreadsheet(
         A dictionary where keys match `sheet_info` and values are the
         corresponding loaded pandas DataFrames.
     """
-    sheet_dict = {
-        key: pd.read_excel(sheet_path, **val) for key, val in sheet_info.items()
-    }
+    sheet_dict = {key: pd.read_excel(sheet_path, **val) for key, val in sheet_info.items()}
 
     logger.info(f"Loaded {sheet_type} info from {sheet_path}")
 
@@ -175,9 +173,7 @@ def write_bids(
         root=bids_root,
     )
 
-    return write_raw_bids(
-        eeg_data, bids_path, overwrite=True, allow_preload=True, format=out_format
-    )
+    return write_raw_bids(eeg_data, bids_path, overwrite=True, allow_preload=True, format=out_format)
 
 
 def write_enriched_sidecar(bids_path: BIDSPath, updates: dict[str, Any]):
@@ -206,9 +202,7 @@ def write_enriched_sidecar(bids_path: BIDSPath, updates: dict[str, Any]):
     This function internally calls `update_sidecar_json` and assumes a
     standard BIDS suffix of 'eeg' and extension '.json'.
     """
-    sidecar_path = bids_path.copy().update(
-        extension=".json", suffix="eeg", datatype="eeg"
-    )
+    sidecar_path = bids_path.copy().update(extension=".json", suffix="eeg", datatype="eeg")
 
     update_sidecar_json(sidecar_path, updates)
 
@@ -266,8 +260,6 @@ def write_phenotype_data(phenotype_data: dict[str, pd.DataFrame], root_path: Pat
     phenotype_path.mkdir(parents=True, exist_ok=True)
 
     phenotype_data["dataset"].to_csv(phenotype_path / "phenotype.tsv", sep="\t")
-    phenotype_data["codebook"].to_json(
-        phenotype_path / "phenotype.json", orient="index"
-    )
+    phenotype_data["codebook"].to_json(phenotype_path / "phenotype.json", orient="index")
 
     logger.info(f"Phenotype data written to {phenotype_path}")

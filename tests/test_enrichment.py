@@ -63,9 +63,7 @@ class TestMNEEnrichment:
             (None, "/path/to/custom_montage.lay", "/path/to/custom_montage.lay"),
         ],
     )
-    def test_set_electrode_montage_success(
-        self, mocker, mock_raw, caplog, mne_name, path, expected_source
-    ):
+    def test_set_electrode_montage_success(self, mocker, mock_raw, caplog, mne_name, path, expected_source):
         mock_spec = mocker.MagicMock()
         mock_dig_montage = mocker.MagicMock()
 
@@ -78,10 +76,7 @@ class TestMNEEnrichment:
 
         mock_raw.set_montage.assert_called_once_with(mock_dig_montage)
 
-        assert (
-            f"Successfully applied montage from source: {expected_source}"
-            in caplog.text
-        )
+        assert f"Successfully applied montage from source: {expected_source}" in caplog.text
 
     def test_set_aux_channel_types(self, mocker, mock_raw):
         real_spec = AuxChanSpec.model_construct(mne_type=MNEChanTypes.ECG)
@@ -155,9 +150,7 @@ MOCK_FILTERS = [
         type=FilterTypeOptions.HARDWARE,
         info={"half-amplitude cutoff (Hz)": 500},
     ),
-    FilterSpec(
-        name="SW1", type=FilterTypeOptions.SOFTWARE, info={"Roll-off": "6dB/Octave"}
-    ),
+    FilterSpec(name="SW1", type=FilterTypeOptions.SOFTWARE, info={"Roll-off": "6dB/Octave"}),
 ]
 
 
@@ -211,9 +204,7 @@ class TestBIDSEnrichment:
                 {
                     "faraday_cage": True,
                     "conductive_medium": "Gel",
-                    "acceptable_impedance": AcceptableImpedance(
-                        value=100, units="ohms"
-                    ),
+                    "acceptable_impedance": AcceptableImpedance(value=100, units="ohms"),
                 },
                 {},
                 {
@@ -241,9 +232,7 @@ class TestBIDSEnrichment:
             ),
         ],
     )
-    def test_enrichment_mappings(
-        self, target_function, model, input_data, base_entries, expected_entries
-    ):
+    def test_enrichment_mappings(self, target_function, model, input_data, base_entries, expected_entries):
         entries = base_entries
 
         model_spec = model.model_construct(**input_data)
@@ -286,9 +275,7 @@ class TestBIDSEnrichment:
 
         mock_metadata.create_dict.assert_called_once()
 
-        mock_maker.assert_called_once_with(
-            path=mock_path, name="Test Study", authors=["Researcher A"], overwrite=True
-        )
+        mock_maker.assert_called_once_with(path=mock_path, name="Test Study", authors=["Researcher A"], overwrite=True)
 
     @pytest.mark.parametrize(
         "input_list, filter_type, expected",
@@ -418,9 +405,7 @@ class TestEnrichmentOrchestration:
             pytest.param(False, False, 0, id="Data-None-Flag-Off-Skips"),
         ],
     )
-    def test_enrich_eeg_sidecar_add_extras_flag(
-        self, mocker, has_extras, add_extras_flag, expected_call_count
-    ):
+    def test_enrich_eeg_sidecar_add_extras_flag(self, mocker, has_extras, add_extras_flag, expected_call_count):
 
         mocker.patch("rs_bidsify.io.write_enriched_sidecar")
         mock_set_extras = mocker.patch("rs_bidsify.enrichment.set_extras")
@@ -440,9 +425,7 @@ class TestEnrichmentOrchestration:
         mock_spec = mocker.MagicMock()
         mock_spec.acquisition_spec.extras = extras_val
 
-        enrichment.enrich_eeg_sidecar(
-            mocker.MagicMock(), mock_spec, add_extras=add_extras_flag
-        )
+        enrichment.enrich_eeg_sidecar(mocker.MagicMock(), mock_spec, add_extras=add_extras_flag)
 
         assert mock_set_extras.call_count == expected_call_count
 
@@ -457,9 +440,7 @@ class TestEnrichmentOrchestration:
             "set_events": mock_spec.resting_state.events,
         }
 
-        mocks = {
-            name: mocker.patch(f"rs_bidsify.enrichment.{name}") for name in targets
-        }
+        mocks = {name: mocker.patch(f"rs_bidsify.enrichment.{name}") for name in targets}
 
         enrichment.enrich_mne_object(mock_eeg_data, mock_spec)
 

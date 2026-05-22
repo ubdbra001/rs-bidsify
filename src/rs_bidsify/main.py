@@ -92,9 +92,7 @@ def main(
 
     process_dataset(raw_data_path, bids_data_path, user_overrides)
 
-    logger.info(
-        f"Successfully BIDSified data from {raw_data_path}, written to {bids_data_path}"
-    )
+    logger.info(f"Successfully BIDSified data from {raw_data_path}, written to {bids_data_path}")
 
 
 if __name__ == "__main__":

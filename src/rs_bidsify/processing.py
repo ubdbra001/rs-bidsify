@@ -11,9 +11,7 @@ from rs_bidsify.validation.subject import SubjectMetadata
 logger = logging.getLogger(__name__)
 
 
-def process_dataset(
-    raw_path: Path, out_root_path: Path, config_override: dict | None = None
-):
+def process_dataset(raw_path: Path, out_root_path: Path, config_override: dict | None = None):
     """
     Orchestrate the conversion of a full raw dataset into BIDS format.
 
@@ -43,9 +41,7 @@ def process_dataset(
     if config_override:
         config = deep_merge(config, config_override)
 
-    dataset_spec = discovery.find_description_spec(
-        raw_path, extension=config["metadata_ext"]
-    )
+    dataset_spec = discovery.find_description_spec(raw_path, extension=config["metadata_ext"])
 
     participant_data, phenotype_data = discovery.find_dataset_spreadsheets(
         raw_path, sheet_info=config["sheet_info"], extension=config["spreadsheet_ext"]
@@ -126,14 +122,10 @@ def process_recording(
     out_format = config["output_EEG_format"]
     include_extras = config["include_extras"]
 
-    logger.info(
-        f"Processing Recording - Sub: {recording.subject}, Task: {recording.condition}"
-    )
+    logger.info(f"Processing Recording - Sub: {recording.subject}, Task: {recording.condition}")
 
     if dynamic_paths:
-        subject_spec = DescriptionSpec.from_template(
-            dataset_spec, dynamic_paths, subject_info
-        )
+        subject_spec = DescriptionSpec.from_template(dataset_spec, dynamic_paths, subject_info)
     else:
         subject_spec = dataset_spec
 
@@ -146,6 +138,4 @@ def process_recording(
     rec_bids_path = io.write_bids(out_root_path, eeg_data, recording, out_format)
 
     enrichment.enrich_eeg_sidecar(rec_bids_path, subject_spec, include_extras)
-    enrichment.enrich_channels_tsv_with_aux(
-        rec_bids_path, subject_spec.acquisition_spec.aux_channels
-    )
+    enrichment.enrich_channels_tsv_with_aux(rec_bids_path, subject_spec.acquisition_spec.aux_channels)

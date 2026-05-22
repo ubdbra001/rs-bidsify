@@ -97,9 +97,7 @@ class EEGDatasetCrawler(BaseModel):
     expected_conditions: list[str] | None = Field(default=None, min_length=1)
     extension: str
 
-    found_recordings: list[RecordingMetadata] = Field(
-        default_factory=list, exclude=True
-    )
+    found_recordings: list[RecordingMetadata] = Field(default_factory=list, exclude=True)
 
     @model_validator(mode="after")
     def verify_structure(self) -> "EEGDatasetCrawler":
@@ -146,9 +144,7 @@ class EEGDatasetCrawler(BaseModel):
                     )
                 )
 
-        logger.info(
-            f"Recording crawl complete, found {len(self.found_recordings)} valid recordings"
-        )
+        logger.info(f"Recording crawl complete, found {len(self.found_recordings)} valid recordings")
         return self
 
     def _check_leaf_node(self, path: Path, p_id: str) -> Path:
@@ -184,8 +180,7 @@ class EEGDatasetCrawler(BaseModel):
             last_missing = path.relative_to(current)
 
             raise ValueError(
-                f"Structure broken for {p_id}."
-                f"Found {current}, but expected to find {last_missing} within"  # type: ignore
+                f"Structure broken for {p_id}.Found {current}, but expected to find {last_missing} within"  # type: ignore
             )
 
             # Look for EEG files

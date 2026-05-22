@@ -47,9 +47,7 @@ class TestLoggingSetup:
         logger = logging.getLogger("test_stream_logger")
         app_logging.setup_stream_handler(logger)
 
-        handler = next(
-            h for h in logger.handlers if isinstance(h, colorlog.StreamHandler)
-        )
+        handler = next(h for h in logger.handlers if isinstance(h, colorlog.StreamHandler))
         assert isinstance(handler.formatter, colorlog.ColoredFormatter)
 
     def test_setup_logging_configures_root(self, fs):
