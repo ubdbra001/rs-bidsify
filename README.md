@@ -21,8 +21,10 @@ It has been designed and built to be used as part of the #EEGManyLabs Resting-St
 RS-BIDSify works with Python>=3.12 and can be installed directly from GitHub:
 
 ``` shell
-pip install rs-bidsify@git+https://github.com/ubdbra001/rs-bidsify.git
+pip install rs-bidsify[cli]@git+https://github.com/ubdbra001/rs-bidsify.git
 ```
+
+It is recommended that you install the package into a virtual environment.
 
 ## Data preparation
 

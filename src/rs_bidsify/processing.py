@@ -124,7 +124,7 @@ def process_recording(
     None
         Writes the processed recording and task-specific metadata to disk.
     """
-    format = config["output_EEG_format"]
+    out_format = config["output_EEG_format"]
     include_extras = config["include_extras"]
 
     logger.info(
@@ -144,7 +144,7 @@ def process_recording(
 
     enrichment.enrich_mne_object(eeg_data, subject_spec)
 
-    rec_bids_path = io.write_bids(out_root_path, eeg_data, recording, format)
+    rec_bids_path = io.write_bids(out_root_path, eeg_data, recording, out_format)
 
     enrichment.enrich_eeg_sidecar(rec_bids_path, subject_spec, include_extras)
     enrichment.enrich_channels_tsv_with_aux(
