@@ -1,14 +1,16 @@
 import logging
+
 import pytest
 from pydantic import BaseModel
+
 from rs_bidsify import enrichment
 from rs_bidsify.validation.description import (
-    AcquisitionSpecs,
-    EEGChanSpec,
-    DatasetMetadata,
-    ExtraSpec,
     AcceptableImpedance,
+    AcquisitionSpecs,
     AuxChanSpec,
+    DatasetMetadata,
+    EEGChanSpec,
+    ExtraSpec,
     FilterSpec,
     FilterTypeOptions,
     MNEChanTypes,

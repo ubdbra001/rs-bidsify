@@ -1,7 +1,8 @@
 import logging
-import colorlog
 from datetime import datetime
 from pathlib import Path
+
+import colorlog
 
 
 def setup_file_handler(

@@ -1,8 +1,8 @@
-import colorlog
 import logging
-import pytest
-
 from pathlib import Path
+
+import colorlog
+import pytest
 
 from rs_bidsify import app_logging
 

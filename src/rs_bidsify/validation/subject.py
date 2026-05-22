@@ -1,19 +1,19 @@
-from datetime import datetime, date
+from datetime import date, datetime
 from typing import Any, Literal, Self
 
 from pandas import DataFrame
 from pydantic import (
     BaseModel,
+    ConfigDict,
     Field,
-    field_validator,
+    PositiveInt,
     ValidationInfo,
     computed_field,
-    PositiveInt,
-    ConfigDict,
+    field_validator,
 )
 
-from rs_bidsify.validation.dataset import RecordingMetadata
 from rs_bidsify.utils import get_utc_today
+from rs_bidsify.validation.dataset import RecordingMetadata
 
 
 class SubjectMetadata(BaseModel):

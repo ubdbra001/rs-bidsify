@@ -1,5 +1,4 @@
 import logging
-
 from pathlib import Path
 
 from rs_bidsify import io

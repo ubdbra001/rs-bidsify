@@ -1,5 +1,6 @@
-import yaml
 from importlib import resources
+
+import yaml
 
 
 def get_default_config():

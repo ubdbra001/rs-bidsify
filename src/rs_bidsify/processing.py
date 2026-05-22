@@ -1,13 +1,12 @@
 import logging
-
 from pathlib import Path
 
-from rs_bidsify import enrichment, io, discovery
-from rs_bidsify.config_loader import get_default_config, deep_merge
-from rs_bidsify.validation.description import DescriptionSpec
-from rs_bidsify.validation.dataset import EEGDatasetCrawler, RecordingMetadata
-from rs_bidsify.validation.subject import SubjectMetadata
+from rs_bidsify import discovery, enrichment, io
+from rs_bidsify.config_loader import deep_merge, get_default_config
 from rs_bidsify.utils import locate_dynamic_fields
+from rs_bidsify.validation.dataset import EEGDatasetCrawler, RecordingMetadata
+from rs_bidsify.validation.description import DescriptionSpec
+from rs_bidsify.validation.subject import SubjectMetadata
 
 logger = logging.getLogger(__name__)
 

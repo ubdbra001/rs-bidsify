@@ -1,5 +1,6 @@
-import pytest
 from pathlib import Path
+
+import pytest
 from pydantic import ValidationError
 
 from rs_bidsify.validation import description as rs_desc

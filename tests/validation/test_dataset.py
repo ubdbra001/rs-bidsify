@@ -1,9 +1,9 @@
-from pydantic import ValidationError
 from pathlib import Path
 
 import pytest
+from pydantic import ValidationError
 
-from rs_bidsify.validation.dataset import RecordingMetadata, EEGDatasetCrawler
+from rs_bidsify.validation.dataset import EEGDatasetCrawler, RecordingMetadata
 
 
 class TestRecordingMetadata:

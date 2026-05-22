@@ -1,9 +1,9 @@
 import logging
+from pathlib import Path
+from typing import Annotated
+
 import typer
 import yaml
-
-from pathlib import Path
-from typing import Annotated, Optional
 
 from rs_bidsify.app_logging import setup_logging
 from rs_bidsify.processing import process_dataset
@@ -33,11 +33,11 @@ def main(
         ),
     ],
     config_file: Annotated[
-        Optional[typer.FileText],
+        typer.FileText | None,
         typer.Option("--config", help="User YAML configuration file"),
     ] = None,
     log_path: Annotated[
-        Optional[Path],
+        Path | None,
         typer.Option(
             "--logs",
             help="Location for logs (defaults to '../logs' relative to raw_data_path)",

@@ -6,18 +6,18 @@ from mne.io import BaseRaw
 from mne_bids import BIDSPath, make_dataset_description
 from pandas import DataFrame, isna
 
+from rs_bidsify import io
+from rs_bidsify.consistency import check_mapping_alignment
 from rs_bidsify.validation.description import (
     AcquisitionSpecs,
     AuxChanSpec,
+    DatasetMetadata,
+    DescriptionSpec,
     EEGChanSpec,
     ExtraSpec,
-    DatasetMetadata,
     FilterSpec,
     FilterTypeOptions,
 )
-from rs_bidsify import io
-from rs_bidsify.consistency import check_mapping_alignment
-from rs_bidsify.validation.description import DescriptionSpec
 from rs_bidsify.validation.subject import SubjectMetadata
 
 logger = logging.getLogger(__name__)

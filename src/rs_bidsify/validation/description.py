@@ -1,23 +1,21 @@
 import logging
-
-from enum import IntEnum, Enum
+from enum import Enum, IntEnum
 from functools import cached_property
-from typing import Literal, Any, Self
+from typing import Any, Literal, Self
 
 from mne.channels import (
+    DigMontage,
     get_builtin_montages,
     make_standard_montage,
     read_custom_montage,
-    DigMontage,
 )
-
 from pydantic import (
     BaseModel,
-    PositiveInt,
     Field,
-    model_validator,
-    field_validator,
     FilePath,
+    PositiveInt,
+    field_validator,
+    model_validator,
 )
 
 from rs_bidsify.utils import apply_dynamic_value

@@ -1,15 +1,14 @@
 import logging
 from pathlib import Path
 from typing import Any
-from rs_bidsify.utils import get_utc_today
-from rs_bidsify.validation.description import DescriptionSpec
-from rs_bidsify.validation.dataset import RecordingMetadata
-
 
 import pandas as pd
-from mne.io import read_raw, BaseRaw
+from mne.io import BaseRaw, read_raw
+from mne_bids import BIDSPath, update_sidecar_json, write_raw_bids
 
-from mne_bids import BIDSPath, write_raw_bids, update_sidecar_json
+from rs_bidsify.utils import get_utc_today
+from rs_bidsify.validation.dataset import RecordingMetadata
+from rs_bidsify.validation.description import DescriptionSpec
 
 logger = logging.getLogger(__name__)
 
