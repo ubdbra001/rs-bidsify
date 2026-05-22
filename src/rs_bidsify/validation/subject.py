@@ -59,7 +59,7 @@ class SubjectMetadata(BaseModel):
             if (val_lower := value.lower()) in mapping_dict:
                 return mapping_dict[val_lower]
             else:
-                allowed_strings = ", ".join(f"'{k}'" for k in mapping_dict.keys())
+                allowed_strings = ", ".join(f"'{k}'" for k in mapping_dict)
                 raise ValueError(
                     f"Unrecognized string '{value}' for {info.field_name}. "
                     f"Allowed string formats are: {allowed_strings}"
