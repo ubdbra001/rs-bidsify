@@ -1,5 +1,5 @@
 import logging
-from enum import Enum, IntEnum
+from enum import IntEnum, StrEnum
 from functools import cached_property
 from typing import Any, Literal, Self
 
@@ -24,7 +24,7 @@ from rs_bidsify.validation.subject import SubjectMetadata
 logger = logging.getLogger(__name__)
 
 
-class MNEChanTypes(str, Enum):
+class MNEChanTypes(StrEnum):
     """
     Standard channel types recognized by MNE-Python.
 
@@ -57,7 +57,7 @@ class MNEChanTypes(str, Enum):
     TEMPERATURE = "temperature"
 
 
-class BIDSChanTypes(str, Enum):
+class BIDSChanTypes(StrEnum):
     """
     Channel types defined by the BIDS specification.
 
@@ -122,14 +122,14 @@ class LineFreqOptions(IntEnum):
     SIXTY = 60
 
 
-class EthicsApprovalOptions(str, Enum):
+class EthicsApprovalOptions(StrEnum):
     """Status options for institutional ethical approval."""
 
     APPROVED = "Approved"
     NOT_REQUIRED = "Not Required"
 
 
-class FilterTypeOptions(str, Enum):
+class FilterTypeOptions(StrEnum):
     """Options for different online filtering sources."""
 
     HARDWARE = "Hardware"
