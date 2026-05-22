@@ -139,7 +139,7 @@ def write_bids(
     bids_root: Path,
     eeg_data: BaseRaw,
     recording: RecordingMetadata,
-    format: str = "EDF",
+    out_format: str = "EDF",
 ) -> BIDSPath:
     """
     Export an EEG recording to the BIDS directory structure.
@@ -157,7 +157,7 @@ def write_bids(
     recording : RecordingMetadata
         A metadata object containing at least `subject` and `condition`
         attributes to define the BIDS entity.
-    format : str, optional
+    out_format : str, optional
         The output file format for the EEG data, by default "EDF".
 
     Returns
@@ -177,7 +177,7 @@ def write_bids(
     )
 
     return write_raw_bids(
-        eeg_data, bids_path, overwrite=True, allow_preload=True, format=format
+        eeg_data, bids_path, overwrite=True, allow_preload=True, format=out_format
     )
 
 
