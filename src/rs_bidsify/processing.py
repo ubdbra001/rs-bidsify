@@ -11,7 +11,7 @@ from rs_bidsify.validation.subject import SubjectMetadata
 logger = logging.getLogger(__name__)
 
 
-def process_dataset(raw_path: Path, out_root_path: Path, config_override: dict | None = None):
+def process_dataset(raw_path: Path, out_root_path: Path, config_override: dict | None = None) -> list[dict]:
     """
     Orchestrate the conversion of a full raw dataset into BIDS format.
 
@@ -58,28 +58,40 @@ def process_dataset(raw_path: Path, out_root_path: Path, config_override: dict |
     )
 
     rec_config = {k: config[k] for k in ("output_EEG_format", "include_extras")}
+
+    results = []
     for recording in crawler.found_recordings:
         subject_info = SubjectMetadata.from_dataframe(
             recording,
             participant_data["dataset"],
             mapping=config["demographic_mappings"],
         )
-        if dynamic_paths:
-            subject_spec = DescriptionSpec.from_template(dataset_spec, dynamic_paths, subject_info)
-        else:
-            subject_spec = dataset_spec
-        
-        process_recording(
-            out_root_path,
-            recording,
-            subject_spec,
-            subject_info,
-            rec_config,
-        )
+
+        try:
+            if dynamic_paths:
+                subject_spec = DescriptionSpec.from_template(dataset_spec, dynamic_paths, subject_info)
+            else:
+                subject_spec = dataset_spec
+            
+            process_recording(
+                out_root_path,
+                recording,
+                subject_spec,
+                subject_info,
+                rec_config,
+            )
+
+            results.append({"recording": recording, "status": "Success", "error": ""})
+        except Exception as e:
+            logger.error(f"Failed to process {recording.subject} - {recording.condition}")
+            results.append({"recording": recording, "status": "Failed", "error": str(e)})
+            continue
 
     enrichment.enrich_dataset_description(dataset_spec.metadata, out_root_path)
     if phenotype_data:
         io.write_phenotype_data(phenotype_data, out_root_path)
+
+    return results
 
 
 def process_recording(
