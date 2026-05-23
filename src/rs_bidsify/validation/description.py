@@ -1,23 +1,21 @@
 import logging
-
-from enum import IntEnum, Enum
+from enum import IntEnum, StrEnum
 from functools import cached_property
-from typing import Literal, Any, Self
+from typing import Any, Literal, Self
 
 from mne.channels import (
+    DigMontage,
     get_builtin_montages,
     make_standard_montage,
     read_custom_montage,
-    DigMontage,
 )
-
 from pydantic import (
     BaseModel,
-    PositiveInt,
     Field,
-    model_validator,
-    field_validator,
     FilePath,
+    PositiveInt,
+    field_validator,
+    model_validator,
 )
 
 from rs_bidsify.utils import apply_dynamic_value
@@ -26,7 +24,7 @@ from rs_bidsify.validation.subject import SubjectMetadata
 logger = logging.getLogger(__name__)
 
 
-class MNEChanTypes(str, Enum):
+class MNEChanTypes(StrEnum):
     """
     Standard channel types recognized by MNE-Python.
 
@@ -59,7 +57,7 @@ class MNEChanTypes(str, Enum):
     TEMPERATURE = "temperature"
 
 
-class BIDSChanTypes(str, Enum):
+class BIDSChanTypes(StrEnum):
     """
     Channel types defined by the BIDS specification.
 
@@ -124,14 +122,14 @@ class LineFreqOptions(IntEnum):
     SIXTY = 60
 
 
-class EthicsApprovalOptions(str, Enum):
+class EthicsApprovalOptions(StrEnum):
     """Status options for institutional ethical approval."""
 
     APPROVED = "Approved"
     NOT_REQUIRED = "Not Required"
 
 
-class FilterTypeOptions(str, Enum):
+class FilterTypeOptions(StrEnum):
     """Options for different online filtering sources."""
 
     HARDWARE = "Hardware"
@@ -240,9 +238,7 @@ class Montage(BaseModel):
             raise ValueError("Need to provide either 'mne_name' or 'path' fields")
 
         if self.mne_name is not None and self.path is not None:
-            raise ValueError(
-                "Only one of either 'mne_name' or 'path' fields need to be provided"
-            )
+            raise ValueError("Only one of either 'mne_name' or 'path' fields need to be provided")
 
         return self
 
@@ -269,9 +265,7 @@ class Montage(BaseModel):
         elif self.path:
             return read_custom_montage(self.path)
 
-        raise RuntimeError(
-            "Invalid state: Montage requires either 'mne_name' or 'path'."
-        )
+        raise RuntimeError("Invalid state: Montage requires either 'mne_name' or 'path'.")
 
 
 class EEGChanSpec(BaseModel):
@@ -302,9 +296,7 @@ class AuxChanSpec(BaseModel):
     bids_type: BIDSChanTypes
     description: str | None = None  # Optional
     units: str | None = None  # Optional
-    location: (
-        str | dict[str, str]
-    )  # Leaving the location dict relatively free-form here
+    location: str | dict[str, str]  # Leaving the location dict relatively free-form here
 
 
 class AcceptableImpedance(BaseModel):
@@ -326,9 +318,7 @@ class FilterSpec(BaseModel):
 
     name: str
     type: FilterTypeOptions
-    info: dict[
-        str, Any
-    ]  # This dict will be copied directly to the eeg sidecar, so should contain that info directly
+    info: dict[str, Any]  # This dict will be copied directly to the eeg sidecar, so should contain that info directly
 
 
 class ExtraSpec(BaseModel):
@@ -449,9 +439,7 @@ class DescriptionSpec(BaseModel):
                 subject_loc_key = var_fields[item_key]
                 subject_value = getattr(subject_info, subject_loc_key)
 
-                logger.info(
-                    f"Updating variable metadata: {'.'.join(path)} = {subject_value}"
-                )
+                logger.info(f"Updating variable metadata: {'.'.join(path)} = {subject_value}")
 
                 apply_dynamic_value(subject_spec, path, subject_value)
 

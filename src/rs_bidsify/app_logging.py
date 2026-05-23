@@ -1,12 +1,11 @@
 import logging
-import colorlog
 from datetime import datetime
 from pathlib import Path
 
+import colorlog
 
-def setup_file_handler(
-    log_dir: Path, logger: logging.Logger, level: str | int = logging.INFO
-):
+
+def setup_file_handler(log_dir: Path, logger: logging.Logger, level: str | int = logging.INFO):
     """
     Configure and attach a timestamped file handler to a logger.
 

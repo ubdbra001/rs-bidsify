@@ -1,19 +1,19 @@
-from datetime import datetime, date
+from datetime import date, datetime
 from typing import Any, Literal, Self
 
 from pandas import DataFrame
 from pydantic import (
     BaseModel,
+    ConfigDict,
     Field,
-    field_validator,
+    PositiveInt,
     ValidationInfo,
     computed_field,
-    PositiveInt,
-    ConfigDict,
+    field_validator,
 )
 
-from rs_bidsify.validation.dataset import RecordingMetadata
 from rs_bidsify.utils import get_utc_today
+from rs_bidsify.validation.dataset import RecordingMetadata
 
 
 class SubjectMetadata(BaseModel):
@@ -59,7 +59,7 @@ class SubjectMetadata(BaseModel):
             if (val_lower := value.lower()) in mapping_dict:
                 return mapping_dict[val_lower]
             else:
-                allowed_strings = ", ".join(f"'{k}'" for k in mapping_dict.keys())
+                allowed_strings = ", ".join(f"'{k}'" for k in mapping_dict)
                 raise ValueError(
                     f"Unrecognized string '{value}' for {info.field_name}. "
                     f"Allowed string formats are: {allowed_strings}"
@@ -95,12 +95,12 @@ class SubjectMetadata(BaseModel):
         return self.model_dump(include={"sex", "hand", "birthday"})
 
     def __str__(self) -> str:
-        return f"Age = {self.age}, Birthday = {self.birthday.strftime('%d/%m/%y')}, Sex = {self.sex}, Hand = {self.hand}"
+        return (
+            f"Age = {self.age}, Birthday = {self.birthday.strftime('%d/%m/%y')}, Sex = {self.sex}, Hand = {self.hand}"
+        )
 
     @classmethod
-    def from_dataframe(
-        cls, recording: RecordingMetadata, df: DataFrame, mapping: dict[str, Any]
-    ) -> Self:
+    def from_dataframe(cls, recording: RecordingMetadata, df: DataFrame, mapping: dict[str, Any]) -> Self:
         """
         Initialize the model using a row from a pandas DataFrame.
 

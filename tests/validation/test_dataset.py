@@ -1,9 +1,9 @@
-from pydantic import ValidationError
 from pathlib import Path
 
 import pytest
+from pydantic import ValidationError
 
-from rs_bidsify.validation.dataset import RecordingMetadata, EEGDatasetCrawler
+from rs_bidsify.validation.dataset import EEGDatasetCrawler, RecordingMetadata
 
 
 class TestRecordingMetadata:
@@ -67,9 +67,7 @@ class TestRecordingMetadata:
         path = Path("/data/test.eeg")
         fs.create_file(path)
 
-        rec = RecordingMetadata(
-            participant=invalid_participant, condition=None, path=path
-        )
+        rec = RecordingMetadata(participant=invalid_participant, condition=None, path=path)
 
         with pytest.raises(ValueError, match="must be alphanumeric"):
             _ = rec.subject
@@ -144,9 +142,7 @@ class TestEEGDatasetCrawler:
         assert model.found_recordings[0].condition == "rest"
         assert model.found_recordings[1].condition == "video"
 
-    @pytest.mark.parametrize(
-        "file_list", [(["sub-01.eeg"]), (["sub-01.eeg", "readme.txt"])]
-    )
+    @pytest.mark.parametrize("file_list", [(["sub-01.eeg"]), (["sub-01.eeg", "readme.txt"])])
     def test_valid_single_leaf_rule(self, fs, file_list):
         for file in file_list:
             fs.create_file(Path("/data/sub-01") / file)
@@ -211,9 +207,7 @@ class TestEEGDatasetCrawler:
         with pytest.raises(ValidationError) as excinfo:
             EEGDatasetCrawler(**config)
 
-        assert f"Expected participant directory missing: {missing_dir}" in str(
-            excinfo.value
-        )
+        assert f"Expected participant directory missing: {missing_dir}" in str(excinfo.value)
 
     def test_no_participants(self, fs):
         config = {

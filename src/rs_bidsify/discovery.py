@@ -1,5 +1,4 @@
 import logging
-
 from pathlib import Path
 
 from rs_bidsify import io
@@ -38,9 +37,7 @@ def find_file(path: Path, ext: str):
     found_path = list(path.glob(f"*.{ext}"))
 
     if len(found_path) != 1:
-        raise ValueError(
-            f"Expected single {ext} file in {path}, instead found {len(found_path)}"
-        )
+        raise ValueError(f"Expected single {ext} file in {path}, instead found {len(found_path)}")
 
     return found_path[0]
 
@@ -108,13 +105,9 @@ def find_dataset_spreadsheets(
     """
     sheet_path = find_file(raw_path, extension)
 
-    participant_data = io.read_description_spreadsheet(
-        sheet_path, sheet_info["participant"], "participant"
-    )
+    participant_data = io.read_description_spreadsheet(sheet_path, sheet_info["participant"], "participant")
     try:
-        phenotype_data = io.read_description_spreadsheet(
-            sheet_path, sheet_info["phenotype"], "phenotype"
-        )
+        phenotype_data = io.read_description_spreadsheet(sheet_path, sheet_info["phenotype"], "phenotype")
     except Exception:
         # When the data is not available
         logger.error(f"Phenotype data could not be loaded from {sheet_path}")
