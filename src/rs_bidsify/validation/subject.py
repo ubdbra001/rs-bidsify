@@ -120,4 +120,4 @@ class SubjectMetadata(BaseModel):
             A validated instance of the model.
         """
         subject_row = df.loc[recording.participant].to_dict()
-        return cls.model_validate(**subject_row, context={"mappings": mapping})  # type: ignore
+        return cls.model_validate(subject_row, context={"mappings": mapping})  # type: ignore

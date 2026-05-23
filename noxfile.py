@@ -10,7 +10,7 @@ options.default_venv_backend = "uv"
 def test(s: Session) -> None:
     s.run("python", "-m", "pytest")
 
-@session(uv_groups=["type_check"], uv_extras=["cli"])
+@session(uv_groups=["type_check"])
 def type_check(s: Session) -> None:
     s.run("pyright", "src")
 

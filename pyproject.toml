@@ -11,6 +11,7 @@ dependencies = [
     "pandas[excel]>=3.0.2",
     "pydantic>=2.13.3",
     "pyyaml>=6.0.3",
+    "typer>=0.25.1",
 ]
 
 [dependency-groups]
@@ -39,9 +40,6 @@ type_check = [
 rs-bidsify = "rs_bidsify.main:app"
 
 [project.optional-dependencies]
-cli = [
-    "typer>=0.25.1",
-]
 notebook = [
     "ipykernel>=7.2.0",
 ]

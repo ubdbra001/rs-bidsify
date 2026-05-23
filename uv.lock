@@ -1809,12 +1809,10 @@ dependencies = [
     { name = "pandas", extra = ["excel"] },
     { name = "pydantic" },
     { name = "pyyaml" },
+    { name = "typer" },
 ]
 
 [package.optional-dependencies]
-cli = [
-    { name = "typer" },
-]
 notebook = [
     { name = "ipykernel" },
 ]
@@ -1852,9 +1850,9 @@ requires-dist = [
     { name = "pandas", extras = ["excel"], specifier = ">=3.0.2" },
     { name = "pydantic", specifier = ">=2.13.3" },
     { name = "pyyaml", specifier = ">=6.0.3" },
-    { name = "typer", marker = "extra == 'cli'", specifier = ">=0.25.1" },
+    { name = "typer", specifier = ">=0.25.1" },
 ]
-provides-extras = ["cli", "notebook"]
+provides-extras = ["notebook"]
 
 [package.metadata.requires-dev]
 dev = [
