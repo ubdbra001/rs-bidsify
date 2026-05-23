@@ -677,8 +677,11 @@ class DescriptionSpec(BaseModel):
                 subject_loc_key = var_fields[item_key]
                 subject_value = getattr(subject_info, subject_loc_key)
 
-                logger.info(f"Updating variable metadata: {'.'.join(path)} = {subject_value}")
-
-                apply_dynamic_value(subject_spec, path, subject_value)
+                if subject_value is None:
+                    logger.error(f"Value for variable metadata {'.'.join(path)} not present")
+                    raise ValueError
+                else:
+                    logger.info(f"Updating variable metadata: {'.'.join(path)} = {subject_value}")
+                    apply_dynamic_value(subject_spec, path, subject_value)
 
         return cls.model_validate(subject_spec)
