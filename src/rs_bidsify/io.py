@@ -169,7 +169,7 @@ def write_bids(
     """
     bids_path = BIDSPath(
         subject=recording.subject,
-        task=recording.condition,
+        task=recording.task,
         root=bids_root,
     )
 
