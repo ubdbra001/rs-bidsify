@@ -4,12 +4,16 @@ from typing import Annotated
 
 import typer
 import yaml
+from rich.console import Console
+from rich.table import Table
 
 from rs_bidsify import __version__
 from rs_bidsify.app_logging import setup_logging
 from rs_bidsify.processing import process_dataset
 
 logger = logging.getLogger(__name__)
+
+console = Console()
 
 app = typer.Typer(help="RS-BIDSify: Standardizing resting-state EEG data into BIDS format.", no_args_is_help=True)
 
@@ -139,6 +143,31 @@ def main(
 ):
     """Global entry point and configuration callback for RS-BIDSify."""
     pass
+
+
+def show_results_summary(results: list[dict]):
+    table = Table(title="RS-BIDSify results summary")
+    table.add_column("Subject")
+
+    
+
+    for result in results:
+        recording, status, error = (result["recording"], result["status"], result["error"])
+
+        if status == "Success":
+            status = f"[green]{status}[/green]"
+        else:
+            status = f"[red]{status}[/red]"
+
+        table.add_row(
+            recording.subject,
+            recording.condition,
+            status,
+            error
+        )
+
+    console.print(table)
+
 
 
 if __name__ == "__main__":
