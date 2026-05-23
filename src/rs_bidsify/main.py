@@ -6,6 +6,7 @@ import typer
 import yaml
 from rich.console import Console
 from rich.table import Table
+from rich.text import Text
 
 from rs_bidsify import __version__
 from rs_bidsify.app_logging import setup_logging
@@ -125,9 +126,11 @@ def convert(
         logger.warning(f"Creating output directory: {bids_data_path}")
         bids_data_path.mkdir(parents=True)
 
-    process_dataset(raw_data_path, bids_data_path, user_overrides)
+    results = process_dataset(raw_data_path, bids_data_path, user_overrides)
 
     logger.info(f"Successfully BIDSified data from {raw_data_path}, written to {bids_data_path}")
+
+    show_results_summary(results)
 
 
 @app.callback()
@@ -148,26 +151,25 @@ def main(
 def show_results_summary(results: list[dict]):
     table = Table(title="RS-BIDSify results summary")
     table.add_column("Subject")
+    table.add_column("Task")
+    table.add_column("Status")
+    table.add_column("Errors")
 
-    
+    status_fmt = {
+        "Success": {"style": "green"},
+        "Skipped": {"style": "cyan"},
+        "Failed": {"style": "red"},
+    }
 
     for result in results:
         recording, status, error = (result["recording"], result["status"], result["error"])
 
-        if status == "Success":
-            status = f"[green]{status}[/green]"
-        else:
-            status = f"[red]{status}[/red]"
+        style_kwargs = status_fmt.get(status, {})
+        formatted_status = Text(status, **style_kwargs)  # pyright: ignore[reportArgumentType]
 
-        table.add_row(
-            recording.subject,
-            recording.condition,
-            status,
-            error
-        )
+        table.add_row(recording.subject, recording.task, formatted_status, error)
 
     console.print(table)
-
 
 
 if __name__ == "__main__":
