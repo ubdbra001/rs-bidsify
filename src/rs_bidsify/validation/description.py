@@ -381,7 +381,7 @@ class RestingStateProtocol(BaseModel):
     instructions: str
     eyes_open: RestingStateTask | Literal[False]
     eyes_closed: RestingStateTask | Literal[False]
-    other_conditions: list[CustomRestingTask] | None = None
+    other_tasks: list[CustomRestingTask] | None = None
     events: dict[str, str]  # Should be defined as "event code": "event description"
 
 
@@ -394,7 +394,7 @@ class DescriptionSpec(BaseModel):
     """
 
     metadata: DatasetMetadata
-    conditions: list[str] | None = Field(default=None, min_length=1)
+    conditions: list[str] | None = Field(default=None, min_length=1, alias="tasks")
     acquisition_spec: AcquisitionSpecs
     resting_state: RestingStateProtocol
     variable_fields: dict[str, str] | None = Field(default=None)
