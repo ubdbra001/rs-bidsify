@@ -22,18 +22,19 @@ class TestRecordingMetadata:
             RecordingMetadata(participant="sub-01", condition=None, path=fake_file)
 
     @pytest.mark.parametrize(
-        "cond",
+        "cond, task",
         [
-            (None),
-            ("rest"),
+            (None, "rest"),
+            ("rest", "rest"),
         ],
     )
-    def test_recording_path_optional_fields(self, fs, cond):
+    def test_recording_path_optional_fields(self, fs, cond, task):
         path = Path("/data/test.eeg")
         fs.create_file(path)
 
         rec = RecordingMetadata(participant="sub-01", condition=cond, path=path)
         assert rec.condition == cond
+        assert rec.task == task
 
     @pytest.mark.parametrize(
         "participant, expected_subject",
