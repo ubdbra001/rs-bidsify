@@ -64,12 +64,16 @@ def process_dataset(raw_path: Path, out_root_path: Path, config_override: dict |
             participant_data["dataset"],
             mapping=config["demographic_mappings"],
         )
+        if dynamic_paths:
+            subject_spec = DescriptionSpec.from_template(dataset_spec, dynamic_paths, subject_info)
+        else:
+            subject_spec = dataset_spec
+        
         process_recording(
             out_root_path,
             recording,
-            dataset_spec,
+            subject_spec,
             subject_info,
-            dynamic_paths,
             rec_config,
         )
 
@@ -83,7 +87,6 @@ def process_recording(
     recording: RecordingMetadata,
     dataset_spec: DescriptionSpec,
     subject_info: SubjectMetadata,
-    dynamic_paths: list,
     config: dict,
 ):
     """
@@ -107,9 +110,6 @@ def process_recording(
     subject_info : SubjectMetadata
         Demographic and clinical metadata for the subject associated
         with this recording.
-    dynamic_paths : list
-        A list of keys within the metadata that should be dynamically
-        populated using subject-specific values.
     config : dict
         Configuration settings, including 'output_EEG_format' and
         'include_extras'.
@@ -124,18 +124,13 @@ def process_recording(
 
     logger.info(f"Processing Recording - Sub: {recording.subject}, Task: {recording.condition}")
 
-    if dynamic_paths:
-        subject_spec = DescriptionSpec.from_template(dataset_spec, dynamic_paths, subject_info)
-    else:
-        subject_spec = dataset_spec
-
     eeg_data = io.read_eeg_recording(recording.path)
 
     enrichment.set_subject_info(eeg_data, subject_info)
 
-    enrichment.enrich_mne_object(eeg_data, subject_spec)
+    enrichment.enrich_mne_object(eeg_data, dataset_spec)
 
     rec_bids_path = io.write_bids(out_root_path, eeg_data, recording, out_format)
 
-    enrichment.enrich_eeg_sidecar(rec_bids_path, subject_spec, include_extras)
-    enrichment.enrich_channels_tsv_with_aux(rec_bids_path, subject_spec.acquisition_spec.aux_channels)
+    enrichment.enrich_eeg_sidecar(rec_bids_path, dataset_spec, include_extras)
+    enrichment.enrich_channels_tsv_with_aux(rec_bids_path, dataset_spec.acquisition_spec.aux_channels)
