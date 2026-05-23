@@ -173,7 +173,7 @@ def write_bids(
         root=bids_root,
     )
 
-    return write_raw_bids(eeg_data, bids_path, overwrite=True, allow_preload=True, format=out_format)
+    return write_raw_bids(eeg_data, bids_path, overwrite=True, allow_preload=True, format=out_format.upper())
 
 
 def write_enriched_sidecar(bids_path: BIDSPath, updates: dict[str, Any]):
