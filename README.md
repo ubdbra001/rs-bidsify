@@ -47,7 +47,7 @@ dataset/
     └── sub-xxx.edf
 ```
 
-Each subject directory can, optionally, contain task subdirectories, but again there should be a single recording per directory. e.g.:
+Each subject directory can, optionally, contain task sub-directories, but again there should be a single recording per directory. e.g.:
 
 ```shell
 dataset/
@@ -67,13 +67,13 @@ This file specifies the metadata describing the dataset. It is split into 4 diff
 
 See the [appendix below](#complete-metadata) for an example of a complete metatdata file
 
-#### 1. Conditions
+#### 1. Tasks
 
-This is a array/list outlining the different conditions present in the data set.
-It can be omitted or left empty if these is a single condition, but need to be present when task directories are present in the dataset file structure, and the values should correspond exactly.
+This is a array/list outlining the different tasks present in the data set.
+It can be omitted if there is only a single task (in which case the task name will default to "rest"), but it is required when task directories are present in the dataset file structure, and the values should correspond exactly.
 
 ```json
-"conditions": ["rest", "video"]
+"tasks": ["rest", "video"]
 ```
 #### 2. Metadata
 This structure contains infomation about dataset-level metadata (i.e. values that would not differ between participants)
@@ -196,7 +196,7 @@ This section is entirely optional, as are each of the fields contained within.
 
 #### 4. Resting state information
 This section conatins information about the resting state tasks undertaken during the recording.  
-In includes information about the instructions issued to the participants, the duration of the eyes-open and eyes-closed conditions, the stimuli used during these conditions, any other conditions recorded, and the detials of the event markers captured during the recording. 
+In includes information about the instructions issued to the participants, the duration of the eyes-open and eyes-closed tasks, the stimuli used during these tasks, any other tasks recorded, and the detials of the event markers captured during the recording. 
 
 ``` json
 "resting_state": {
@@ -208,9 +208,9 @@ In includes information about the instructions issued to the participants, the d
         "duration_secs": 240,
         "stimulus_description": "white fixation cross on a grey background"
     },
-    "other_conditions": [
+    "other_task": [
         {
-            "condition_name": "video watching",
+            "task_name": "video watching",
             "duration_secs": 231,
             "stimulus_description": "a short animated movie 'The man who was afraid of falling' (https://osf.io/x9jpz)"
         }
@@ -336,7 +336,7 @@ Below is an example of a complete JSON metadata file:
 
 ```json
 {
-    "conditions": ["rest", "video"],
+    "tasks": ["rest", "video"],
     "metadata": {
         "population": "Healthy Adults",
         "dataset_name": "Test dataset",
@@ -418,9 +418,9 @@ Below is an example of a complete JSON metadata file:
             "duration_secs": 240,
             "stimulus_description": "white fixation cross on a grey background"
         },
-        "other_conditions": [
+        "other_tasks": [
             {
-                "condition_name": "video watching",
+                "task_name": "video watching",
                 "duration_secs": 231,
                 "stimulus_description": "a short animated movie 'The man who was afraid of falling' (https://osf.io/x9jpz)"
             }

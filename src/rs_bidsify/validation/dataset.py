@@ -67,6 +67,23 @@ class RecordingMetadata(BaseModel):
 
         return self.participant
 
+    @computed_field
+    @property
+    def task(self) -> str:
+        """
+        Derive the BIDS task name from the experimental condition.
+
+        If a condition is explicitly provided, it is returned as the task name.
+        Otherwise, it defaults to "rest" to comply with standard resting-state
+        naming conventions.
+
+        Returns
+        -------
+        str
+            The task label for BIDS filenames (e.g., 'rest', 'face_processing').
+        """
+        return self.condition if self.condition is not None else "rest"
+
 
 class EEGDatasetCrawler(BaseModel):
     """
