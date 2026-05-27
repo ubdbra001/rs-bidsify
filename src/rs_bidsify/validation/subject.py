@@ -20,9 +20,9 @@ class SubjectMetadata(BaseModel):
     """
     Data model for participant demographic information.
 
-    Handles the conversion of human-readable strings (e.g., 'male', 'right')
-    into BIDS-compliant integers and calculates a proxy birthday required
-    by MNE for age internal calculations.
+    Handles the conversion of human-readable strings into BIDS-compliant
+    integers and calculates a surrogate birthday required for MNE
+    internal age calculations.
 
     Attributes
     ----------
@@ -32,8 +32,9 @@ class SubjectMetadata(BaseModel):
         Participant biological sex (0=Unknown, 1=Male, 2=Female).
     hand : Literal[1, 2, 3]
         Participant handedness (1=Left, 2=Right, 3=Ambidextrous).
+        Aliased as 'handedness' in input data.
     meas_date : datetime
-        The date of the recording, defaults to UTC today.
+        The date of the recording. Defaults to the current UTC date.
     """
 
     model_config = ConfigDict(extra="allow")
@@ -49,8 +50,28 @@ class SubjectMetadata(BaseModel):
         """
         Convert sex and handedness strings to BIDS-compliant integers.
 
-        Uses a mapping dictionary provided via validation context to translate
-        strings like 'female' to their integer representation.
+        Uses a mapping dictionary provided via the Pydantic validation
+        context to translate descriptive strings (e.g., 'female', 'right')
+        into their standardized integer representations.
+
+        Parameters
+        ----------
+        value : Any
+            The raw input value, typically a string from a spreadsheet.
+        info : ValidationInfo
+            Pydantic validation metadata containing the mapping context.
+
+        Returns
+        -------
+        Any
+            The mapped integer value if a string was provided, or the
+            original value if already numeric.
+
+        Raises
+        ------
+        ValueError
+            If the input string does not exist in the provided mapping
+            dictionaries.
         """
         context = info.context or {}
         mapping_dict = context.get("mappings", {}).get(info.field_name, {})
@@ -74,8 +95,13 @@ class SubjectMetadata(BaseModel):
         Calculate a surrogate birthday based on age and measurement date.
 
         MNE requires a 'birthday' field to store age in its internal
-        subject_info. This computes a date exactly 'age' years prior to
-        the recording date.
+        subject_info structure. This computes a date exactly 'age' years
+        prior to the recording date to satisfy this requirement.
+
+        Returns
+        -------
+        date
+            The calculated surrogate birth date.
         """
         meas_date = self.meas_date.date()
         try:
@@ -87,10 +113,13 @@ class SubjectMetadata(BaseModel):
         """
         Generate a dictionary formatted for MNE's info['subject_info'].
 
+        Extracts the subset of fields compatible with the MNE-Python
+        subject information schema.
+
         Returns
         -------
         dict
-            A dictionary containing only 'sex', 'hand', and 'birthday'.
+            A dictionary containing 'sex', 'hand', and 'birthday'.
         """
         return self.model_dump(include={"sex", "hand", "birthday"})
 

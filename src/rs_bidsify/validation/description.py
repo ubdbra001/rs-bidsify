@@ -142,6 +142,29 @@ class DatasetMetadata(BaseModel):
 
     Defines the global information required for the dataset description,
     including institutional details, funding, and ethical approval status.
+    This model ensures that the dataset-level requirements for BIDS
+    compliance are met before export.
+
+    Attributes
+    ----------
+    population : str
+        A description of the study population (e.g., 'healthy adults').
+    dataset_name : str
+        The full name of the dataset.
+    authors : list[str]
+        List of individuals who contributed to the creation of the dataset.
+    funding : str | list[str] | None, optional
+        Funding sources or grant numbers associated with the study.
+    ethics_approval : EthicsApprovalOptions
+        The institutional review board or ethics committee approval status.
+    license : str
+        The data license (e.g., 'CC0', 'PDDL') under which the data is shared.
+    references_links : str | list[str]
+        Citations or URLs to publications or repositories related to the data.
+    institution_name : str
+        The name of the university or research facility where data was collected.
+    institution_dept : str
+        The specific department within the institution.
     """
 
     population: str
@@ -158,7 +181,15 @@ class DatasetMetadata(BaseModel):
         """
         Generate a dictionary formatted for BIDS dataset_description.json.
 
-        Maps internal model fields to official BIDS-compliant keys.
+        Maps internal model fields to their official BIDS-compliant keys
+        as defined in the BIDS specification. This dictionary can be
+        serialized directly to JSON.
+
+        Returns
+        -------
+        dict
+            A dictionary containing the standardized BIDS metadata keys
+            (e.g., 'Name', 'Authors', 'DatasetDOI').
         """
         return {
             "name": self.dataset_name,
@@ -274,7 +305,21 @@ class EEGChanSpec(BaseModel):
 
     Defines the physical properties of the EEG acquisition, including the
     number of sensors, their spatial arrangement, and the electrical
-    referencing scheme.
+    referencing scheme used during the recording.
+
+    Attributes
+    ----------
+    number : PositiveInt
+        Total count of EEG channels present in the recording.
+    montage : Montage
+        The spatial layout or naming convention of the electrodes, see
+        the Montage class for more information.
+    ground : str
+        The physical location of the ground electrode (e.g., 'AFz', 'Fz').
+    reference : str | Literal["VARIES"]
+        The electrical reference used. Can be a specific electrode location
+        (e.g., 'Cz', 'Average') or "VARIES" if the reference is inconsistent
+        across the dataset or subject to offline changes.
     """
 
     number: PositiveInt
@@ -287,9 +332,27 @@ class AuxChanSpec(BaseModel):
     """
     Metadata specification for auxiliary channels.
 
-    Defines how non-EEG channels (e.g., ECG, triggers, or motion sensors)
-    should be categorized in both MNE and BIDS, including their physical
-    units and sensor locations.
+    Defines how non-EEG channels are categorized for MNE and BIDS,
+    including their physical units and anatomical sensor locations.
+    This model facilitates channel renaming and retyping during the
+    BIDS conversion process.
+
+    Attributes
+    ----------
+    mne_type : MNEChanTypes
+        The channel type designation used by MNE-Python
+        (e.g., 'ecg', 'emg', 'stim').
+    bids_type : BIDSChanTypes
+        The BIDS channel type (e.g., 'TRIG', 'MISC', 'EYE').
+    description : str | None, optional
+        A human-readable description of the channel's purpose or source.
+    units : str | None, optional
+        The physical unit of the signal (e.g., 'V', 'uV', 'mmHg').
+    location : str | dict[str, str]
+        Anatomical placement of the sensors. Can be a descriptive string
+        (e.g., 'left index finger'), "n/a", or a dictionary defining the
+        specific lead configuration (e.g., active, reference, and ground
+        placements)
     """
 
     mne_type: MNEChanTypes
@@ -300,21 +363,65 @@ class AuxChanSpec(BaseModel):
 
 
 class AcceptableImpedance(BaseModel):
-    """Threshold and units for acceptable sensor impedance levels."""
+    """
+    Threshold and units for acceptable sensor impedance levels.
+
+    Defines the maximum impedance value permitted for sensors during
+    the recording session.
+
+    Attributes
+    ----------
+    value : int
+        The maximum impedance threshold (e.g., 5, 20).
+    units : str
+        The unit of measurement for the impedance value,
+        typically 'kOhm'.
+    """
 
     value: int
     units: str
 
 
 class LightingConditions(BaseModel):
-    """Environmental lighting metadata for the recording session."""
+    """
+    Environmental lighting metadata for the recording session.
+
+    Captures the ambient lighting state and intensity of the experimental
+    room during data acquisition.
+
+    Attributes
+    ----------
+    description : str
+        A qualitative description of the lighting source or state
+        (e.g., 'dimmed', 'natural light', 'fluorescent').
+    measurement : str
+        The quantitative value and the method or instrument used for
+        the reading (e.g., '150 lux via T-10A Illuminance Meter',
+        'low via subjective report').
+    """
 
     description: str
     measurement: str
 
 
 class FilterSpec(BaseModel):
-    """Configuration for signal filters applied to the dataset."""
+    """
+    Configuration for signal filters applied to the dataset.
+
+    Defines the parameters and origin of a specific filter, intended
+    for direct inclusion in the BIDS EEG sidecar metadata.
+
+    Attributes
+    ----------
+    name : str
+        The descriptive name of the filter (e.g., 'High-pass', 'Notch').
+    type : FilterTypeOptions
+        The source of the filter application, either hardware or software.
+    info : dict[str, Any]
+        A dictionary of filter parameters (e.g., cutoff frequencies,
+        roll-off, order). This content is mapped directly to the BIDS
+        EEG sidecar JSON.
+    """
 
     name: str
     type: FilterTypeOptions
@@ -322,7 +429,27 @@ class FilterSpec(BaseModel):
 
 
 class ExtraSpec(BaseModel):
-    """Optional metadata for experimental environment and recording quality."""
+    """
+    Optional metadata for experimental environment and recording quality.
+
+    Groups secondary environmental factors and technical hardware
+    specifications that characterize the recording conditions.
+
+    Attributes
+    ----------
+    acceptable_impedance : AcceptableImpedance | None, optional
+        The threshold and units used to define valid sensor impedance.
+    electrode_type : str | None, optional
+        The type of electrodes used (e.g., 'active', 'passive', 'Ag/AgCl').
+    conductive_medium : str | None, optional
+        The material used to reduce impedance (e.g., 'gel', 'paste', 'saline').
+    faraday_cage : bool | None, optional
+        Whether the recording was performed inside a Faraday cage.
+    sound_proof : bool | None, optional
+        Whether the recording was performed in a sound-attenuated booth.
+    lighting_conditions : LightingConditions | None, optional
+        The ambient lighting state and intensity of the experimental room.
+    """
 
     acceptable_impedance: AcceptableImpedance | None = None
     electrode_type: str | None = None
@@ -338,6 +465,31 @@ class AcquisitionSpecs(BaseModel):
 
     Aggregates channel configurations, filter settings, and environmental
     details into a single schema used to populate BIDS sidecar files.
+
+    Attributes
+    ----------
+    software : str
+        The name and version of the software used to acquire the data
+        (e.g., 'LabRecorder v1.14', 'OpenBCI GUI').
+    acquisition_freq : PositiveInt
+        The sampling rate of the recording in Hertz (Hz).
+    file_format : str
+        The format of the raw data file (e.g., 'BDF', 'EDF', 'FIFF').
+    amplifier_model : str
+        The manufacturer and model of the EEG amplifier
+        (e.g., 'BioSemi ActiveTwo', 'BrainAmp Standard').
+    eeg_channels : EEGChanSpec
+        Specifications for the EEG electrode array and referencing scheme.
+    aux_channels : dict[str, AuxChanSpec]
+        A mapping of auxiliary channel names to their respective types,
+        units, and locations.
+    power_line_freq : LineFreqOptions
+        The frequency of the local electrical grid (e.g., 50 or 60 Hz).
+    filters : list[FilterSpec]
+        A list of hardware and software filters applied during acquisition.
+    extras : ExtraSpec | None, optional
+        Additional environmental and hardware metadata, such as lighting
+        and impedance thresholds.
     """
 
     software: str
@@ -352,19 +504,55 @@ class AcquisitionSpecs(BaseModel):
 
 
 class BaseRestingTask(BaseModel):
-    """Core duration requirements for a resting state segment."""
+    """
+    Core duration requirements for a resting state segment.
+
+    Attributes
+    ----------
+    duration_secs : PositiveInt
+        The required length of the resting state recording in seconds.
+    """
 
     duration_secs: PositiveInt
 
 
 class RestingStateTask(BaseRestingTask):
-    """Standard resting state condition with optional stimulus info."""
+    """
+    Standard resting state condition with optional stimulus info.
+
+    Inherits core duration requirements and allows for an optional
+    description of the resting environment or instructions.
+
+    Attributes
+    ----------
+    duration_secs : PositiveInt
+        The required length of the resting state recording in seconds.
+    stimulus_description : str | None, optional
+        Details regarding the resting state protocol (e.g., 'eyes closed',
+        'fixation cross').
+    """
 
     stimulus_description: str | None = None
 
 
 class CustomRestingTask(BaseRestingTask):
-    """Named resting state condition with required stimulus description."""
+    """
+    Named resting state condition with required stimulus description.
+
+    Used for non-standard resting segments that require a specific
+    condition label and mandatory stimulus details.
+
+    Attributes
+    ----------
+    duration_secs : PositiveInt
+        The required length of the resting state recording in seconds.
+    condition_name : str
+        The unique identifier for the custom task (e.g., 'meditation',
+        'pre-task-rest').
+    stimulus_description : str
+        Mandatory details regarding the specific instructions or
+        environment for this custom condition.
+    """
 
     condition_name: str
     stimulus_description: str
@@ -376,6 +564,24 @@ class RestingStateProtocol(BaseModel):
 
     Defines instructions, standard conditions, and custom segments,
     along with a dictionary mapping trigger codes to event descriptions.
+
+    Attributes
+    ----------
+    instructions : str
+        The textual instructions provided to the participant prior to
+        starting the resting state session.
+    eyes_open : RestingStateTask | Literal[False]
+        Configuration for the eyes-open segment. Set to False if this
+        condition is not part of the protocol.
+    eyes_closed : RestingStateTask | Literal[False]
+        Configuration for the eyes-closed segment. Set to False if this
+        condition is not part of the protocol.
+    other_tasks : list[CustomRestingTask] | None, optional
+        A list of additional resting state conditions or segments
+        not covered by the standard eyes-open/closed categories.
+    events : dict[str, str]
+        A mapping of hardware trigger codes to human-readable labels
+        (e.g., {"1": "eyes_open_start", "2": "eyes_closed_start"}).
     """
 
     instructions: str
@@ -391,6 +597,23 @@ class DescriptionSpec(BaseModel):
 
     Aggregates global metadata, acquisition hardware settings,
     resting-state protocols, and logic for handling subject-variable fields.
+    This serves as the primary configuration object for BIDS conversion
+    and directory crawling.
+
+    Attributes
+    ----------
+    metadata : DatasetMetadata
+        Global dataset information including funding, authors, and ethics.
+    conditions : list[str] | None, optional
+        A list of experimental task or condition names. Aliased as 'tasks'
+        in the input data.
+    acquisition_spec : AcquisitionSpecs
+        Hardware and software technical specifications for the recording.
+    resting_state : RestingStateProtocol
+        The protocol definition and event mapping for resting segments.
+    variable_fields : dict[str, str] | None, optional
+        A mapping of specification keys to subject-level metadata fields
+        used for dynamic value injection.
     """
 
     metadata: DatasetMetadata
@@ -400,8 +623,16 @@ class DescriptionSpec(BaseModel):
     variable_fields: dict[str, str] | None = Field(default=None)
 
     @property
-    def crawler_info(self):
-        """Metadata for the directory crawler to filter files."""
+    def crawler_info(self) -> dict:
+        """
+        Metadata for the directory crawler to filter and identify files.
+
+        Returns
+        -------
+        dict
+            A dictionary containing 'expected_conditions' and the target
+            file 'extension'.
+        """
         return {
             "expected_conditions": self.conditions,
             "extension": self.acquisition_spec.file_format,
@@ -417,19 +648,26 @@ class DescriptionSpec(BaseModel):
         """
         Create a subject-specific specification from a base template.
 
+        Iterates through designated paths in the configuration and replaces
+        placeholder or generic values with specific metadata associated
+        with an individual participant.
+
         Parameters
         ----------
         template : Self
-            The base configuration model to use as a template.
+            The base configuration model used as the structural template.
         varies_paths : list of list of str
-            Nested dictionary paths to fields requiring dynamic updates.
+            A list of nested dictionary paths (e.g., [['acquisition_spec', 'software']])
+            indicating which fields require dynamic updates.
         subject_info : SubjectMetadata
-            Source object containing subject-specific values to inject.
+            The source object containing the actual participant values to
+            be injected into the template.
 
         Returns
         -------
         Self
-            A new instance of DescriptionSpec with resolved variable fields.
+            A new instance of DescriptionSpec with all variable fields
+            resolved to subject-specific values.
         """
         subject_spec = template.model_dump()
 
