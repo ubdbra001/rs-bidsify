@@ -107,7 +107,7 @@ def read_eeg_recording(recording_path: Path) -> BaseRaw:
     return eeg_data
 
 
-def read_bids_tsv(tsv_path: BIDSPath):
+def read_bids_tsv(tsv_path: BIDSPath) -> pd.DataFrame:
     """
     Read a BIDS-compliant TSV file into a pandas DataFrame.
 

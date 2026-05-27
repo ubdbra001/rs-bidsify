@@ -3,7 +3,7 @@ from importlib import resources
 import yaml
 
 
-def get_default_config():
+def get_default_config() -> dict:
     """
     Load the default configuration settings from the package resources.
 

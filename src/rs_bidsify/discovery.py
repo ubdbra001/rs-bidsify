@@ -7,7 +7,7 @@ from rs_bidsify.validation.description import DescriptionSpec
 logger = logging.getLogger(__name__)
 
 
-def find_file(path: Path, ext: str):
+def find_file(path: Path, ext: str) -> Path:
     """
     Locate a single file with a specific extension within a directory.
 

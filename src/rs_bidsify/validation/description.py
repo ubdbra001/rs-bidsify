@@ -400,8 +400,7 @@ class DescriptionSpec(BaseModel):
     variable_fields: dict[str, str] | None = Field(default=None)
 
     @property
-    def crawler_info(self):
-        """Metadata for the directory crawler to filter files."""
+    def crawler_info(self) -> dict:
         return {
             "expected_conditions": self.conditions,
             "extension": self.acquisition_spec.file_format,
