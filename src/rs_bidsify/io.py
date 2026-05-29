@@ -218,3 +218,29 @@ def write_phenotype_data(phenotype_data: dict[str, pd.DataFrame], root_path: Pat
     phenotype_data["codebook"].to_json(phenotype_path / "phenotype.json", orient="index")
 
     logger.debug(f"Phenotype data written to {phenotype_path}")
+
+
+def check_task_exists(subject_dir: Path, task: str) -> bool:
+    """
+    Check for the existence of specific task files within a subject directory.
+
+    Scans the subject's BIDS folder to identify if any files associated 
+    with the given task label have already been generated.
+
+    Parameters
+    ----------
+    subject_dir : Path
+        The BIDS subject-level directory (e.g., 'sub-001/') to be searched.
+    task : str
+        The BIDS task label to search for (e.g., 'rest', 'faceprocessing').
+
+    Returns
+    -------
+    bool
+        True if the directory exists and contains at least one file 
+        matching the task pattern; False otherwise.
+    """
+    if not subject_dir.exists():
+        return False
+
+    return  any(subject_dir.rglob(f"*task-{task}*"))

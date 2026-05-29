@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+
 from mne_bids import BIDSPath, write_raw_bids
 
 from rs_bidsify import discovery, enrichment, io
@@ -66,12 +67,18 @@ def process_dataset(
     rec_config = {k: config[k] for k in ("output_EEG_format", "include_extras")}
 
     results = []
+
     for recording in crawler.found_recordings:
         bids_path = BIDSPath(
             subject=recording.subject,
             task=recording.task,
             root=out_root_path,
         )
+
+        if io.check_task_exists(bids_path.directory, recording.task) and not force_flag:
+            logger.info(f"{recording.info_str} - Skipping as BIDSified files already exist")
+            results.append({"recording": recording, "status": "Skipped", "error": ""})
+            continue
 
         subject_info = SubjectMetadata.from_dataframe(
             recording,
@@ -80,11 +87,13 @@ def process_dataset(
         )
 
         try:
-            if dynamic_paths:
-                subject_spec = DescriptionSpec.from_template(dataset_spec, dynamic_paths, subject_info)
-            else:
-                subject_spec = dataset_spec
-            
+            subject_spec = (
+                DescriptionSpec.from_template(dataset_spec, dynamic_paths, subject_info)
+                if dynamic_paths
+                else dataset_spec
+            )
+
+            # Process recording
             process_recording(
                 bids_path,
                 recording,
@@ -96,12 +105,15 @@ def process_dataset(
             results.append({"recording": recording, "status": "Success", "error": ""})
         except Exception as e:
             logger.exception(f"{recording.info_str} - Processing failed")
+
             results.append({"recording": recording, "status": "Failed", "error": str(e)})
             continue
 
     enrichment.enrich_dataset_description(dataset_spec.metadata, out_root_path)
     if phenotype_data:
         io.write_phenotype_data(phenotype_data, out_root_path)
+
+    logger.info("Enriched BIDS-compliant dataset")
 
     return results
 
@@ -125,8 +137,8 @@ def process_recording(
     Parameters
     ----------
     bids_path : BIDSPath
-        The target BIDS destination for this recording. This object must specify 
-        the subject, task, and root directory, ensuring the data is written 
+        The target BIDS destination for this recording. This object must specify
+        the subject, task, and root directory, ensuring the data is written
         to the correct entity-linked location.
     recording : RecordingMetadata
         Metadata for this specific recording session (e.g., file path,
@@ -158,12 +170,10 @@ def process_recording(
 
     rec_bids_path = write_raw_bids(eeg_data, bids_path, overwrite=True, allow_preload=True, format=out_format.upper())
 
-
     logger.info(f"{recording.info_str} - Saved BIDS-compliant data")
 
     enrichment.enrich_eeg_sidecar(rec_bids_path, dataset_spec, include_extras)
     enrichment.enrich_channels_tsv_with_aux(rec_bids_path, dataset_spec.acquisition_spec.aux_channels)
 
     logger.info(f"{recording.info_str} - Enriched BIDS-compliant data")
-
 
