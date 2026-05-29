@@ -114,3 +114,30 @@ def find_dataset_spreadsheets(
         phenotype_data = None
 
     return participant_data, phenotype_data
+
+
+def find_missing_subjects(expected_ids: list[str], out_path: Path) -> list[str]:
+    """
+    Identify expected subjects that are missing from the BIDS output directory.
+
+    Scans the filesystem to determine which participants from the initial
+    protocol were not successfully exported, allowing for targeted
+    metadata cleanup.
+
+    Parameters
+    ----------
+    expected_ids : list[str]
+        A list of BIDS-compliant subject strings (e.g., ['sub-01', 'sub-02'])
+        originally slated for processing.
+    out_path : Path
+        The root directory of the BIDS dataset to be scanned for subject folders.
+
+    Returns
+    -------
+    list[str]
+        A list of subject identifiers present in 'expected_ids' but missing
+        from the physical directory.
+    """
+    present_ids = [path.name for path in out_path.iterdir() if path.is_dir() and path.name.startswith("sub")]
+
+    return list(set(expected_ids) - set(present_ids))

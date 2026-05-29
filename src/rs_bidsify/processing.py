@@ -111,7 +111,8 @@ def process_dataset(
             results.append({"recording": recording, "status": "Failed", "error": str(e)})
             continue
 
-    missing_subjects = io.cleanup_participants_tsv(expected_participants, out_root_path)
+    missing_subjects = discovery.find_missing_subjects(expected_participants, out_root_path)
+    io.cleanup_participants_tsv(missing_subjects, out_root_path)
     enrichment.enrich_dataset_description(dataset_spec.metadata, out_root_path)
 
     if phenotype_data:

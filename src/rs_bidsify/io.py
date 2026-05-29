@@ -293,39 +293,32 @@ def rollback_recording_files(subject_dir: Path, recording: RecordingMetadata):
         logger.error(f"{recording.info_str} - Clean up failed: {cleanup_error}")
 
 
-def cleanup_participants_tsv(expected_ids: list[str], out_path: Path) -> list[str]:
+def cleanup_participants_tsv(missing_ids: list[str], out_path: Path):
     """
-    Synchronize the participants TSV with the physical BIDS directory.
+    Remove missing or invalid participants from the participants.tsv file.
 
-    Identifies discrepancies between the participant folders present on disk
-    and the IDs expected by the protocol. If a discrepancy is found, it
-    removes the missing IDs from 'participants.tsv' to ensure metadata
-    integrity.
+    Ensures metadata integrity by pruning rows from the tabular participant
+    index that correspond to subjects who were not successfully processed
+    or are missing from the physical BIDS directory.
 
     Parameters
     ----------
-    expected_ids : list[str]
-        A list of BIDS-compliant subject strings (e.g., ['sub-001', 'sub-002'])
-        that were originally planned for processing.
+    missing_ids : list[str]
+        A list of BIDS subject identifiers (e.g., ['sub-01', 'sub-02'])
+        to be removed from the dataset index.
     out_path : Path
-        The root directory of the BIDS dataset containing the subject folders
-        and the 'participants.tsv' file.
+        The root directory of the BIDS dataset containing the
+        'participants.tsv' file.
 
     Returns
     -------
-    list[str]
-        A list of the missing or removed identifiers identified during the
-        cleanup process.
+    None
+        Overwrites the existing 'participants.tsv' with the filtered content.
     """
-    present_ids = [path.name for path in out_path.iterdir() if path.is_dir() and path.name.startswith("sub")]
+    tsv_path = out_path / "participants.tsv"
 
-    if missing_ids := list(set(expected_ids).symmetric_difference(present_ids)):
-        tsv_path = out_path / "participants.tsv"
+    participant_tsv = read_bids_tsv(tsv_path)
 
-        participant_tsv = read_bids_tsv(tsv_path)
+    cleaned_tsv = filter_dataframe_by_valid_ids(participant_tsv, missing_ids)
 
-        cleaned_tsv = filter_dataframe_by_valid_ids(participant_tsv, missing_ids)
-
-        write_bids_tsv(tsv_path, cleaned_tsv)
-
-    return missing_ids
+    write_bids_tsv(tsv_path, cleaned_tsv)
