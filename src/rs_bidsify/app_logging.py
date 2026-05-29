@@ -138,6 +138,8 @@ def setup_logging(root_path: Path, level: str | int = logging.DEBUG):
     """
     adjust_mne_logger()
 
+    logging.getLogger(name="filelock").setLevel(logging.INFO)
+
     logger = logging.getLogger()
     logger.setLevel(level)
 
