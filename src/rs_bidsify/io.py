@@ -7,7 +7,7 @@ import pandas as pd
 from mne.io import BaseRaw, read_raw
 from mne_bids import BIDSPath, update_sidecar_json
 
-from rs_bidsify.utils import get_utc_today
+from rs_bidsify.utils import filter_dataframe_by_valid_ids, get_utc_today
 from rs_bidsify.validation.dataset import RecordingMetadata
 from rs_bidsify.validation.description import DescriptionSpec
 
@@ -284,3 +284,41 @@ def rollback_recording_files(subject_dir: Path, recording: RecordingMetadata):
             logger.info(f"{recording.info_str} - Cleaned up incomplete BIDS folder")
     except Exception as cleanup_error:
         logger.error(f"{recording.info_str} - Clean up failed: {cleanup_error}")
+
+
+def cleanup_participants_tsv(expected_ids: list[str], out_path: Path) -> list[str]:
+    """
+    Synchronize the participants TSV with the physical BIDS directory.
+
+    Identifies discrepancies between the participant folders present on disk
+    and the IDs expected by the protocol. If a discrepancy is found, it
+    removes the missing IDs from 'participants.tsv' to ensure metadata
+    integrity.
+
+    Parameters
+    ----------
+    expected_ids : list[str]
+        A list of BIDS-compliant subject strings (e.g., ['sub-001', 'sub-002'])
+        that were originally planned for processing.
+    out_path : Path
+        The root directory of the BIDS dataset containing the subject folders
+        and the 'participants.tsv' file.
+
+    Returns
+    -------
+    list[str]
+        A list of the missing or removed identifiers identified during the
+        cleanup process.
+    """
+    present_ids = [path.name for path in out_path.iterdir() if path.is_dir() and path.name.startswith("sub")]
+
+    if missing_ids := list(set(expected_ids).symmetric_difference(present_ids)):
+        tsv_path = out_path / "participants.tsv"
+
+        participant_tsv = read_bids_tsv(tsv_path)
+
+        cleaned_tsv = filter_dataframe_by_valid_ids(participant_tsv, missing_ids)
+
+        write_bids_tsv(tsv_path, cleaned_tsv)
+
+    return missing_ids
