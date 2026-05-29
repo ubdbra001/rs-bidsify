@@ -108,7 +108,7 @@ def read_eeg_recording(recording_path: Path) -> BaseRaw:
     return eeg_data
 
 
-def read_bids_tsv(tsv_path: BIDSPath) -> pd.DataFrame:
+def read_bids_tsv(tsv_path: Path) -> pd.DataFrame:
     """
     Read a BIDS-compliant TSV file into a pandas DataFrame.
 
@@ -117,8 +117,8 @@ def read_bids_tsv(tsv_path: BIDSPath) -> pd.DataFrame:
 
     Parameters
     ----------
-    tsv_path : BIDSPath
-        The BIDSPath object pointing to the target .tsv file.
+    tsv_path : Path
+        The Path object pointing to the target .tsv file.
 
     Returns
     -------
@@ -164,7 +164,7 @@ def write_enriched_sidecar(bids_path: BIDSPath, updates: dict[str, Any]):
     update_sidecar_json(sidecar_path, updates)
 
 
-def write_bids_tsv(tsv_path: BIDSPath, tsv_df: pd.DataFrame):
+def write_bids_tsv(tsv_path: Path, tsv_df: pd.DataFrame):
     """
     Write a pandas DataFrame to a BIDS-compliant TSV file.
 
@@ -173,8 +173,8 @@ def write_bids_tsv(tsv_path: BIDSPath, tsv_df: pd.DataFrame):
 
     Parameters
     ----------
-    tsv_path : BIDSPath
-        The BIDSPath object defining the destination for the .tsv file.
+    tsv_path : Path
+        The Path object defining the destination for the .tsv file.
     tsv_df : pd.DataFrame
         The DataFrame containing the data to be written.
 

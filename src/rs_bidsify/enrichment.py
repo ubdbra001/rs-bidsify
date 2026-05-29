@@ -602,8 +602,8 @@ def enrich_channels_tsv_with_aux(rec_bids_path: BIDSPath, aux_info: dict[str, Au
     """
     channel_tsv_path = rec_bids_path.copy().update(suffix="channels", extension="tsv")
 
-    channel_tsv = io.read_bids_tsv(channel_tsv_path)
+    channel_tsv = io.read_bids_tsv(channel_tsv_path.fpath)
     set_channels_tsv(aux_info, channel_tsv)
-    io.write_bids_tsv(channel_tsv_path, channel_tsv)
+    io.write_bids_tsv(channel_tsv_path.fpath, channel_tsv)
 
     logger.debug(f"Updated channel tsv written to {channel_tsv_path}")
