@@ -128,7 +128,7 @@ def convert(
 
     logger.info("Starting RS-BIDSify")
 
-    logger.info(f"Logs will be written to {log_path}")
+    logger.info(f"Full text logs will be written to {log_path}")
 
     if not bids_data_path.exists():
         logger.warning(f"Creating output directory: {bids_data_path}")
