@@ -71,7 +71,7 @@ class TestMNEEnrichment:
         mock_spec.montage.path = path
         mock_spec.montage.montage = mock_dig_montage
 
-        with caplog.at_level(logging.INFO):
+        with caplog.at_level(logging.DEBUG):
             enrichment.set_electrode_montage(mock_raw, mock_spec)
 
         mock_raw.set_montage.assert_called_once_with(mock_dig_montage)
@@ -243,15 +243,14 @@ class TestBIDSEnrichment:
             assert entries.get(key) == exp_val
 
     def test_map_spec_to_bids(self, caplog):
-        caplog.set_level(logging.INFO)
-
         source = MockModel(field_a="hello", field_b=None)
 
         mapping = {"BIDS_A": "field_a", "BIDS_B": "field_b", "BIDS_C": "field_c"}
 
         updates = {"Existing": "Data"}  # Ensure we don't wipe existing dicts
 
-        enrichment.map_spec_to_bids(source, mapping, updates)
+        with caplog.at_level(logging.DEBUG):
+            enrichment.map_spec_to_bids(source, mapping, updates)
 
         assert updates["BIDS_A"] == "hello"
         assert "BIDS_B" not in updates
@@ -364,7 +363,7 @@ class TestBIDSEnrichment:
         entries = {}
         filter_dict = {"HW1": {}, "HW2": {}}
 
-        with caplog.at_level("INFO"):
+        with caplog.at_level(logging.DEBUG):
             enrichment.set_filters(entries, filter_dict, "HardwareFilters")
 
         assert "Queued update - HardwareFilters: HW1,HW2" in caplog.text
