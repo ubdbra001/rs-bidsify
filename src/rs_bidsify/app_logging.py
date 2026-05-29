@@ -73,10 +73,10 @@ def setup_stream_handler(logger: logging.Logger, level: str | int = logging.INFO
     -----
     This function requires the `colorlog` package. The console output
     uses the following format:
-    '%(asctime)s | %(log_color)s%(levelname)-8s%(reset)s | [%(name)s:%(lineno)d] | %(message)s'
+    '%(log_color)s%(levelname)-8s%(reset)s | %(name)s | %(message)s'
     """
     stream_formatter = colorlog.ColoredFormatter(
-        "%(asctime)s | %(log_color)s%(levelname)-8s%(reset)s | [%(name)s:%(lineno)d] | %(message)s",
+        "%(log_color)s%(levelname)-6s%(reset)s | %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     )
     stream_handler = colorlog.StreamHandler()
