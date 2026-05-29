@@ -111,9 +111,11 @@ def process_dataset(
             results.append({"recording": recording, "status": "Failed", "error": str(e)})
             continue
 
+    missing_subjects = io.cleanup_participants_tsv(expected_participants, out_root_path)
     enrichment.enrich_dataset_description(dataset_spec.metadata, out_root_path)
+
     if phenotype_data:
-        io.write_phenotype_data(phenotype_data, out_root_path)
+        io.write_phenotype_data(phenotype_data, out_root_path, missing_subjects)
 
     logger.info("Enriched BIDS-compliant dataset")
 
