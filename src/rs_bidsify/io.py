@@ -186,36 +186,43 @@ def write_bids_tsv(tsv_path: Path, tsv_df: pd.DataFrame):
     tsv_df.to_csv(tsv_path, sep="\t")
 
 
-def write_phenotype_data(phenotype_data: dict[str, pd.DataFrame], root_path: Path):
+def write_phenotype_data(phenotype_data: dict[str, pd.DataFrame], root_path: Path, missing_ids: list[str]):
     """
-    Write phenotype data and its associated codebook to the dataset root.
+    Write filtered phenotype data and associated codebooks to the BIDS dataset.
 
-    Creates a 'phenotype' directory within the root path and exports the
-    dataset as a TSV file and the codebook as a JSON file.
+    Creates a 'phenotype' directory in the root path. Before exporting, it
+    prunes the phenotype dataset to exclude any participants identified in
+    'missing_ids', ensuring the metadata remains synchronized with the
+    available EEG recordings.
 
     Parameters
     ----------
     phenotype_data : dict[str, pd.DataFrame]
         A dictionary containing the phenotype information. Must include
-        'dataset' (DataFrame) and 'codebook' (DataFrame) keys.
+        'dataset' (the actual values) and 'codebook' (metadata) as DataFrames.
     root_path : Path
-        The root directory of the BIDS dataset where the phenotype
+        The root directory of the BIDS dataset where the '/phenotype'
         folder will be created.
+    missing_ids : list[str]
+        A list of subject identifiers to be filtered out of the phenotype
+        dataset before writing to disk.
 
     Returns
     -------
     None
-        Writes files to disk and logs the output location.
+        Writes 'phenotype.tsv' and 'phenotype.json' to the filesystem.
 
     Notes
     -----
     The codebook is exported using a JSON 'index' orientation to map
-    variable names to their respective descriptions and metadata.
+    variable names to their respective descriptions and metadata,
+    aligning with BIDS recommendations for sidecar files.
     """
     phenotype_path = root_path / "phenotype"
 
     phenotype_path.mkdir(parents=True, exist_ok=True)
 
+    phenotype_data["dataset"] = filter_dataframe_by_valid_ids(phenotype_data["dataset"], missing_ids)
     phenotype_data["dataset"].to_csv(phenotype_path / "phenotype.tsv", sep="\t")
     phenotype_data["codebook"].to_json(phenotype_path / "phenotype.json", orient="index")
 
