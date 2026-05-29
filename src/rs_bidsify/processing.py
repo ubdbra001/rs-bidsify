@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+from mne_bids import BIDSPath
 
 from rs_bidsify import discovery, enrichment, io
 from rs_bidsify.config_loader import deep_merge, get_default_config
@@ -61,6 +62,12 @@ def process_dataset(raw_path: Path, out_root_path: Path, config_override: dict |
 
     results = []
     for recording in crawler.found_recordings:
+        bids_path = BIDSPath(
+            subject=recording.subject,
+            task=recording.task,
+            root=out_root_path,
+        )
+
         subject_info = SubjectMetadata.from_dataframe(
             recording,
             participant_data["dataset"],
@@ -74,7 +81,7 @@ def process_dataset(raw_path: Path, out_root_path: Path, config_override: dict |
                 subject_spec = dataset_spec
             
             process_recording(
-                out_root_path,
+                bids_path,
                 recording,
                 subject_spec,
                 subject_info,
@@ -95,7 +102,7 @@ def process_dataset(raw_path: Path, out_root_path: Path, config_override: dict |
 
 
 def process_recording(
-    out_root_path: Path,
+    bids_path: BIDSPath,
     recording: RecordingMetadata,
     dataset_spec: DescriptionSpec,
     subject_info: SubjectMetadata,
@@ -112,8 +119,10 @@ def process_recording(
 
     Parameters
     ----------
-    out_root_path : Path
-        The root directory of the BIDS dataset.
+    bids_path : BIDSPath
+        The target BIDS destination for this recording. This object must specify 
+        the subject, task, and root directory, ensuring the data is written 
+        to the correct entity-linked location.
     recording : RecordingMetadata
         Metadata for this specific recording session (e.g., file path,
         subject ID, and task name).
