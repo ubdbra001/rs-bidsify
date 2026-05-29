@@ -83,7 +83,7 @@ def process_dataset(raw_path: Path, out_root_path: Path, config_override: dict |
 
             results.append({"recording": recording, "status": "Success", "error": ""})
         except Exception as e:
-            logger.error(f"Failed to process {recording.subject} - {recording.condition}")
+            logger.exception(f"{recording.info_str} - Processing failed")
             results.append({"recording": recording, "status": "Failed", "error": str(e)})
             continue
 
@@ -134,7 +134,7 @@ def process_recording(
     out_format = config["output_EEG_format"]
     include_extras = config["include_extras"]
 
-    logger.info(f"Processing Recording - Sub: {recording.subject}, Task: {recording.condition}")
+    logger.info(f"{recording.info_str} - Processing Recording")
 
     eeg_data = io.read_eeg_recording(recording.path)
 
@@ -144,5 +144,12 @@ def process_recording(
 
     rec_bids_path = io.write_bids(out_root_path, eeg_data, recording, out_format)
 
+
+    logger.info(f"{recording.info_str} - Saved BIDS-compliant data")
+
     enrichment.enrich_eeg_sidecar(rec_bids_path, dataset_spec, include_extras)
     enrichment.enrich_channels_tsv_with_aux(rec_bids_path, dataset_spec.acquisition_spec.aux_channels)
+
+    logger.info(f"{recording.info_str} - Enriched BIDS-compliant data")
+
+
