@@ -82,6 +82,10 @@ def setup_stream_handler(logger: logging.Logger, level: str | int = logging.INFO
     stream_handler = colorlog.StreamHandler()
     stream_handler.setFormatter(stream_formatter)
     stream_handler.setLevel(level)
+
+    stream_filter = DependencyFilter("rs_bidsify")
+    stream_handler.addFilter(stream_filter)
+
     logger.addHandler(stream_handler)
 
 
@@ -132,7 +136,7 @@ def setup_logging(root_path: Path, level: str | int = logging.DEBUG):
     None
         Configures the global logging environment in-place.
     """
-    adjust_mne_logger(level)
+    adjust_mne_logger()
 
     logger = logging.getLogger()
     logger.setLevel(level)
@@ -141,3 +145,16 @@ def setup_logging(root_path: Path, level: str | int = logging.DEBUG):
 
     setup_file_handler(root_path, logger)
     setup_stream_handler(logger)
+
+
+class DependencyFilter(logging.Filter):
+    def __init__(self, package_name: str) -> None:
+        self.package_name = package_name
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        if record.levelno >= logging.ERROR:
+            return True
+
+        is_own_package = record.name == "rs_bidsify" or record.name.startswith(f"{self.package_name}.")
+
+        return is_own_package
