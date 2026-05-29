@@ -106,6 +106,8 @@ def process_dataset(
         except Exception as e:
             logger.exception(f"{recording.info_str} - Processing failed")
 
+            io.rollback_recording_files(bids_path.directory, recording)
+
             results.append({"recording": recording, "status": "Failed", "error": str(e)})
             continue
 
@@ -176,4 +178,3 @@ def process_recording(
     enrichment.enrich_channels_tsv_with_aux(rec_bids_path, dataset_spec.acquisition_spec.aux_channels)
 
     logger.info(f"{recording.info_str} - Enriched BIDS-compliant data")
-

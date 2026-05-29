@@ -1,4 +1,5 @@
 import logging
+import shutil
 from pathlib import Path
 from typing import Any
 
@@ -7,6 +8,7 @@ from mne.io import BaseRaw, read_raw
 from mne_bids import BIDSPath, update_sidecar_json
 
 from rs_bidsify.utils import get_utc_today
+from rs_bidsify.validation.dataset import RecordingMetadata
 from rs_bidsify.validation.description import DescriptionSpec
 
 logger = logging.getLogger(__name__)
@@ -224,7 +226,7 @@ def check_task_exists(subject_dir: Path, task: str) -> bool:
     """
     Check for the existence of specific task files within a subject directory.
 
-    Scans the subject's BIDS folder to identify if any files associated 
+    Scans the subject's BIDS folder to identify if any files associated
     with the given task label have already been generated.
 
     Parameters
@@ -237,10 +239,48 @@ def check_task_exists(subject_dir: Path, task: str) -> bool:
     Returns
     -------
     bool
-        True if the directory exists and contains at least one file 
+        True if the directory exists and contains at least one file
         matching the task pattern; False otherwise.
     """
     if not subject_dir.exists():
         return False
 
-    return  any(subject_dir.rglob(f"*task-{task}*"))
+    return any(subject_dir.rglob(f"*task-{task}*"))
+
+
+def rollback_recording_files(subject_dir: Path, recording: RecordingMetadata):
+    """
+    Remove partial or corrupted files following an export failure.
+
+    Provides an automated cleanup mechanism to prevent data pollution. If
+    a specific condition is provided, it targets only files associated
+    with that task; otherwise, it removes the entire subject directory.
+
+    Parameters
+    ----------
+    subject_dir : Path
+        The BIDS subject-level directory (e.g., 'sub-001/') where the
+        failed export occurred.
+    recording : RecordingMetadata
+        Metadata for the failed recording, used to identify specific
+        task labels and provide context for logging.
+
+    Returns
+    -------
+    None
+        Deletes files or directories from the filesystem and logs the
+        outcome.
+    """
+    if not subject_dir.exists():
+        return
+
+    try:
+        if recording.condition:
+            failed_files = subject_dir.rglob(f"*task-{recording.task}*")
+            [file_path.unlink() for file_path in failed_files if file_path.is_file()]
+            logger.info(f"{recording.info_str} - Cleaned up partial task files")
+        else:
+            shutil.rmtree(subject_dir)
+            logger.info(f"{recording.info_str} - Cleaned up incomplete BIDS folder")
+    except Exception as cleanup_error:
+        logger.error(f"{recording.info_str} - Clean up failed: {cleanup_error}")
