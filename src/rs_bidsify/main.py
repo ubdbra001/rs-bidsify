@@ -76,6 +76,14 @@ def convert(
             writable=True,
         ),
     ] = None,
+    force: Annotated[
+        bool,
+        typer.Option(
+            "--force",
+            "-f",
+            help="Force overwrite of existing BIDS-compliant data",
+        ),
+    ] = False,
 ):
     """
     Execute the full end-to-end raw EEG to BIDS conversion pipeline.
@@ -126,7 +134,7 @@ def convert(
         logger.warning(f"Creating output directory: {bids_data_path}")
         bids_data_path.mkdir(parents=True)
 
-    results = process_dataset(raw_data_path, bids_data_path, user_overrides)
+    results = process_dataset(raw_data_path, bids_data_path, user_overrides, force)
 
     logger.info(f"Successfully BIDSified data from {raw_data_path}, written to {bids_data_path}")
 

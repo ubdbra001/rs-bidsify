@@ -12,7 +12,12 @@ from rs_bidsify.validation.subject import SubjectMetadata
 logger = logging.getLogger(__name__)
 
 
-def process_dataset(raw_path: Path, out_root_path: Path, config_override: dict | None = None) -> list[dict]:
+def process_dataset(
+    raw_path: Path,
+    out_root_path: Path,
+    config_override: dict | None = None,
+    force_flag: bool = False,
+) -> list[dict]:
     """
     Orchestrate the conversion of a full raw dataset into BIDS format.
 
