@@ -4,10 +4,9 @@ from typing import Any
 
 import pandas as pd
 from mne.io import BaseRaw, read_raw
-from mne_bids import BIDSPath, update_sidecar_json, write_raw_bids
+from mne_bids import BIDSPath, update_sidecar_json
 
 from rs_bidsify.utils import get_utc_today
-from rs_bidsify.validation.dataset import RecordingMetadata
 from rs_bidsify.validation.description import DescriptionSpec
 
 logger = logging.getLogger(__name__)
@@ -130,50 +129,6 @@ def read_bids_tsv(tsv_path: BIDSPath) -> pd.DataFrame:
     tab-separated and contain a leading index/header column.
     """
     return pd.read_csv(tsv_path, sep="\t", index_col=0)
-
-
-def write_bids(
-    bids_root: Path,
-    eeg_data: BaseRaw,
-    recording: RecordingMetadata,
-    out_format: str = "EDF",
-) -> BIDSPath:
-    """
-    Export an EEG recording to the BIDS directory structure.
-
-    Constructs a BIDS-compliant path using subject and condition metadata
-    and writes the raw EEG data to disk. By default, existing files at
-    the destination are overwritten.
-
-    Parameters
-    ----------
-    bids_root : Path
-        The root directory of the BIDS dataset.
-    eeg_data : BaseRaw
-        The MNE Raw object containing the EEG data and info.
-    recording : RecordingMetadata
-        A metadata object containing at least `subject` and `condition`
-        attributes to define the BIDS entity.
-    out_format : str, optional
-        The output file format for the EEG data, by default "EDF".
-
-    Returns
-    -------
-    BIDSPath
-        The resulting BIDSPath object indicating where the data was written.
-
-    Notes
-    -----
-    This function calls `write_raw_bids` with `overwrite=True` and
-    `allow_preload=True` enabled.
-    """
-    bids_path = BIDSPath(
-        subject=recording.subject,
-        task=recording.task,
-        root=bids_root,
-    )
-
-    return write_raw_bids(eeg_data, bids_path, overwrite=True, allow_preload=True, format=out_format.upper())
 
 
 def write_enriched_sidecar(bids_path: BIDSPath, updates: dict[str, Any]):

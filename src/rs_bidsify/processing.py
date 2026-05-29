@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from mne_bids import BIDSPath
+from mne_bids import BIDSPath, write_raw_bids
 
 from rs_bidsify import discovery, enrichment, io
 from rs_bidsify.config_loader import deep_merge, get_default_config
@@ -151,7 +151,7 @@ def process_recording(
 
     enrichment.enrich_mne_object(eeg_data, dataset_spec)
 
-    rec_bids_path = io.write_bids(out_root_path, eeg_data, recording, out_format)
+    rec_bids_path = write_raw_bids(eeg_data, bids_path, overwrite=True, allow_preload=True, format=out_format.upper())
 
 
     logger.info(f"{recording.info_str} - Saved BIDS-compliant data")
