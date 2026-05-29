@@ -18,6 +18,7 @@ def process_dataset(
     out_root_path: Path,
     config_override: dict | None = None,
     force_flag: bool = False,
+    strict_flag: bool = False,
 ) -> list[dict]:
     """
     Orchestrate the conversion of a full raw dataset into BIDS format.
@@ -107,6 +108,9 @@ def process_dataset(
             logger.exception(f"{recording.info_str} - Processing failed")
 
             io.rollback_recording_files(bids_path.directory, recording)
+
+            if strict_flag:
+                raise
 
             results.append({"recording": recording, "status": "Failed", "error": str(e)})
             continue
