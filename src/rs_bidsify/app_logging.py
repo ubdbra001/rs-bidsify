@@ -5,7 +5,7 @@ from pathlib import Path
 import colorlog
 
 
-def setup_file_handler(log_dir: Path, logger: logging.Logger, level: str | int = logging.INFO):
+def setup_file_handler(log_dir: Path, logger: logging.Logger, level: str | int = logging.DEBUG):
     """
     Configure and attach a timestamped file handler to a logger.
 
@@ -110,7 +110,7 @@ def adjust_mne_logger(level: str | int = logging.INFO):
     mne_logger.setLevel(level)
 
 
-def setup_logging(root_path: Path, level: str | int = logging.INFO):
+def setup_logging(root_path: Path, level: str | int = logging.DEBUG):
     """
     Initialize and configure the root logger with file and stream handlers.
 
@@ -125,7 +125,7 @@ def setup_logging(root_path: Path, level: str | int = logging.INFO):
         The base directory where the 'logs' subdirectory will be created.
     level : str or int, optional
         The logging level to apply globally across all configured
-        handlers. By default logging.INFO.
+        handlers. By default logging.DEBUG.
 
     Returns
     -------
@@ -139,5 +139,5 @@ def setup_logging(root_path: Path, level: str | int = logging.INFO):
 
     logging.captureWarnings(True)
 
-    setup_file_handler(root_path, logger, level)
-    setup_stream_handler(logger, level)
+    setup_file_handler(root_path, logger)
+    setup_stream_handler(logger)

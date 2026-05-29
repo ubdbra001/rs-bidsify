@@ -40,7 +40,7 @@ def read_description_json(file_path: Path) -> DescriptionSpec:
     raw_description = Path(file_path).read_text()
     validated_model = DescriptionSpec.model_validate_json(raw_description)
 
-    logger.info(f"Loaded and validated description JSON: {file_path}")
+    logger.debug(f"Loaded and validated description JSON: {file_path}")
 
     return validated_model
 
@@ -74,7 +74,7 @@ def read_description_spreadsheet(
     """
     sheet_dict = {key: pd.read_excel(sheet_path, **val) for key, val in sheet_info.items()}
 
-    logger.info(f"Loaded {sheet_type} info from {sheet_path}")
+    logger.debug(f"Loaded {sheet_type} info from {sheet_path}")
 
     return sheet_dict
 
@@ -262,4 +262,4 @@ def write_phenotype_data(phenotype_data: dict[str, pd.DataFrame], root_path: Pat
     phenotype_data["dataset"].to_csv(phenotype_path / "phenotype.tsv", sep="\t")
     phenotype_data["codebook"].to_json(phenotype_path / "phenotype.json", orient="index")
 
-    logger.info(f"Phenotype data written to {phenotype_path}")
+    logger.debug(f"Phenotype data written to {phenotype_path}")
