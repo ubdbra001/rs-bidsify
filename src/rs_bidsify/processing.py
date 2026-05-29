@@ -110,6 +110,10 @@ def process_dataset(
             io.rollback_recording_files(bids_path.directory, recording)
 
             if strict_flag:
+                # Initial attempt
+                # Remove "ghost" participants after strict crash
+                if not bids_path.directory.exists():
+                    io.cleanup_participants_tsv([recording.subject], out_root_path)
                 raise
 
             results.append({"recording": recording, "status": "Failed", "error": str(e)})
