@@ -12,8 +12,8 @@ It has been designed and built to be used as part of the #EEGManyLabs Resting-St
   * [JSON Metadata](#json-metadata)
   * [Participant Information](#participant-information)
 * [Usage](#usage)
-* [Advanced Usage](#advanced-usage)
-  * [Configuration File](#configuration-file)
+  * [Convert](#convert)
+* [Configuration File](#configuration-file)
 * [Appendix](#appendix)
   * [Complete Metadata](#complete-metadata)
 
@@ -240,34 +240,64 @@ It should also contain a codebook: a seperate sheet with a table describing what
 This file can also optionally contain a sheet with phenotype data collected from the participants. This data should also be stored in tabular form with the required column `participant_id`, whose values should match the values in the participant information worksheet. As many other columns may be added to the sheet.  
 If a phenotype sheet is included then a phenotype codebook sheet is required. As with the participant dataset codebook, this should describe each of the columns present in the phenotype datasheet.
 
-By default a `.ods` spreadsheet is expected, but this can be customised using a config file ([see below](#spreadsheet-extension)).  
+By default a `.ods` spreadsheet is expected, but this can be customised in the config file ([see below](#spreadsheet-extension)).  
 
 [↑ Back to Top](#table-of-contents)
 
 ## Usage
 
-Once installed you can use a command line interface to run RS-BIDSify:
+RS-BIDSify has the following command line options:
 
-``` shellsee below
-rs-bidsify path/to/raw/data path/for/bids/data
+```text
+Usage: rs-bidsify [OPTIONS] COMMAND [ARGS]
+
+Options:
+    --version, -v : Show the installed veriosn of RS-BIDSify
+    --help: Show the available options and commands
+
+Commands:
+    convert: Convert a raw EEG dataset into BIDS-compliant format.
 ```
 
-The first argument (`path/to/raw/data`) is the path to the input directory containing the raw data and metadata files  
-The second argument (`path/for/bids/data`) is the path to the output directory where you would like the BIDS-compliant data to be saved.
+### `Convert`
 
-## Advanced usage
+Command for converting a raw EEG dataset with metadata into BIDS-compliant format.
 
-### Configuration file
+```text
+Usage: rs-bidsify convert [OPTIONS] RAW_DATA_PATH BIDS_DATA_PATH
 
-It is possible to specify a custom configuration for running RS-BIDSify:
+Arguments:
+    RAW_DATA_PATH: Path to the directory containig the raw EEG Dataset and metadata
+    BIDS_DATA_PATH: Path to the directory where the BIDS-formatted dataset will be saved
+
+Options:
+    --config: Path to a user specified YAML configuration file  
+    --logs: Location for logs (defaults to '../logs' relative to raw_data_path)
+```
+
+Example usage:
 
 ``` shell
-rs-bidsify path/to/raw/data path/for/bids/data --config path/to/config.yml
+# Standard Usage
+rs-bidsify convert path/to/raw/data path/for/bids/data
+
+# Specify a custom configuration file
+rs-bidsify convert path/to/raw/data path/for/bids/data --config path/to/config.yml
+
+# Specify a different location for the log file
+rs-bidsify convert path/to/raw/data path/for/bids/data --logs path/to/logs
+
 ```
 
-This configuration file should be a yaml file, and can be used to set the following options:
+[See below](#configuration-file) for information about options that can be specifed in the configuration file.
 
-#### Demographic mappings
+[↑ Back to Top](#table-of-contents)
+
+## Configuration file
+
+The configuration file should be a yaml file, and can be used to set the following options:
+
+### Demographic mappings
 
 This describes mappings between text and numeric values for how sex and handedness may be described in the participants spreadsheet.
 
@@ -289,7 +319,7 @@ demographic_mappings:
     ambidextrous: 3
 ```
 
-#### Sheet info
+### Sheet info
 
 This describes the location and index column for each sheet in the participant information spreadsheet:
 
@@ -311,7 +341,7 @@ sheet_info:
       index_col: "Variable"
 ```
 
-#### Spreadsheet extension
+### Spreadsheet extension
 
 The file extension to search for when looking up the participant spreadsheet:
 
@@ -319,7 +349,7 @@ The file extension to search for when looking up the participant spreadsheet:
 spreadsheet_ext: "ods"
 ```
 
-#### Metadata extension
+### Metadata extension
 
 The file extension to search for when looking up the metadta file:
 
@@ -327,7 +357,7 @@ The file extension to search for when looking up the metadta file:
 metadata_ext: "json"
 ```
 
-#### Output EEG format
+### Output EEG format
 
 The file format to save the EEG data to in the BIDS-compliant output:
 
@@ -335,7 +365,7 @@ The file format to save the EEG data to in the BIDS-compliant output:
 output_EEG_format: "edf"
 ```
 
-#### Include extra information
+### Include extra information
 
 A flag indicating whether the extra information section of the metadata should be written to the EEG recording sidecar files.
 
