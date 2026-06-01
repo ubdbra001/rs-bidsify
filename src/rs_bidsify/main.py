@@ -14,7 +14,7 @@ app = typer.Typer()
 
 
 @app.command()
-def main(
+def convert(
     raw_data_path: Annotated[
         Path,
         typer.Argument(
