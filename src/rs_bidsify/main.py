@@ -11,7 +11,7 @@ from rs_bidsify.processing import process_dataset
 
 logger = logging.getLogger(__name__)
 
-app = typer.Typer(help="RS-BIDSify: Standardizing resting-state EEG data into BIDS format.")
+app = typer.Typer(help="RS-BIDSify: Standardizing resting-state EEG data into BIDS format.", no_args_is_help=True)
 
 
 def version_callback(value: bool):
@@ -37,7 +37,7 @@ def version_callback(value: bool):
         raise typer.Exit()
 
 
-@app.command()
+@app.command(no_args_is_help=True)
 def convert(
     raw_data_path: Annotated[
         Path,
