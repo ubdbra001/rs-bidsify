@@ -5,16 +5,40 @@ from typing import Annotated
 import typer
 import yaml
 
+from rs_bidsify import __version__
 from rs_bidsify.app_logging import setup_logging
 from rs_bidsify.processing import process_dataset
 
 logger = logging.getLogger(__name__)
 
-app = typer.Typer()
+app = typer.Typer(help="RS-BIDSify: Standardizing resting-state EEG data into BIDS format.", no_args_is_help=True)
 
 
-@app.command()
-def main(
+def version_callback(value: bool):
+    """
+    Handle the eager evaluation of the application version flag.
+
+    Prints the application's current semantic version string and cleanly
+    terminates execution if the flag is provided.
+
+    Parameters
+    ----------
+    value : bool
+        The boolean flag evaluated by Typer determining if the version
+        was requested.
+
+    Raises
+    ------
+    typer.Exit
+        Cleanly exits the application context after displaying the version.
+    """
+    if value:
+        typer.echo(f"RS-BIDSify verson: {__version__}")
+        raise typer.Exit()
+
+
+@app.command(no_args_is_help=True)
+def convert(
     raw_data_path: Annotated[
         Path,
         typer.Argument(
@@ -49,28 +73,35 @@ def main(
     ] = None,
 ):
     """
-    RS-BIDSify: Convert raw EEG dataset into BIDS-compliant format.
+    Execute the full end-to-end raw EEG to BIDS conversion pipeline.
 
-    This CLI tool manages the full conversion pipeline: initializing logging,
-    validating paths, loading optional configuration overrides, and executing
-    the dataset processing logic.
+    This command orchestrates the entire structural data transformation. It
+    validates input source files, parses demographic indices, maps string
+    variables to standardized formats, reads and modifies recording-level MNE
+    objects, and writes the standardized BIDS file hierarchy to disk.
+    Additionally, it runs post-conversion synchronization routines to prune
+    failed subjects from the participant index and phenotype data files.
 
     Parameters
     ----------
     raw_data_path : Path
-        The source directory containing raw data to be converted.
+        The source directory containing raw data to be converted. Checked for
+        readability and structural validity.
     bids_data_path : Path
-        The destination directory for the BIDS dataset. Created if it doesn't exist.
+        The destination directory for the BIDS dataset. Created automatically
+        if it does not yet exist.
     config_file : FileText, optional
-        A user-provided YAML file containing configuration overrides.
+        A user-provided text stream pointing to a YAML file containing
+        configuration overrides.
     log_path : Path, optional
-        The directory for log files. Defaults to a 'logs' folder adjacent to
-        the raw data path.
+        The directory where application runtime files will be generated. Defaults
+        to a 'logs' folder adjacent to the raw data path if unprovided.
 
     Returns
     -------
     None
-        Orchestrates the conversion process and logs progress to the console/file.
+        Orchestrates the conversion pipeline and outputs side-effects directly
+        to the terminal and filesystem logs.
     """
     if log_path is None:
         log_path = raw_data_path.parent / "logs"
@@ -93,6 +124,21 @@ def main(
     process_dataset(raw_data_path, bids_data_path, user_overrides)
 
     logger.info(f"Successfully BIDSified data from {raw_data_path}, written to {bids_data_path}")
+
+
+@app.callback()
+def main(
+    version: bool = typer.Option(
+        None,
+        "--version",
+        "-v",
+        callback=version_callback,
+        is_eager=True,
+        help="Show the installed version of RS-BIDSify",
+    ),
+):
+    """Global entry point and configuration callback for RS-BIDSify."""
+    pass
 
 
 if __name__ == "__main__":
