@@ -1,4 +1,5 @@
 import logging
+from dataclasses import dataclass
 from pathlib import Path
 
 from mne_bids import BIDSPath, write_raw_bids
@@ -11,6 +12,25 @@ from rs_bidsify.validation.description import DescriptionSpec
 from rs_bidsify.validation.subject import SubjectMetadata
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class RecordingPlan:
+    """Holds a single recording paired with its pre-calculated subject specs."""
+
+    recording: RecordingMetadata
+    subject_info: SubjectMetadata
+    subject_spec: DescriptionSpec
+
+@dataclass
+class DatasetPlan:
+    """Holds the validated state and pre-calculated plans for the entire dataset."""
+
+    dataset_spec: DescriptionSpec
+    participant_data: dict
+    phenotype_data: dict | None
+    expected_participants: list
+    recording_plans: list[RecordingPlan]
 
 
 def process_dataset(
