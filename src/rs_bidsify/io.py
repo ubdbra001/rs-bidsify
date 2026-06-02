@@ -286,7 +286,10 @@ def rollback_recording_files(subject_dir: Path, recording: RecordingMetadata):
             failed_files = subject_dir.rglob(f"*task-{recording.task}*")
             [file_path.unlink() for file_path in failed_files if file_path.is_file()]
             logger.info(f"{recording.info_str} - Cleaned up partial task files")
-        else:
+
+        remaining_conditions = any(subject_dir.rglob("*eeg.json"))
+
+        if not recording.condition or not remaining_conditions:
             shutil.rmtree(subject_dir)
             logger.info(f"{recording.info_str} - Cleaned up incomplete BIDS folder")
     except Exception as cleanup_error:
