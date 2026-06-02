@@ -22,6 +22,7 @@ class RecordingPlan:
     subject_info: SubjectMetadata
     subject_spec: DescriptionSpec
 
+
 @dataclass
 class DatasetPlan:
     """Holds the validated state and pre-calculated plans for the entire dataset."""
@@ -33,12 +34,30 @@ class DatasetPlan:
     recording_plans: list[RecordingPlan]
 
 
+def check_dataset(raw_path: Path, config_override: dict | None = None):
+    config = load_config(config_override)
+    process_metadata(raw_path, config)
+
+
+def convert_dataset(
+    raw_path: Path,
+    out_root_path: Path,
+    config_override: dict | None = None,
+    force_flag: bool = False,
+    strict_flag: bool = False,
+):
+    config = load_config(config_override)
+    dataset_plan = process_metadata(raw_path, config)
+    processing_result = process_dataset(dataset_plan, out_root_path, config, force_flag, strict_flag)
+
+    return processing_result
+
+
 def process_metadata(
     raw_path: Path,
     config: dict,
 ) -> DatasetPlan:
-    """Process metadata and return processing plan for dataset"""
-
+    """Process metadata and return processing plan for dataset."""
     dataset_spec = discovery.find_description_spec(raw_path, extension=config["metadata_ext"])
 
     participant_data, phenotype_data = discovery.find_dataset_spreadsheets(
@@ -65,26 +84,19 @@ def process_metadata(
         )
 
         subject_spec = (
-            DescriptionSpec.from_template(dataset_spec, dynamic_paths, subject_info)
-            if dynamic_paths
-            else dataset_spec
+            DescriptionSpec.from_template(dataset_spec, dynamic_paths, subject_info) if dynamic_paths else dataset_spec
         )
 
-        recording_plans.append(
-            RecordingPlan(
-                recording=recording,
-                subject_info=subject_info,
-                subject_spec=subject_spec
-            )
-        )
-    
+        recording_plans.append(RecordingPlan(recording=recording, subject_info=subject_info, subject_spec=subject_spec))
+
     return DatasetPlan(
         dataset_spec=dataset_spec,
         participant_data=participant_data,
         phenotype_data=phenotype_data,
         expected_participants=expected_participants,
-        recording_plans=recording_plans
+        recording_plans=recording_plans,
     )
+
 
 def process_dataset(
     plan: DatasetPlan,
@@ -117,7 +129,6 @@ def process_dataset(
     None
         Executes the conversion pipeline and writes the output to disk.
     """
-
     rec_config = {k: config[k] for k in ("output_EEG_format", "include_extras")}
 
     results = []
@@ -137,7 +148,6 @@ def process_dataset(
             continue
 
         try:
-
             # Process recording
             process_recording(
                 bids_path,
