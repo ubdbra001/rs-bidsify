@@ -44,7 +44,7 @@ def set_line_frequency(eeg_data: BaseRaw, acqusition_spec: AcquisitionSpecs):
         Updates the `eeg_data` object in-place.
     """
     eeg_data.info["line_freq"] = acqusition_spec.power_line_freq
-    logger.info(f"Set line_freq to {acqusition_spec.power_line_freq} Hz")
+    logger.debug(f"Set line_freq to {acqusition_spec.power_line_freq} Hz")
 
 
 def set_events(eeg_data: BaseRaw, event_info: dict[str, str]):
@@ -83,7 +83,7 @@ def set_events(eeg_data: BaseRaw, event_info: dict[str, str]):
         eeg_data.annotations.rename(valid_events)
 
         ev_updates = ", ".join([f"{k} -> {v}" for k, v in valid_events.items()])
-        logger.info(f"Events renamed: {ev_updates}")
+        logger.debug(f"Events renamed: {ev_updates}")
 
 
 def set_aux_channel_types(eeg_data: BaseRaw, aux_chans: dict[str, AuxChanSpec]):
@@ -120,7 +120,7 @@ def set_aux_channel_types(eeg_data: BaseRaw, aux_chans: dict[str, AuxChanSpec]):
         eeg_data.set_channel_types(valid_chans)
 
         ch_updates = ", ".join([f"{k} - {v}" for k, v in valid_chans.items()])
-        logger.info(f"Specified Aux channel MNE types set: {ch_updates}")
+        logger.debug(f"Specified Aux channel MNE types set: {ch_updates}")
     else:
         logger.warning("No valid channels found to update")
 
@@ -155,7 +155,7 @@ def set_electrode_montage(eeg_data: BaseRaw, eeg_spec: EEGChanSpec):
     try:
         eeg_data.set_montage(montage_info.montage)
         source = montage_info.mne_name or montage_info.path
-        logger.info(f"Successfully applied montage from source: {source}")
+        logger.debug(f"Successfully applied montage from source: {source}")
     except Exception as e:
         logger.error(f"failed to apply montage {e}")
         raise
@@ -191,7 +191,7 @@ def set_subject_info(eeg_data: BaseRaw, subject_model: SubjectMetadata):
         # subject_info, but it is not of an expected type
         pass
 
-    logger.info(f"Updated subject information: {subject_model}")
+    logger.debug(f"Updated subject information: {subject_model}")
 
 
 def set_hardware_filters(entries_dict: dict[str, Any], filter_list: list[FilterSpec]):
@@ -285,7 +285,7 @@ def set_filters(entries_dict: dict[str, Any], filters: dict[str, Any], bids_key:
     """
     if filters:
         entries_dict.update({bids_key: filters})
-        logger.info(f"Queued update - {bids_key}: {','.join(filters.keys())}")
+        logger.debug(f"Queued update - {bids_key}: {','.join(filters.keys())}")
 
 
 def set_reference_chan(entries_dict: dict[str, Any], eeg_chan_spec: EEGChanSpec):
@@ -446,7 +446,7 @@ def map_spec_to_bids(source_obj: Any, mapping: dict[str, str], updates: dict[str
         # Only add to the dictionary if a value actually exists
         if (val := model_dict.get(metadata_key, None)) is not None:
             updates[bids_key] = val
-            logger.info(f"Queued update - {bids_key}: {val}")
+            logger.debug(f"Queued update - {bids_key}: {val}")
 
 
 def set_channels_tsv(channels: dict[str, AuxChanSpec], channel_tsv: DataFrame):
@@ -478,13 +478,13 @@ def set_channels_tsv(channels: dict[str, AuxChanSpec], channel_tsv: DataFrame):
         if info.bids_type is not None and channel_tsv.loc[chan, "type"] == "MISC":
             channel_tsv.loc[chan, "type"] = info.bids_type.value
 
-            logger.info(f"Updated type for {chan} to {info.bids_type.value}")
+            logger.debug(f"Updated type for {chan} to {info.bids_type.value}")
             if info.description is not None:
                 channel_tsv.loc[chan, "description"] = info.description
 
         if info.units is not None and isna(channel_tsv.loc[chan, "units"]):
             channel_tsv.loc[chan, "units"] = info.units
-            logger.info(f"Updated units for {chan} to {info.units}")
+            logger.debug(f"Updated units for {chan} to {info.units}")
 
 
 def enrich_dataset_description(metadata: DatasetMetadata, out_root_path: Path):
@@ -602,8 +602,8 @@ def enrich_channels_tsv_with_aux(rec_bids_path: BIDSPath, aux_info: dict[str, Au
     """
     channel_tsv_path = rec_bids_path.copy().update(suffix="channels", extension="tsv")
 
-    channel_tsv = io.read_bids_tsv(channel_tsv_path)
+    channel_tsv = io.read_bids_tsv(channel_tsv_path.fpath)
     set_channels_tsv(aux_info, channel_tsv)
-    io.write_bids_tsv(channel_tsv_path, channel_tsv)
+    io.write_bids_tsv(channel_tsv_path.fpath, channel_tsv)
 
-    logger.info(f"Updated channel tsv written to {channel_tsv_path}")
+    logger.debug(f"Updated channel tsv written to {channel_tsv_path}")

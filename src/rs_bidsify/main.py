@@ -4,12 +4,17 @@ from typing import Annotated
 
 import typer
 import yaml
+from rich.console import Console
+from rich.table import Table
+from rich.text import Text
 
 from rs_bidsify import __version__
 from rs_bidsify.app_logging import setup_logging
 from rs_bidsify.processing import process_dataset
 
 logger = logging.getLogger(__name__)
+
+console = Console()
 
 app = typer.Typer(help="RS-BIDSify: Standardizing resting-state EEG data into BIDS format.", no_args_is_help=True)
 
@@ -71,6 +76,22 @@ def convert(
             writable=True,
         ),
     ] = None,
+    force: Annotated[
+        bool,
+        typer.Option(
+            "--force",
+            "-f",
+            help="Force overwrite of existing BIDS-compliant data",
+        ),
+    ] = False,
+    strict: Annotated[
+        bool,
+        typer.Option(
+            "--strict",
+            "-s",
+            help="Stop when an error is encountered",
+        ),
+    ] = False,
 ):
     """
     Execute the full end-to-end raw EEG to BIDS conversion pipeline.
@@ -115,15 +136,17 @@ def convert(
 
     logger.info("Starting RS-BIDSify")
 
-    logger.info(f"Logs will be written to {log_path}")
+    logger.info(f"Full text logs will be written to {log_path}")
 
     if not bids_data_path.exists():
         logger.warning(f"Creating output directory: {bids_data_path}")
         bids_data_path.mkdir(parents=True)
 
-    process_dataset(raw_data_path, bids_data_path, user_overrides)
+    results = process_dataset(raw_data_path, bids_data_path, user_overrides, force, strict)
 
     logger.info(f"Successfully BIDSified data from {raw_data_path}, written to {bids_data_path}")
+
+    show_results_summary(results)
 
 
 @app.callback()
@@ -139,6 +162,53 @@ def main(
 ):
     """Global entry point and configuration callback for RS-BIDSify."""
     pass
+
+
+def show_results_summary(results: list[dict]):
+    """
+    Render a stylized terminal summary table of the pipeline's execution results.
+
+    Parses the compilation status of each processed recording and displays them
+    in a structured, color-coded table using the 'rich' library. Successes,
+    skips, and catastrophic failures are visually distinct to facilitate
+    rapid post-run inspection.
+
+    Parameters
+    ----------
+    results : list[dict]
+        A list of dictionaries representing execution records. Each dictionary
+        must contain the following keys:
+
+        - 'recording' (RecordingMetadata): The parsed recording data object.
+        - 'status' (str): The outcome flag; must be 'Success', 'Skipped', or 'Failed'.
+        - 'error' (str): Descriptors of any captured exceptions, or an empty string.
+
+    Returns
+    -------
+    None
+        Outputs the formatted table directly to the standard output console.
+    """
+    table = Table(title="RS-BIDSify results summary")
+    table.add_column("Subject")
+    table.add_column("Task")
+    table.add_column("Status")
+    table.add_column("Errors")
+
+    status_fmt = {
+        "Success": {"style": "green"},
+        "Skipped": {"style": "cyan"},
+        "Failed": {"style": "red"},
+    }
+
+    for result in results:
+        recording, status, error = (result["recording"], result["status"], result["error"])
+
+        style_kwargs = status_fmt.get(status, {})
+        formatted_status = Text(status, **style_kwargs)  # pyright: ignore[reportArgumentType]
+
+        table.add_row(recording.subject, recording.task, formatted_status, error)
+
+    console.print(table)
 
 
 if __name__ == "__main__":

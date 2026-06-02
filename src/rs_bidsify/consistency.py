@@ -55,7 +55,7 @@ def check_mapping_alignment(
     extra = actual_set.difference(expected_set)
 
     if present:
-        logger.info(f"Specified {context} found in recording: {', '.join(present)}")
+        logger.debug(f"Specified {context} found in recording: {', '.join(present)}")
 
     if missing:
         logger.warning(f"{context} in Metadata missing from data: {', '.join(missing)}")

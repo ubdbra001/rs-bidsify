@@ -1,6 +1,8 @@
 from datetime import UTC, datetime
 from typing import Any
 
+import pandas as pd
+
 
 def get_utc_today() -> datetime:
     """
@@ -76,3 +78,28 @@ def apply_dynamic_value(data: dict[str, Any], path: list[str], new_value: Any):
         current[path[-1]] = new_value
     except (KeyError, TypeError):
         print(f"Error: Path {path} could not be followed.")
+
+
+def filter_dataframe_by_valid_ids(df: pd.DataFrame, missing_ids: list[str]) -> pd.DataFrame:
+    """
+    Filter out rows from a DataFrame based on a list of invalid identifiers.
+
+    Evaluates the DataFrame's index against a provided list of missing or
+    excluded ID strings, returning a subset that contains only the valid entries.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        The source dataframe, expected to be indexed by participant or
+        recording identifier strings.
+    missing_ids : list[str]
+        A list of string identifiers representing the rows that should be
+        removed from the dataset.
+
+    Returns
+    -------
+    pd.DataFrame
+        The filtered dataframe containing only the rows with indices
+        that are not present in the exclusion list.
+    """
+    return df.loc[~df.index.isin(missing_ids)]

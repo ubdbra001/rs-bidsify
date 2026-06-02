@@ -1,6 +1,8 @@
 import logging
 from pathlib import Path
 
+from mne_bids import BIDSPath, write_raw_bids
+
 from rs_bidsify import discovery, enrichment, io
 from rs_bidsify.config_loader import deep_merge, get_default_config
 from rs_bidsify.utils import locate_dynamic_fields
@@ -11,7 +13,13 @@ from rs_bidsify.validation.subject import SubjectMetadata
 logger = logging.getLogger(__name__)
 
 
-def process_dataset(raw_path: Path, out_root_path: Path, config_override: dict | None = None):
+def process_dataset(
+    raw_path: Path,
+    out_root_path: Path,
+    config_override: dict | None = None,
+    force_flag: bool = False,
+    strict_flag: bool = False,
+) -> list[dict]:
     """
     Orchestrate the conversion of a full raw dataset into BIDS format.
 
@@ -58,32 +66,76 @@ def process_dataset(raw_path: Path, out_root_path: Path, config_override: dict |
     )
 
     rec_config = {k: config[k] for k in ("output_EEG_format", "include_extras")}
+
+    results = []
+
     for recording in crawler.found_recordings:
+        bids_path = BIDSPath(
+            subject=recording.subject,
+            task=recording.task,
+            root=out_root_path,
+        )
+
+        if io.check_task_exists(bids_path.directory, recording.task) and not force_flag:
+            logger.info(f"{recording.info_str} - Skipping as BIDSified files already exist")
+            results.append({"recording": recording, "status": "Skipped", "error": ""})
+            continue
+
         subject_info = SubjectMetadata.from_dataframe(
             recording,
             participant_data["dataset"],
             mapping=config["demographic_mappings"],
         )
-        process_recording(
-            out_root_path,
-            recording,
-            dataset_spec,
-            subject_info,
-            dynamic_paths,
-            rec_config,
-        )
 
+        try:
+            subject_spec = (
+                DescriptionSpec.from_template(dataset_spec, dynamic_paths, subject_info)
+                if dynamic_paths
+                else dataset_spec
+            )
+
+            # Process recording
+            process_recording(
+                bids_path,
+                recording,
+                subject_spec,
+                subject_info,
+                rec_config,
+            )
+
+            results.append({"recording": recording, "status": "Success", "error": ""})
+        except Exception as e:
+            logger.exception(f"{recording.info_str} - Processing failed")
+
+            io.rollback_recording_files(bids_path.directory, recording)
+
+            if strict_flag:
+                # Initial attempt
+                # Remove "ghost" participants after strict crash
+                if not bids_path.directory.exists():
+                    io.cleanup_participants_tsv([recording.subject], out_root_path)
+                raise
+
+            results.append({"recording": recording, "status": "Failed", "error": str(e)})
+            continue
+
+    missing_subjects = discovery.find_missing_subjects(expected_participants, out_root_path)
+    io.cleanup_participants_tsv(missing_subjects, out_root_path)
     enrichment.enrich_dataset_description(dataset_spec.metadata, out_root_path)
+
     if phenotype_data:
-        io.write_phenotype_data(phenotype_data, out_root_path)
+        io.write_phenotype_data(phenotype_data, out_root_path, missing_subjects)
+
+    logger.info("Enriched BIDS-compliant dataset")
+
+    return results
 
 
 def process_recording(
-    out_root_path: Path,
+    bids_path: BIDSPath,
     recording: RecordingMetadata,
     dataset_spec: DescriptionSpec,
     subject_info: SubjectMetadata,
-    dynamic_paths: list,
     config: dict,
 ):
     """
@@ -97,8 +149,10 @@ def process_recording(
 
     Parameters
     ----------
-    out_root_path : Path
-        The root directory of the BIDS dataset.
+    bids_path : BIDSPath
+        The target BIDS destination for this recording. This object must specify
+        the subject, task, and root directory, ensuring the data is written
+        to the correct entity-linked location.
     recording : RecordingMetadata
         Metadata for this specific recording session (e.g., file path,
         subject ID, and task name).
@@ -107,9 +161,6 @@ def process_recording(
     subject_info : SubjectMetadata
         Demographic and clinical metadata for the subject associated
         with this recording.
-    dynamic_paths : list
-        A list of keys within the metadata that should be dynamically
-        populated using subject-specific values.
     config : dict
         Configuration settings, including 'output_EEG_format' and
         'include_extras'.
@@ -122,20 +173,19 @@ def process_recording(
     out_format = config["output_EEG_format"]
     include_extras = config["include_extras"]
 
-    logger.info(f"Processing Recording - Sub: {recording.subject}, Task: {recording.condition}")
-
-    if dynamic_paths:
-        subject_spec = DescriptionSpec.from_template(dataset_spec, dynamic_paths, subject_info)
-    else:
-        subject_spec = dataset_spec
+    logger.info(f"{recording.info_str} - Processing Recording")
 
     eeg_data = io.read_eeg_recording(recording.path)
 
     enrichment.set_subject_info(eeg_data, subject_info)
 
-    enrichment.enrich_mne_object(eeg_data, subject_spec)
+    enrichment.enrich_mne_object(eeg_data, dataset_spec)
 
-    rec_bids_path = io.write_bids(out_root_path, eeg_data, recording, out_format)
+    rec_bids_path = write_raw_bids(eeg_data, bids_path, overwrite=True, allow_preload=True, format=out_format.upper())
 
-    enrichment.enrich_eeg_sidecar(rec_bids_path, subject_spec, include_extras)
-    enrichment.enrich_channels_tsv_with_aux(rec_bids_path, subject_spec.acquisition_spec.aux_channels)
+    logger.info(f"{recording.info_str} - Saved BIDS-compliant data")
+
+    enrichment.enrich_eeg_sidecar(rec_bids_path, dataset_spec, include_extras)
+    enrichment.enrich_channels_tsv_with_aux(rec_bids_path, dataset_spec.acquisition_spec.aux_channels)
+
+    logger.info(f"{recording.info_str} - Enriched BIDS-compliant data")

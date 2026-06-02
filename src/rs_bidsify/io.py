@@ -1,12 +1,13 @@
 import logging
+import shutil
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
 from mne.io import BaseRaw, read_raw
-from mne_bids import BIDSPath, update_sidecar_json, write_raw_bids
+from mne_bids import BIDSPath, update_sidecar_json
 
-from rs_bidsify.utils import get_utc_today
+from rs_bidsify.utils import filter_dataframe_by_valid_ids, get_utc_today
 from rs_bidsify.validation.dataset import RecordingMetadata
 from rs_bidsify.validation.description import DescriptionSpec
 
@@ -40,7 +41,7 @@ def read_description_json(file_path: Path) -> DescriptionSpec:
     raw_description = Path(file_path).read_text()
     validated_model = DescriptionSpec.model_validate_json(raw_description)
 
-    logger.info(f"Loaded and validated description JSON: {file_path}")
+    logger.debug(f"Loaded and validated description JSON: {file_path}")
 
     return validated_model
 
@@ -74,7 +75,7 @@ def read_description_spreadsheet(
     """
     sheet_dict = {key: pd.read_excel(sheet_path, **val) for key, val in sheet_info.items()}
 
-    logger.info(f"Loaded {sheet_type} info from {sheet_path}")
+    logger.debug(f"Loaded {sheet_type} info from {sheet_path}")
 
     return sheet_dict
 
@@ -107,7 +108,7 @@ def read_eeg_recording(recording_path: Path) -> BaseRaw:
     return eeg_data
 
 
-def read_bids_tsv(tsv_path: BIDSPath) -> pd.DataFrame:
+def read_bids_tsv(tsv_path: Path) -> pd.DataFrame:
     """
     Read a BIDS-compliant TSV file into a pandas DataFrame.
 
@@ -116,8 +117,8 @@ def read_bids_tsv(tsv_path: BIDSPath) -> pd.DataFrame:
 
     Parameters
     ----------
-    tsv_path : BIDSPath
-        The BIDSPath object pointing to the target .tsv file.
+    tsv_path : Path
+        The Path object pointing to the target .tsv file.
 
     Returns
     -------
@@ -130,50 +131,6 @@ def read_bids_tsv(tsv_path: BIDSPath) -> pd.DataFrame:
     tab-separated and contain a leading index/header column.
     """
     return pd.read_csv(tsv_path, sep="\t", index_col=0)
-
-
-def write_bids(
-    bids_root: Path,
-    eeg_data: BaseRaw,
-    recording: RecordingMetadata,
-    out_format: str = "EDF",
-) -> BIDSPath:
-    """
-    Export an EEG recording to the BIDS directory structure.
-
-    Constructs a BIDS-compliant path using subject and condition metadata
-    and writes the raw EEG data to disk. By default, existing files at
-    the destination are overwritten.
-
-    Parameters
-    ----------
-    bids_root : Path
-        The root directory of the BIDS dataset.
-    eeg_data : BaseRaw
-        The MNE Raw object containing the EEG data and info.
-    recording : RecordingMetadata
-        A metadata object containing at least `subject` and `condition`
-        attributes to define the BIDS entity.
-    out_format : str, optional
-        The output file format for the EEG data, by default "EDF".
-
-    Returns
-    -------
-    BIDSPath
-        The resulting BIDSPath object indicating where the data was written.
-
-    Notes
-    -----
-    This function calls `write_raw_bids` with `overwrite=True` and
-    `allow_preload=True` enabled.
-    """
-    bids_path = BIDSPath(
-        subject=recording.subject,
-        task=recording.task,
-        root=bids_root,
-    )
-
-    return write_raw_bids(eeg_data, bids_path, overwrite=True, allow_preload=True, format=out_format.upper())
 
 
 def write_enriched_sidecar(bids_path: BIDSPath, updates: dict[str, Any]):
@@ -207,7 +164,7 @@ def write_enriched_sidecar(bids_path: BIDSPath, updates: dict[str, Any]):
     update_sidecar_json(sidecar_path, updates)
 
 
-def write_bids_tsv(tsv_path: BIDSPath, tsv_df: pd.DataFrame):
+def write_bids_tsv(tsv_path: Path, tsv_df: pd.DataFrame):
     """
     Write a pandas DataFrame to a BIDS-compliant TSV file.
 
@@ -216,8 +173,8 @@ def write_bids_tsv(tsv_path: BIDSPath, tsv_df: pd.DataFrame):
 
     Parameters
     ----------
-    tsv_path : BIDSPath
-        The BIDSPath object defining the destination for the .tsv file.
+    tsv_path : Path
+        The Path object defining the destination for the .tsv file.
     tsv_df : pd.DataFrame
         The DataFrame containing the data to be written.
 
@@ -229,37 +186,142 @@ def write_bids_tsv(tsv_path: BIDSPath, tsv_df: pd.DataFrame):
     tsv_df.to_csv(tsv_path, sep="\t")
 
 
-def write_phenotype_data(phenotype_data: dict[str, pd.DataFrame], root_path: Path):
+def write_phenotype_data(phenotype_data: dict[str, pd.DataFrame], root_path: Path, missing_ids: list[str]):
     """
-    Write phenotype data and its associated codebook to the dataset root.
+    Write filtered phenotype data and associated codebooks to the BIDS dataset.
 
-    Creates a 'phenotype' directory within the root path and exports the
-    dataset as a TSV file and the codebook as a JSON file.
+    Creates a 'phenotype' directory in the root path. Before exporting, it
+    prunes the phenotype dataset to exclude any participants identified in
+    'missing_ids', ensuring the metadata remains synchronized with the
+    available EEG recordings.
 
     Parameters
     ----------
     phenotype_data : dict[str, pd.DataFrame]
         A dictionary containing the phenotype information. Must include
-        'dataset' (DataFrame) and 'codebook' (DataFrame) keys.
+        'dataset' (the actual values) and 'codebook' (metadata) as DataFrames.
     root_path : Path
-        The root directory of the BIDS dataset where the phenotype
+        The root directory of the BIDS dataset where the '/phenotype'
         folder will be created.
+    missing_ids : list[str]
+        A list of subject identifiers to be filtered out of the phenotype
+        dataset before writing to disk.
 
     Returns
     -------
     None
-        Writes files to disk and logs the output location.
+        Writes 'phenotype.tsv' and 'phenotype.json' to the filesystem.
 
     Notes
     -----
     The codebook is exported using a JSON 'index' orientation to map
-    variable names to their respective descriptions and metadata.
+    variable names to their respective descriptions and metadata,
+    aligning with BIDS recommendations for sidecar files.
     """
     phenotype_path = root_path / "phenotype"
 
     phenotype_path.mkdir(parents=True, exist_ok=True)
 
+    phenotype_data["dataset"] = filter_dataframe_by_valid_ids(phenotype_data["dataset"], missing_ids)
     phenotype_data["dataset"].to_csv(phenotype_path / "phenotype.tsv", sep="\t")
     phenotype_data["codebook"].to_json(phenotype_path / "phenotype.json", orient="index")
 
-    logger.info(f"Phenotype data written to {phenotype_path}")
+    logger.debug(f"Phenotype data written to {phenotype_path}")
+
+
+def check_task_exists(subject_dir: Path, task: str) -> bool:
+    """
+    Check for the existence of specific task files within a subject directory.
+
+    Scans the subject's BIDS folder to identify if any files associated
+    with the given task label have already been generated.
+
+    Parameters
+    ----------
+    subject_dir : Path
+        The BIDS subject-level directory (e.g., 'sub-001/') to be searched.
+    task : str
+        The BIDS task label to search for (e.g., 'rest', 'faceprocessing').
+
+    Returns
+    -------
+    bool
+        True if the directory exists and contains at least one file
+        matching the task pattern; False otherwise.
+    """
+    if not subject_dir.exists():
+        return False
+
+    return any(subject_dir.rglob(f"*task-{task}*"))
+
+
+def rollback_recording_files(subject_dir: Path, recording: RecordingMetadata):
+    """
+    Remove partial or corrupted files following an export failure.
+
+    Provides an automated cleanup mechanism to prevent data pollution. If
+    a specific condition is provided, it targets only files associated
+    with that task; otherwise, it removes the entire subject directory.
+
+    Parameters
+    ----------
+    subject_dir : Path
+        The BIDS subject-level directory (e.g., 'sub-001/') where the
+        failed export occurred.
+    recording : RecordingMetadata
+        Metadata for the failed recording, used to identify specific
+        task labels and provide context for logging.
+
+    Returns
+    -------
+    None
+        Deletes files or directories from the filesystem and logs the
+        outcome.
+    """
+    if not subject_dir.exists():
+        return
+
+    try:
+        if recording.condition:
+            failed_files = subject_dir.rglob(f"*task-{recording.task}*")
+            [file_path.unlink() for file_path in failed_files if file_path.is_file()]
+            logger.info(f"{recording.info_str} - Cleaned up partial task files")
+
+        remaining_conditions = any(subject_dir.rglob("*eeg.json"))
+
+        if not recording.condition or not remaining_conditions:
+            shutil.rmtree(subject_dir)
+            logger.info(f"{recording.info_str} - Cleaned up incomplete BIDS folder")
+    except Exception as cleanup_error:
+        logger.error(f"{recording.info_str} - Clean up failed: {cleanup_error}")
+
+
+def cleanup_participants_tsv(missing_ids: list[str], out_path: Path):
+    """
+    Remove missing or invalid participants from the participants.tsv file.
+
+    Ensures metadata integrity by pruning rows from the tabular participant
+    index that correspond to subjects who were not successfully processed
+    or are missing from the physical BIDS directory.
+
+    Parameters
+    ----------
+    missing_ids : list[str]
+        A list of BIDS subject identifiers (e.g., ['sub-01', 'sub-02'])
+        to be removed from the dataset index.
+    out_path : Path
+        The root directory of the BIDS dataset containing the
+        'participants.tsv' file.
+
+    Returns
+    -------
+    None
+        Overwrites the existing 'participants.tsv' with the filtered content.
+    """
+    tsv_path = out_path / "participants.tsv"
+
+    participant_tsv = read_bids_tsv(tsv_path)
+
+    cleaned_tsv = filter_dataframe_by_valid_ids(participant_tsv, missing_ids)
+
+    write_bids_tsv(tsv_path, cleaned_tsv)
