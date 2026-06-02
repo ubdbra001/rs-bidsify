@@ -165,6 +165,29 @@ def main(
 
 
 def show_results_summary(results: list[dict]):
+    """
+    Render a stylized terminal summary table of the pipeline's execution results.
+
+    Parses the compilation status of each processed recording and displays them
+    in a structured, color-coded table using the 'rich' library. Successes,
+    skips, and catastrophic failures are visually distinct to facilitate
+    rapid post-run inspection.
+
+    Parameters
+    ----------
+    results : list[dict]
+        A list of dictionaries representing execution records. Each dictionary
+        must contain the following keys:
+
+        - 'recording' (RecordingMetadata): The parsed recording data object.
+        - 'status' (str): The outcome flag; must be 'Success', 'Skipped', or 'Failed'.
+        - 'error' (str): Descriptors of any captured exceptions, or an empty string.
+
+    Returns
+    -------
+    None
+        Outputs the formatted table directly to the standard output console.
+    """
     table = Table(title="RS-BIDSify results summary")
     table.add_column("Subject")
     table.add_column("Task")
