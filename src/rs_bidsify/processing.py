@@ -87,9 +87,9 @@ def process_metadata(
     )
 
 def process_dataset(
-    raw_path: Path,
+    plan: DatasetPlan,
     out_root_path: Path,
-    config_override: dict | None = None,
+    config: dict,
     force_flag: bool = False,
     strict_flag: bool = False,
 ) -> list[dict]:
@@ -117,32 +117,14 @@ def process_dataset(
     None
         Executes the conversion pipeline and writes the output to disk.
     """
-    config = get_default_config()
-
-    if config_override:
-        config = deep_merge(config, config_override)
-
-    dataset_spec = discovery.find_description_spec(raw_path, extension=config["metadata_ext"])
-
-    participant_data, phenotype_data = discovery.find_dataset_spreadsheets(
-        raw_path, sheet_info=config["sheet_info"], extension=config["spreadsheet_ext"]
-    )
-
-    dynamic_paths = locate_dynamic_fields(dataset_spec.model_dump())
-
-    expected_participants = participant_data["dataset"].index.to_list()
-
-    crawler = EEGDatasetCrawler(
-        root_path=raw_path,
-        expected_participants=expected_participants,
-        **dataset_spec.crawler_info,
-    )
 
     rec_config = {k: config[k] for k in ("output_EEG_format", "include_extras")}
 
     results = []
 
-    for recording in crawler.found_recordings:
+    for plan_item in plan.recording_plans:
+        recording = plan_item.recording
+
         bids_path = BIDSPath(
             subject=recording.subject,
             task=recording.task,
@@ -154,25 +136,14 @@ def process_dataset(
             results.append({"recording": recording, "status": "Skipped", "error": ""})
             continue
 
-        subject_info = SubjectMetadata.from_dataframe(
-            recording,
-            participant_data["dataset"],
-            mapping=config["demographic_mappings"],
-        )
-
         try:
-            subject_spec = (
-                DescriptionSpec.from_template(dataset_spec, dynamic_paths, subject_info)
-                if dynamic_paths
-                else dataset_spec
-            )
 
             # Process recording
             process_recording(
                 bids_path,
                 recording,
-                subject_spec,
-                subject_info,
+                plan_item.subject_spec,
+                plan_item.subject_info,
                 rec_config,
             )
 
@@ -183,8 +154,6 @@ def process_dataset(
             io.rollback_recording_files(bids_path.directory, recording)
 
             if strict_flag:
-                # Initial attempt
-                # Remove "ghost" participants after strict crash
                 if not bids_path.directory.exists():
                     io.cleanup_participants_tsv([recording.subject], out_root_path)
                 raise
@@ -192,12 +161,12 @@ def process_dataset(
             results.append({"recording": recording, "status": "Failed", "error": str(e)})
             continue
 
-    missing_subjects = discovery.find_missing_subjects(expected_participants, out_root_path)
+    missing_subjects = discovery.find_missing_subjects(plan.expected_participants, out_root_path)
     io.cleanup_participants_tsv(missing_subjects, out_root_path)
-    enrichment.enrich_dataset_description(dataset_spec.metadata, out_root_path)
+    enrichment.enrich_dataset_description(plan.dataset_spec.metadata, out_root_path)
 
-    if phenotype_data:
-        io.write_phenotype_data(phenotype_data, out_root_path, missing_subjects)
+    if plan.phenotype_data:
+        io.write_phenotype_data(plan.phenotype_data, out_root_path, missing_subjects)
 
     logger.info("Enriched BIDS-compliant dataset")
 
