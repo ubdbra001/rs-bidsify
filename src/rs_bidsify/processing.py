@@ -5,7 +5,7 @@ from pathlib import Path
 from mne_bids import BIDSPath, write_raw_bids
 
 from rs_bidsify import discovery, enrichment, io
-from rs_bidsify.config_loader import deep_merge, get_default_config
+from rs_bidsify.config_loader import load_config
 from rs_bidsify.utils import locate_dynamic_fields
 from rs_bidsify.validation.dataset import EEGDatasetCrawler, RecordingMetadata
 from rs_bidsify.validation.description import DescriptionSpec

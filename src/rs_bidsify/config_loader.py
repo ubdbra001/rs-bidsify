@@ -3,6 +3,15 @@ from importlib import resources
 import yaml
 
 
+def load_config(config_override: dict | None = None) -> dict:
+    config = get_default_config()
+
+    if config_override:
+        config = deep_merge(config, config_override)
+
+    return config
+
+
 def get_default_config() -> dict:
     """
     Load the default configuration settings from the package resources.
