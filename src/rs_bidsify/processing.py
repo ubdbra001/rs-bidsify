@@ -33,6 +33,59 @@ class DatasetPlan:
     recording_plans: list[RecordingPlan]
 
 
+def process_metadata(
+    raw_path: Path,
+    config: dict,
+) -> DatasetPlan:
+    """Process metadata and return processing plan for dataset"""
+
+    dataset_spec = discovery.find_description_spec(raw_path, extension=config["metadata_ext"])
+
+    participant_data, phenotype_data = discovery.find_dataset_spreadsheets(
+        raw_path, sheet_info=config["sheet_info"], extension=config["spreadsheet_ext"]
+    )
+
+    expected_participants = participant_data["dataset"].index.to_list()
+
+    crawler = EEGDatasetCrawler(
+        root_path=raw_path,
+        expected_participants=expected_participants,
+        **dataset_spec.crawler_info,
+    )
+
+    dynamic_paths = locate_dynamic_fields(dataset_spec.model_dump())
+
+    recording_plans = []
+
+    for recording in crawler.found_recordings:
+        subject_info = SubjectMetadata.from_dataframe(
+            recording,
+            participant_data["dataset"],
+            mapping=config["demographic_mappings"],
+        )
+
+        subject_spec = (
+            DescriptionSpec.from_template(dataset_spec, dynamic_paths, subject_info)
+            if dynamic_paths
+            else dataset_spec
+        )
+
+        recording_plans.append(
+            RecordingPlan(
+                recording=recording,
+                subject_info=subject_info,
+                subject_spec=subject_spec
+            )
+        )
+    
+    return DatasetPlan(
+        dataset_spec=dataset_spec,
+        participant_data=participant_data,
+        phenotype_data=phenotype_data,
+        expected_participants=expected_participants,
+        recording_plans=recording_plans
+    )
+
 def process_dataset(
     raw_path: Path,
     out_root_path: Path,
