@@ -10,7 +10,7 @@ from rich.text import Text
 
 from rs_bidsify import __version__
 from rs_bidsify.app_logging import setup_logging
-from rs_bidsify.processing import process_dataset
+from rs_bidsify.processing import convert_dataset, check_dataset
 
 logger = logging.getLogger(__name__)
 
@@ -142,11 +142,36 @@ def convert(
         logger.warning(f"Creating output directory: {bids_data_path}")
         bids_data_path.mkdir(parents=True)
 
-    results = process_dataset(raw_data_path, bids_data_path, user_overrides, force, strict)
+    results = convert_dataset(raw_data_path, bids_data_path, user_overrides, force, strict)
 
     logger.info(f"Successfully BIDSified data from {raw_data_path}, written to {bids_data_path}")
 
     show_results_summary(results)
+
+@app.command(no_args_is_help=True)
+def check(
+    raw_data_path: Annotated[
+        Path,
+        typer.Argument(
+            help="Path to the input directory containing raw source data",
+            exists=True,
+            file_okay=False,
+            dir_okay=True,
+            readable=True,
+        ),
+    ],
+    config_file: Annotated[
+        typer.FileText | None,
+        typer.Option("--config", help="User YAML configuration file"),
+    ] = None,
+):
+    user_overrides = {}
+
+    if config_file:
+        user_overrides = yaml.safe_load(config_file)
+
+    check_dataset(raw_data_path, user_overrides)
+
 
 
 @app.callback()
