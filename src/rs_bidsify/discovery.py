@@ -106,12 +106,15 @@ def find_dataset_spreadsheets(
     sheet_path = find_file(raw_path, extension)
 
     participant_data = io.read_description_spreadsheet(sheet_path, sheet_info["participant"], "participant")
-    try:
-        phenotype_data = io.read_description_spreadsheet(sheet_path, sheet_info["phenotype"], "phenotype")
-    except Exception:
-        # When the data is not available
-        logger.error(f"Phenotype data could not be loaded from {sheet_path}")
-        phenotype_data = None
+
+    phenotype_data = None
+
+    if sheet_info.get("phenotype"):
+        try:
+            phenotype_data = io.read_description_spreadsheet(sheet_path, sheet_info["phenotype"], "phenotype")
+        except Exception:
+            # When the data is not available
+            logger.error(f"Phenotype data could not be loaded from {sheet_path}")
 
     return participant_data, phenotype_data
 
