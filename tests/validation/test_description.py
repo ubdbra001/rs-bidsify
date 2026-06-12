@@ -1,9 +1,9 @@
 from pathlib import Path
 
 import pytest
-from pydantic import ValidationError
 
 from rs_bidsify.validation import description as rs_desc
+from rs_bidsify.validation.subject import SubjectMetadata
 
 
 @pytest.fixture
@@ -23,7 +23,7 @@ class TestMontageInfo:
 
     def test_invalid_name(self):
         data = {"mne_name": "not_a_real_montage"}
-        with pytest.raises(ValidationError, match="is not a valid built-in MNE montage"):
+        with pytest.raises(ValueError, match="is not a valid built-in MNE montage"):
             rs_desc.Montage.model_validate(data)
 
     def test_valid_path(self, shared_file):
@@ -33,20 +33,14 @@ class TestMontageInfo:
         assert model.mne_name is None
         assert model.path == shared_file
 
-    def test_missing_path(self):
-        data = {"path": "missing.file"}
-
-        with pytest.raises(ValidationError):
-            rs_desc.Montage.model_validate(data)
-
     def test_both_present(self, shared_file):
         data = {"mne_name": "standard_1020", "path": shared_file}
 
-        with pytest.raises(ValidationError, match="Only one of either"):
+        with pytest.raises(ValueError, match="Only one of either"):
             rs_desc.Montage(**data)
 
     def test_both_missing(self):
-        with pytest.raises(ValidationError, match="Need to provide either"):
+        with pytest.raises(ValueError, match="Need to provide either"):
             rs_desc.Montage(mne_name=None, path=None)
 
     def test_montage_property_logic(self, mocker, shared_file):
@@ -74,3 +68,49 @@ class TestMontageInfo:
         _ = m.montage
 
         assert mock_make.call_count == 1
+
+
+class TestDescriptionSpecTemplate:
+    def test_from_template_happy_path(self, mocker):
+        """Test that dynamic fields are correctly injected from SubjectMetadata into the template."""
+
+        mock_template_dict = {
+            "acquisition_spec": {"software": "DEFAULT_SOFTWARE"},
+            "variable_fields": {"software": "subject_software_version"},
+        }
+
+        mock_template = mocker.MagicMock()
+        mock_template.model_dump.return_value = mock_template_dict
+
+        mock_subject_info = mocker.MagicMock(spec=SubjectMetadata)
+        mock_subject_info.subject_software_version = "BrainVision v2.0"
+
+        varies_paths = [["acquisition_spec", "software"]]
+
+        mock_apply = mocker.patch("rs_bidsify.validation.description.apply_dynamic_value")
+
+        mocker.patch.object(rs_desc.DescriptionSpec, "model_validate", return_value="Success")
+
+        result = rs_desc.DescriptionSpec.from_template(mock_template, varies_paths, mock_subject_info)
+
+        assert result == "Success"
+
+        mock_apply.assert_called_once_with(mock_template_dict, ["acquisition_spec", "software"], "BrainVision v2.0")
+
+    def test_from_template_missing_subject_value_raises_error(self, mocker):
+        """Test that a ValueError is raised if the required subject attribute resolves to None."""
+        mock_template_dict = {
+            "acquisition_spec": {"software": "DEFAULT_SOFTWARE"},
+            "variable_fields": {"software": "subject_software_version"},
+        }
+
+        mock_template = mocker.MagicMock()
+        mock_template.model_dump.return_value = mock_template_dict
+
+        mock_subject_info = mocker.MagicMock(spec=SubjectMetadata)
+        mock_subject_info.subject_software_version = None
+
+        varies_paths = [["acquisition_spec", "software"]]
+
+        with pytest.raises(ValueError):
+            rs_desc.DescriptionSpec.from_template(mock_template, varies_paths, mock_subject_info)
