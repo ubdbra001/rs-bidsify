@@ -18,7 +18,7 @@ from pydantic import (
     model_validator,
 )
 
-from rs_bidsify.utils import apply_dynamic_value
+from rs_bidsify.utils import apply_dynamic_value, upper_case_channels
 from rs_bidsify.validation.subject import SubjectMetadata
 
 logger = logging.getLogger(__name__)
@@ -292,7 +292,8 @@ class Montage(BaseModel):
             If the class reaches an invalid state lacking both a name and a path.
         """
         if self.mne_name:
-            return make_standard_montage(self.mne_name)
+            temp_mont = make_standard_montage(self.mne_name)
+            return upper_case_channels(temp_mont)
         elif self.path:
             return read_custom_montage(self.path)
 

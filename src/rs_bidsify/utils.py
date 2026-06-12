@@ -103,3 +103,11 @@ def filter_dataframe_by_valid_ids(df: pd.DataFrame, missing_ids: list[str]) -> p
         that are not present in the exclusion list.
     """
     return df.loc[~df.index.isin(missing_ids)]
+
+
+def upper_case_channels(montage) -> Any:
+    """Convert channel names to uppercase."""
+    ch_maps = {chan: chan.upper() for chan in montage.ch_names}
+    updated_mont = montage.rename_channels(ch_maps)
+
+    return updated_mont
