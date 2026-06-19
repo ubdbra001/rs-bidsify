@@ -21,6 +21,10 @@ dev = [
     {include-group = "type_check"},
     {include-group = "nox"},
 ]
+docs = [
+    "mkdocstrings-python>=2.0.5",
+    "zensical>=0.0.45",
+]
 lint = [
     "ruff>=0.15.13",
 ]
