@@ -53,6 +53,18 @@ nav = [
     "usage/commands.md",
     "usage/configuration.md",
   ]},
+  { "API Reference" = [
+    "api/discovery.md",
+    "api/enrichment.md",
+    "api/io.md",
+    "api/processing.md",
+    "api/utils.md",
+    { "Validation" = [
+      "api/validation/description.md",
+      "api/validation/dataset.md",
+      "api/validation/subject.md",
+    ]}
+  ]}
 ]
 
 # With the "extra_css" option you can add your own CSS styling to customize
@@ -353,3 +365,12 @@ combine_header_slug = true
 [project.markdown_extensions.pymdownx.tasklist]
 custom_checkbox = true
 [project.markdown_extensions.pymdownx.tilde]
+
+[project.plugins.mkdocstrings.handlers.python]
+paths = ["src"]
+
+[project.plugins.mkdocstrings.handlers.python.options]
+docstring_style = "numpy"
+show_root_toc_entry = false
+#inherited_members = true
+#show_source = false
