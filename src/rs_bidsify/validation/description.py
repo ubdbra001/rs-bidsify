@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 class MNEChanTypes(StrEnum):
     """
-    Standard channel types recognized by MNE-Python.
+    Standard channel types recognised by MNE-Python.
 
     Lower-case strings corresponding to the types allowed in
     mne.io.Raw.set_channel_types.
@@ -116,7 +116,7 @@ class BIDSChanTypes(StrEnum):
 
 
 class LineFreqOptions(IntEnum):
-    """Supported powerline frequencies for MNE and BIDS metadata."""
+    """Supported power-line frequencies for MNE and BIDS metadata."""
 
     FIFTY = 50
     SIXTY = 60
@@ -188,7 +188,7 @@ class DatasetMetadata(BaseModel):
         Returns
         -------
         dict
-            A dictionary containing the standardized BIDS metadata keys
+            A dictionary containing the standardised BIDS metadata keys
             (e.g., 'Name', 'Authors', 'DatasetDOI').
         """
         return {
@@ -212,7 +212,7 @@ class Montage(BaseModel):
     ----------
     mne_name : str or None
         Name of a built-in MNE montage (e.g., 'standard_1020'). If provided,
-        must be a recognized string in MNE's built-in montages.
+        must be a recognised string in MNE's built-in montages.
     path : FilePath or None
         Valid path to a custom sensor location file on the local system.
     """
@@ -333,7 +333,7 @@ class AuxChanSpec(BaseModel):
     """
     Metadata specification for auxiliary channels.
 
-    Defines how non-EEG channels are categorized for MNE and BIDS,
+    Defines how non-EEG channels are categorised for MNE and BIDS,
     including their physical units and anatomical sensor locations.
     This model facilitates channel renaming and retyping during the
     BIDS conversion process.
@@ -395,7 +395,7 @@ class LightingConditions(BaseModel):
     description : str
         A qualitative description of the lighting source or state
         (e.g., 'dimmed', 'natural light', 'fluorescent').
-    measurement : str
+    measurement : str, optional
         The quantitative value and the method or instrument used for
         the reading (e.g., '150 lux via T-10A Illuminance Meter',
         'low via subjective report').
@@ -419,7 +419,7 @@ class FilterSpec(BaseModel):
     type : FilterTypeOptions
         The source of the filter application, either hardware or software.
     info : dict[str, Any]
-        A dictionary of filter parameters (e.g., cutoff frequencies,
+        A dictionary of filter parameters (e.g., cut-off frequencies,
         roll-off, order). This content is mapped directly to the BIDS
         EEG sidecar JSON.
     """
@@ -434,7 +434,7 @@ class ExtraSpec(BaseModel):
     Optional metadata for experimental environment and recording quality.
 
     Groups secondary environmental factors and technical hardware
-    specifications that characterize the recording conditions.
+    specifications that characterise the recording conditions.
 
     Attributes
     ----------
