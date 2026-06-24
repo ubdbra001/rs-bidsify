@@ -9,7 +9,7 @@ It is currently not available on PyPI, and so needs be installed directly from G
 pip install rs-bidsify@git+https://github.com/ubdbra001/rs-bidsify.git
 ```
 
-It is recommended that you install the package into a virtual environment.
+It is recommended that you install the package into a [virtual environment](https://docs.python.org/3/library/venv.html).
 
 ## Data preparation
 
@@ -21,22 +21,12 @@ There are three key elements required to convert an existing resting state EEG (
 
 For more specific information about the metadata files and their structure refer to the [metadata section](usage/metadata.md). Likewise, refer to the [dataset section](usage/dataset.md) for specific information about the expected dataset structure.
 
-## Checking
-
-If you would like to check the elements above to ensure they pass the initial validation, without actually converting the dataset just yet, then you can use the `check` command:
-
-``` shell
-rs-bidsify check /path/to/input
-```
-
-This will flag any issues with the input metadata and dataset.
-
 ## Conversion
 
-Once the three elements listed above are correct then you can use the `convert` command to convert your raw dataset to BIDS:
+Once the three elements listed above are correct then you can use the `convert` command to convert your raw dataset to a BIDS-compliant dataset:
 
 ``` shell
-rs-bidsify convert /path/to/input /path/to/output
+rs-bidsify convert path/to/input path/to/output
 ```
 
-For more specific information about the `check` and `convert` commands, including their options see the [commands section](usage/commands.md).
+For more specific information about `convert` command, including its options see the [commands section](usage/commands.md).
