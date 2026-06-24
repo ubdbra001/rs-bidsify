@@ -39,5 +39,4 @@ Once the three elements listed above are correct then you can use the `convert` 
 rs-bidsify convert /path/to/input /path/to/output
 ```
 
-For more specific infomation about the `check` and `convert` commands, including their options see the [commands section](usage/commands.md).
-For specific information about configuration options, see the [configuration section](usage/configuration.md)
+For more specific information about the `check` and `convert` commands, including their options see the [commands section](usage/commands.md).
