@@ -173,7 +173,7 @@ class DatasetMetadata(BaseModel):
     funding: str | list[str] | None = None
     ethics_approval: EthicsApprovalOptions
     license: str
-    references_links: str | list[str]
+    references_links: list[str] | None = None
     institution_name: str
     institution_dept: str
 
@@ -402,7 +402,7 @@ class LightingConditions(BaseModel):
     """
 
     description: str
-    measurement: str
+    measurement: str | None = None
 
 
 class FilterSpec(BaseModel):
