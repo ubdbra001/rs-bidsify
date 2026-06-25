@@ -45,7 +45,7 @@ class TestSubjectMetadata:
         [
             pytest.param({"age": 30, "sex": "m", "handedness": "right"}, 1, 1, id="lower case vals"),
             pytest.param({"age": 30, "sex": "M", "handedness": "RigHt"}, 1, 1, id="mixed case vals"),
-        ]
+        ],
     )
     def test_string_to_int_mapping_valid(self, input_data, expected_sex, expected_hand, base_context_mapping):
         """Test the @field_validator correctly maps string aliases to ints via context."""
@@ -59,8 +59,8 @@ class TestSubjectMetadata:
         """Test that SubjectMetadata class rases an error when invalid string passed"""
         data = {"age": 30, "sex": "m", "handedness": "r"}
 
-        with pytest.raises(ValueError, match = "Unrecognized string"):
-           SubjectMetadata.model_validate(data, context=base_context_mapping)
+        with pytest.raises(ValueError, match="Unrecognized string"):
+            SubjectMetadata.model_validate(data, context=base_context_mapping)
 
     @pytest.mark.parametrize(
         "meas_date, exp_birthday, age",
@@ -127,11 +127,7 @@ class TestSubjectMetadata:
         recording = RecordingMetadata.model_construct(participant="sub-99")
 
         with pytest.raises(KeyError) as exc_info:
-            SubjectMetadata.from_dataframe(
-                recording=recording, 
-                df=df, 
-                mapping=base_context_mapping["mappings"]
-            )
+            SubjectMetadata.from_dataframe(recording=recording, df=df, mapping=base_context_mapping["mappings"])
 
         assert "sub-99" in str(exc_info.value)
 
@@ -145,9 +141,4 @@ class TestSubjectMetadata:
         recording = RecordingMetadata.model_construct(participant="sub-01")
 
         with pytest.raises(ValueError):
-            SubjectMetadata.from_dataframe(
-                recording=recording, 
-                df=df, 
-                mapping=base_context_mapping["mappings"]
-            )
-            
+            SubjectMetadata.from_dataframe(recording=recording, df=df, mapping=base_context_mapping["mappings"])
