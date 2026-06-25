@@ -60,13 +60,13 @@ dataset/
 ...
 ```
 
-The JSON file containg the dataset metadata and the spreadsheet (ods) containing the participant information should be in the root of the raw data directory. These do not have to be named as in the example above, but should have the correct file extensions, and there should only be a single file for each.
+The JSON file containing the dataset metadata and the spreadsheet (ods) containing the participant information should be in the root of the raw data directory. These do not have to be named as in the example above, but should have the correct file extensions, and there should only be a single file for each.
 
 ### JSON metadata
 
 This file specifies the metadata describing the dataset. It is split into 4 different sections.
 
-See the [appendix below](#complete-metadata) for an example of a complete metatdata file
+See the [appendix below](#complete-metadata) for an example of a complete metadata file
 
 #### 1. Tasks
 
@@ -79,7 +79,7 @@ It can be omitted if there is only a single task (in which case the task name wi
 
 #### 2. Metadata
 
-This structure contains infomation about dataset-level metadata (i.e. values that would not differ between participants)
+This structure contains information about dataset-level metadata (i.e. values that would not differ between participants)
 
 ``` json
 "metadata": {
@@ -129,7 +129,7 @@ This structure contains information about the EEG channels present in the record
 }
 ```
 
-##### Auxillary channel information
+##### Auxiliary channel information
 
 This structure outlines the details of all the non-EEG channels present in the recordings.  
 Each channel should be named as they are in the recording, and should include information about the type of channel in both MNE and BIDS, as well as the location of the channel, measurement units, and description.  
@@ -163,7 +163,7 @@ Each channel should be named as they are in the recording, and should include in
 
 ##### Filter Information
 
-This section consists of a list of all the hardware and software filters soecified for the recording.  
+This section consists of a list of all the hardware and software filters specified for the recording.  
 Each filter should consist of an object with a name, a type (Hardware or Software), and info about the filter.  
 Info should be represented in an object with key value pairs, and these are translated directly to the BIDS recording sidecar file.
 
@@ -182,7 +182,7 @@ Info should be represented in an object with key value pairs, and these are tran
 
 ##### Extra information
 
-This structure specifies extra metadata that may be recorded but does not have a formal place in BIDS, and so may optioanlly be included in the final BIDS-compliant dataset.
+This structure specifies extra metadata that may be recorded but does not have a formal place in BIDS, and so may optionally be included in the final BIDS-compliant dataset.
 This section is entirely optional, as are each of the fields contained within.
 
 ``` json
@@ -201,8 +201,8 @@ This section is entirely optional, as are each of the fields contained within.
 
 #### 4. Resting state information
 
-This section conatins information about the resting state tasks undertaken during the recording.  
-In includes information about the instructions issued to the participants, the duration of the eyes-open and eyes-closed tasks, the stimuli used during these tasks, any other tasks recorded, and the detials of the event markers captured during the recording.  
+This section contains information about the resting state tasks undertaken during the recording.  
+In includes information about the instructions issued to the participants, the duration of the eyes-open and eyes-closed tasks, the stimuli used during these tasks, any other tasks recorded, and the details of the event markers captured during the recording.  
 
 ``` json
 "resting_state": {
@@ -234,11 +234,11 @@ In includes information about the instructions issued to the participants, the d
 
 ### Participant information
 
-This file contians information about the participants. This information should be stored in tabular form in a single worksheet with the columns: `participant_id`, `age`, `sex`, and `handedness`.
-It should also contain a codebook: a seperate sheet with a table describing what each of these columns represent.  
+This file contains information about the participants. This information should be stored in tabular form in a single worksheet with the columns: `participant_id`, `age`, `sex`, and `handedness`.
+It should also contain a codebook: a separate sheet with a table describing what each of these columns represent.  
 
 This file can also optionally contain a sheet with phenotype data collected from the participants. This data should also be stored in tabular form with the required column `participant_id`, whose values should match the values in the participant information worksheet. As many other columns may be added to the sheet.  
-If a phenotype sheet is included then a phenotype codebook sheet is required. As with the participant dataset codebook, this should describe each of the columns present in the phenotype datasheet.
+If a phenotype sheet is included then a phenotype codebook sheet is required. As with the participant dataset codebook, this should describe each of the columns present in the phenotype data sheet.
 
 By default a `.ods` spreadsheet is expected, but this can be customised in the config file ([see below](#spreadsheet-extension)).  
 
@@ -252,7 +252,7 @@ RS-BIDSify has the following command line options:
 Usage: rs-bidsify [OPTIONS] COMMAND [ARGS]
 
 Options:
-    --version, -v : Show the installed veriosn of RS-BIDSify
+    --version, -v : Show the installed version of RS-BIDSify
     --help: Show the available options and commands
 
 Commands:
@@ -267,7 +267,7 @@ Command for converting a raw EEG dataset with metadata into BIDS-compliant forma
 Usage: rs-bidsify convert [OPTIONS] RAW_DATA_PATH BIDS_DATA_PATH
 
 Arguments:
-    RAW_DATA_PATH: Path to the directory containig the raw EEG Dataset and metadata
+    RAW_DATA_PATH: Path to the directory containing the raw EEG Dataset and metadata
     BIDS_DATA_PATH: Path to the directory where the BIDS-formatted dataset will be saved
 
 Options:
@@ -289,7 +289,7 @@ rs-bidsify convert path/to/raw/data path/for/bids/data --logs path/to/logs
 
 ```
 
-[See below](#configuration-file) for information about options that can be specifed in the configuration file.
+[See below](#configuration-file) for information about options that can be specified in the configuration file.
 
 [↑ Back to Top](#table-of-contents)
 
@@ -351,7 +351,7 @@ spreadsheet_ext: "ods"
 
 ### Metadata extension
 
-The file extension to search for when looking up the metadta file:
+The file extension to search for when looking up the metadata file:
 
 ``` yaml
 metadata_ext: "json"
