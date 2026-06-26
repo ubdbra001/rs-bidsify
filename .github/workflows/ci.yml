@@ -3,8 +3,22 @@ name: CI Pipeline
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'noxfile.py'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - '.github/workflows/**'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'noxfile.py'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - '.github/workflows/**'
 
 jobs:
   static-analysis:
