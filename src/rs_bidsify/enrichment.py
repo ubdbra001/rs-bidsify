@@ -125,11 +125,45 @@ def set_aux_channel_types(eeg_data: BaseRaw, aux_chans: dict[str, AuxChanSpec]):
         logger.warning("No valid channels found to update")
 
 
+def set_channel_case(eeg_data: BaseRaw, eeg_spec: EEGChanSpec):
+    """
+    Standardise the casing of EEG channel names to match a reference montage.
+
+    Utilises the pre-validated montage configuration from the EEG specification
+    to perform a case-insensitive match, renaming channels in the MNE Raw object
+    to align exactly with the standard montage capitalisation.
+
+    Parameters
+    ----------
+    eeg_data : BaseRaw
+        The MNE Raw object whose channel names will be updated.
+    eeg_spec : EEGChanSpec
+        The EEG channel specification containing the reference montage.
+
+    Returns
+    -------
+    None
+        The `eeg_data` object is modified in-place.
+    """
+    montage = eeg_spec.montage.montage
+
+    chans_reference = {ch.lower(): ch for ch in montage.ch_names}
+
+    rename_mapping = {
+        chan: chans_reference[chan_lower]
+        for chan in eeg_data.ch_names
+        if (chan_lower := chan.lower()) in chans_reference and chan != chans_reference[chan_lower]
+    }
+
+    if rename_mapping:
+        eeg_data.rename_channels(rename_mapping)
+
+
 def set_electrode_montage(eeg_data: BaseRaw, eeg_spec: EEGChanSpec):
     """
     Apply a physical electrode coordinate system (montage) to the EEG data.
 
-    Utilizes the pre-validated montage configuration from the EEG specification
+    Utilises the pre-validated montage configuration from the EEG specification
     to assign 3D sensor locations to the MNE Raw object.
 
     Parameters
@@ -536,6 +570,7 @@ def enrich_mne_object(eeg_data: BaseRaw, dataset_spec: DescriptionSpec):
     acquisition_spec = dataset_spec.acquisition_spec
     set_line_frequency(eeg_data, acquisition_spec)
     set_aux_channel_types(eeg_data, acquisition_spec.aux_channels)
+    set_channel_case(eeg_data, acquisition_spec.eeg_channels)
     set_electrode_montage(eeg_data, acquisition_spec.eeg_channels)
     set_events(eeg_data, dataset_spec.resting_state.events)
 
