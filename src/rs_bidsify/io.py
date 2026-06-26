@@ -7,7 +7,7 @@ import pandas as pd
 from mne.io import BaseRaw, read_raw
 from mne_bids import BIDSPath, update_sidecar_json
 
-from rs_bidsify.utils import filter_dataframe_by_valid_ids, get_utc_today, upper_case_channels
+from rs_bidsify.utils import filter_dataframe_by_valid_ids, get_utc_today
 from rs_bidsify.validation.dataset import RecordingMetadata
 from rs_bidsify.validation.description import DescriptionSpec
 
@@ -104,7 +104,6 @@ def read_eeg_recording(recording_path: Path) -> BaseRaw:
     """
     eeg_data = read_raw(recording_path)
     eeg_data.set_meas_date(get_utc_today())
-    eeg_data = upper_case_channels(eeg_data)
 
     return eeg_data
 

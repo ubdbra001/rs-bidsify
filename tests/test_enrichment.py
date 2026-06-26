@@ -132,6 +132,30 @@ class TestMNEEnrichment:
 
         mock_raw.annotations.rename.assert_not_called()
 
+    @pytest.mark.parametrize(
+        "ch_names, expected_mapping",
+        [
+            pytest.param(["FZ", "fp1", "Cz", "TRIGGER"], {"FZ": "Fz", "fp1": "Fp1"}, id="renames_incorrect_cases"),
+            pytest.param(["Fz", "Fp1", "Cz", "TRIGGER"], {}, id="no_renaming"),
+        ],
+    )
+    def test_set_channel_case(self, mocker, ch_names, expected_mapping):
+        mock_eeg_data = mocker.MagicMock()
+        mock_eeg_data.ch_names = ch_names
+
+        mock_montage = mocker.MagicMock()
+        mock_montage.ch_names = ["Fz", "Fp1", "Cz", "Pz"]
+
+        mock_eeg_spec = mocker.MagicMock()
+        mock_eeg_spec.montage.montage = mock_montage
+
+        enrichment.set_channel_case(mock_eeg_data, mock_eeg_spec)
+
+        if expected_mapping:
+            mock_eeg_data.rename_channels.assert_called_once_with(expected_mapping)
+        else:
+            mock_eeg_data.rename_channels.assert_not_called()
+
 
 class MockModel(BaseModel):
     field_a: str | None = None
