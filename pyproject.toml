@@ -37,7 +37,7 @@ test = [
     "pytest-mock>=3.15.1",
 ]
 type_check = [
-    "pyright>=1.1.409",
+    "pyright>=1.1.411",
 ]
 
 [project.scripts]
