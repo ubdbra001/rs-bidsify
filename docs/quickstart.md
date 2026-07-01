@@ -5,11 +5,43 @@
 `RS-BIDSify` works with `python` 3.12 and later.  
 It is currently not available on PyPI, and so needs be installed directly from GitHub:
 
-``` shell
-pip install rs-bidsify@git+https://github.com/ubdbra001/rs-bidsify.git
-```
-
 It is recommended that you install the package into a [virtual environment](https://docs.python.org/3/library/venv.html).
+
+??? info "Creating and activating a virtual environment"
+    Create a virtual environment:
+    === "python/pip"
+        ``` shell
+        python -m venv .venv --prompt .
+        ```
+
+    === "uv"
+        ```shell
+        uv venv
+        ```
+
+    Activate the virtual environment:
+
+    === "MacOS/Linux"
+        ```shell
+        source .venv/bin/activate
+        ```
+
+    === "Windows"
+        ```shell
+        .venv/Scripts/activate
+        ```
+
+=== "python/pip"
+    ``` shell
+    pip install rs-bidsify@git+https://github.com/ubdbra001/rs-bidsify.git
+    ```
+
+=== "uv"
+    ``` shell
+    uv add rs-bidsify@git+https://github.com/ubdbra001/rs-bidsify.git
+    # Or
+    # uv pip install rs-bidsify@git+https://github.com/ubdbra001/rs-bidsify.git
+    ```
 
 ## Data preparation
 
