@@ -36,17 +36,17 @@ If using numeric values for `sheet_name` indexing starts at 0.
 sheet_info:
   participant:
     dataset:
-      sheet_name: 6
+      sheet_name: 0
       index_col: "participant_id"
     codebook:
-      sheet_name: 7
+      sheet_name: 1
       index_col: "Variable"
   phenotype:
     dataset:
-      sheet_name: 8
+      sheet_name: 2
       index_col: "participant_id"
     codebook:
-      sheet_name: 9
+      sheet_name: 3
       index_col: "Variable"
 ```
 
