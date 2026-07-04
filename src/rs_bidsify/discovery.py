@@ -7,12 +7,12 @@ from rs_bidsify.validation.description import DescriptionSpec
 logger = logging.getLogger(__name__)
 
 
-def find_file(path: Path, ext: str) -> Path:
+def find_file(path: Path, ext: str, keyword: str = "") -> Path:
     """
     Locate a single file with a specific extension within a directory.
 
     This function searches the specified directory for files matching the
-    provided extension. It enforces a strict requirement that exactly one
+    provided extension, and keyword. It enforces a strict requirement that exactly one
     matching file must exist.
 
     Parameters
@@ -22,6 +22,9 @@ def find_file(path: Path, ext: str) -> Path:
     ext : str
         The file extension to look for (e.g., 'json', 'nii.gz').
         Do not include the leading dot.
+    keyword : str, optional
+        An additional label for identifying the file to find.
+        Default = ""
 
     Returns
     -------
@@ -31,13 +34,14 @@ def find_file(path: Path, ext: str) -> Path:
     Raises
     ------
     ValueError
-        If no files or multiple files with the given extension are found
-        in the directory.
+        If no files or multiple files with the given keyword and extension
+        are found in the directory.
     """
-    found_path = list(path.glob(f"*.{ext}"))
+    pattern = f"*{keyword}.{ext}"
+    found_path = list(path.glob(pattern))
 
     if len(found_path) != 1:
-        raise ValueError(f"Expected single {ext} file in {path}, instead found {len(found_path)}")
+        raise ValueError(f"Expected single file matching {pattern} in {path}, instead found {len(found_path)}")
 
     return found_path[0]
 
@@ -46,7 +50,7 @@ def find_description_spec(raw_path: Path, extension: str = "json") -> Descriptio
     """
     Locate and load the dataset description metadata file.
 
-    Utilizes file discovery to find a unique metadata file with the
+    Utilises file discovery to find a unique metadata file with the
     specified extension and parses its content into a DescriptionSpec object.
 
     Parameters
@@ -66,8 +70,8 @@ def find_description_spec(raw_path: Path, extension: str = "json") -> Descriptio
     This function relies on `find_file`, which will raise a ValueError if
     zero or multiple files matching the extension are found.
     """
-    json_path = find_file(raw_path, extension)
-    return io.read_description_json(json_path)
+    file_path = find_file(raw_path, ext=extension, keyword="metadata")
+    return io.read_description_file(file_path)
 
 
 def find_dataset_spreadsheets(
