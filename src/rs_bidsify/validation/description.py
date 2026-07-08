@@ -24,39 +24,6 @@ from rs_bidsify.validation.subject import SubjectMetadata
 logger = logging.getLogger(__name__)
 
 
-class MNEChanTypes(StrEnum):
-    """
-    Standard channel types recognised by MNE-Python.
-
-    Lower-case strings corresponding to the types allowed in
-    mne.io.Raw.set_channel_types.
-    """
-
-    # This list could probably be reduced to channels specifically relevant to EEG
-    BIO = "bio"
-    CHPI = "chpi"
-    DBS = "dbs"
-    DIPOLE = "dipole"
-    ECG = "ecg"
-    ECOG = "ecog"
-    EMG = "emg"
-    EOG = "eog"
-    EXCI = "exci"
-    EYETRACK = "eyetrack"
-    FNIRS = "fnirs"
-    GOF = "gof"
-    GSR = "gsr"
-    IAS = "ias"
-    MISC = "misc"
-    MEG = "meg"
-    REF_MEG = "ref_meg"
-    RESP = "resp"
-    SEEG = "seeg"
-    STIM = "stim"
-    SYST = "syst"
-    TEMPERATURE = "temperature"
-
-
 class BIDSChanTypes(StrEnum):
     """
     Channel types defined by the BIDS specification.
