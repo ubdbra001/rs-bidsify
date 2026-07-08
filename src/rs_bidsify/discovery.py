@@ -104,7 +104,7 @@ def find_dataset_spreadsheets(
 
     Notes
     -----
-    This function utilizes `find_file`, which raises a ValueError if
+    This function utilises `find_file`, which raises a ValueError if
     the spreadsheet is not uniquely identified.
     """
     sheet_path = find_file(raw_path, extension)
