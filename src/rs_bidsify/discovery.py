@@ -46,7 +46,7 @@ def find_file(path: Path, ext: str, keyword: str = "") -> Path:
     return found_path[0]
 
 
-def find_description_spec(raw_path: Path, extension: str = "json") -> DescriptionSpec:
+def find_description_spec(raw_path: Path, extension: str = "toml") -> DescriptionSpec:
     """
     Locate and load the dataset description metadata file.
 
@@ -58,7 +58,7 @@ def find_description_spec(raw_path: Path, extension: str = "json") -> Descriptio
     raw_path : Path
         The directory path to search for the description file.
     extension : str, optional
-        The file extension to search for, by default "json".
+        The file extension to search for, by default "toml".
 
     Returns
     -------
