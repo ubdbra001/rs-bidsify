@@ -107,7 +107,7 @@ def set_aux_channel_types(eeg_data: BaseRaw, aux_chans: dict[str, AuxChanSpec]):
     None
         Updates the `eeg_data` object in-place and logs the changes.
     """
-    type_map = {k: v.mne_type.value for k, v in aux_chans.items()}
+    type_map = {k: v.mne_type for k, v in aux_chans.items()}
 
     valid_chans = check_mapping_alignment(
         actual=eeg_data.ch_names,

@@ -24,39 +24,6 @@ from rs_bidsify.validation.subject import SubjectMetadata
 logger = logging.getLogger(__name__)
 
 
-class MNEChanTypes(StrEnum):
-    """
-    Standard channel types recognised by MNE-Python.
-
-    Lower-case strings corresponding to the types allowed in
-    mne.io.Raw.set_channel_types.
-    """
-
-    # This list could probably be reduced to channels specifically relevant to EEG
-    BIO = "bio"
-    CHPI = "chpi"
-    DBS = "dbs"
-    DIPOLE = "dipole"
-    ECG = "ecg"
-    ECOG = "ecog"
-    EMG = "emg"
-    EOG = "eog"
-    EXCI = "exci"
-    EYETRACK = "eyetrack"
-    FNIRS = "fnirs"
-    GOF = "gof"
-    GSR = "gsr"
-    IAS = "ias"
-    MISC = "misc"
-    MEG = "meg"
-    REF_MEG = "ref_meg"
-    RESP = "resp"
-    SEEG = "seeg"
-    STIM = "stim"
-    SYST = "syst"
-    TEMPERATURE = "temperature"
-
-
 class BIDSChanTypes(StrEnum):
     """
     Channel types defined by the BIDS specification.
@@ -113,6 +80,25 @@ class BIDSChanTypes(StrEnum):
     TRIG = "TRIG"
     VEL = "VEL"
     VEOG = "VEOG"
+
+
+bids_to_mne_map = {
+    # Probably a few missing here
+    BIDSChanTypes.EEG: "eeg",
+    BIDSChanTypes.SEEG: "seeg",
+    BIDSChanTypes.ECOG: "ecog",
+    BIDSChanTypes.DBS: "dbs",
+    BIDSChanTypes.REF: "dbs",
+    BIDSChanTypes.VEOG: "eog",
+    BIDSChanTypes.HEOG: "eog",
+    BIDSChanTypes.ECG: "ecg",
+    BIDSChanTypes.EMG: "emg",
+    BIDSChanTypes.PPG: "misc",
+    BIDSChanTypes.GSR: "gsr",
+    BIDSChanTypes.TEMP: "temperature",
+    BIDSChanTypes.AUDIO: "misc",
+    BIDSChanTypes.TRIG: "stim",
+}
 
 
 class LineFreqOptions(IntEnum):
@@ -339,9 +325,6 @@ class AuxChanSpec(BaseModel):
 
     Attributes
     ----------
-    mne_type : MNEChanTypes
-        The channel type designation used by MNE-Python
-        (e.g., 'ecg', 'emg', 'stim').
     bids_type : BIDSChanTypes
         The BIDS channel type (e.g., 'TRIG', 'MISC', 'EYE').
     description : str | None, optional
@@ -355,11 +338,15 @@ class AuxChanSpec(BaseModel):
         placements)
     """
 
-    mne_type: MNEChanTypes
     bids_type: BIDSChanTypes
     description: str | None = None  # Optional
     units: str | None = None  # Optional
     location: str | dict[str, str] | None = None  # Leaving the location dict relatively free-form here
+
+    @property
+    def mne_type(self) -> str:
+        """Gets the MNE channel type based in the BIDS channel type."""
+        return bids_to_mne_map[self.bids_type]
 
 
 class AcceptableImpedance(BaseModel):
