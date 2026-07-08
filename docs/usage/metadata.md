@@ -131,7 +131,6 @@ This structure contains information about the specifics of each recording.
         reference: "VARIES"
 
         [acquisition_spec.aux_channels.ECG]
-        mne_type: "ecg"
         bids_type: "ECG"
         location: {
             "active": "right wrist"
@@ -140,14 +139,12 @@ This structure contains information about the specifics of each recording.
         }
 
         [acquisition_spec.aux_channels.PPG]
-        mne_type: "misc"
         bids_type: "PPG"
         description: "photoplethysmography"
         location: "placed on the left index finger",
         units: "µV"
 
         [acquisition_spec.aux_channels.audio]
-        mne_type: "misc",
         bids_type: "AUDIO",
         description: "Audio channel",
         location: "n/a"
@@ -203,20 +200,17 @@ This structure contains information about the specifics of each recording.
             reference: "VARIES"
           aux_channels:
             ECG:
-              mne_type: "ecg"
               bids_type: "ECG"
               location:
                 active: "right wrist"
                 reference: "left wrist",
                 ground: "left inner forearm 3 cm distal from the elbow"
             PPG:
-              mne_type: "misc"
               bids_type: "PPG"
               description": "photoplethysmography"
               location: "placed on the left index finger"
               units: "µV"
             audio:
-              mne_type: "misc"
               bids_type: "AUDIO"
               description: "Audio channel"
               location: "n/a"
@@ -266,7 +260,6 @@ This structure contains information about the specifics of each recording.
             },
             "aux_channels": {
                 "ECG": {
-                    "mne_type": "ecg",
                     "bids_type": "ECG",
                     "location": {
                         "active": "right wrist",
@@ -275,14 +268,12 @@ This structure contains information about the specifics of each recording.
                     }
                 },
                 "PPG": {
-                    "mne_type": "misc",
                     "bids_type": "PPG",
                     "description": "photoplethysmography",
                     "location": "placed on the left index finger",
                     "units": "µV"
                 },
                 "audio": {
-                    "mne_type": "misc",
                     "bids_type": "AUDIO",
                     "description": "Audio channel",
                     "location": "n/a"
@@ -459,7 +450,6 @@ It consists of a dictionary with an entry for each auxiliary channel in the reco
 === "TOML"
     ``` toml
     [acquisition_spec.aux_channels.ECG]
-    mne_type: "ecg"
     bids_type: "ECG"
     location: {
         "active": "right wrist"
@@ -468,14 +458,12 @@ It consists of a dictionary with an entry for each auxiliary channel in the reco
     }
 
     [acquisition_spec.aux_channels.PPG]
-    mne_type: "misc"
     bids_type: "PPG"
     description: "photoplethysmography"
     location: "placed on the left index finger"
     units: "µV"
 
     [acquisition_spec.aux_channels.audio]
-    mne_type: "misc"
     bids_type: "AUDIO"
     description: "Audio channel"
     location: "n/a"
@@ -484,20 +472,17 @@ It consists of a dictionary with an entry for each auxiliary channel in the reco
     ``` yaml
     aux_channels:
       ECG:
-        mne_type: "ecg"
         bids_type: "ECG"
         location:
           active: "right wrist"
           reference: "left wrist",
           ground: "left inner forearm 3 cm distal from the elbow"
       PPG:
-        mne_type: "misc"
         bids_type: "PPG"
         description": "photoplethysmography"
         location: "placed on the left index finger"
         units: "µV"
       audio:
-        mne_type: "misc"
         bids_type: "AUDIO"
         description: "Audio channel"
         location: "n/a"
@@ -506,7 +491,6 @@ It consists of a dictionary with an entry for each auxiliary channel in the reco
     ``` json
     "aux_channels": {
         "ECG": {
-            "mne_type": "ecg",
             "bids_type": "ECG",
             "location": {
                 "active": "right wrist",
@@ -515,14 +499,12 @@ It consists of a dictionary with an entry for each auxiliary channel in the reco
             }
         },
         "PPG": {
-            "mne_type": "misc",
             "bids_type": "PPG",
             "description": "photoplethysmography",
             "location": "placed on the left index finger",
             "units": "µV"
         },
         "audio": {
-            "mne_type": "misc",
             "bids_type": "AUDIO",
             "description": "Audio channel",
             "location": "n/a"
@@ -536,7 +518,6 @@ This object should be included as the value for each auxiliary channel.
 
 | Field Name  | Type                 | Required | Default | Description                                                                                                                                       |
 | ----------- | -------------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| mne_type    | string               | Yes      | -       | The MNE channel type. See the list of MNE [data][mne_data_chans] and [non-data][mne_nondata_chans] channels                                       |
 | bids_type   | string               | Yes      | -       | The BIDS channel type. See the [list of possible values][bids_chans]                                                                              |
 | description | string               | No       | -       | A short description of the channel                                                                                                                |
 | location    | string or dictionary | No       | -       | A description of where the channel is located. <br>If the channel is multi-electrode then this can be a dictionary with a location per electrode. |
@@ -941,6 +922,4 @@ As with the participant data the phenotype codebook should contain `Variable` an
 [mne_read_raw]: https://mne.tools/stable/generated/mne.io.read_raw.html
 [built_in_montages]: https://mne.tools/stable/auto_tutorials/intro/40_sensor_locations.html#working-with-built-in-montages
 [read_custom_montage]: https://mne.tools/stable/generated/mne.channels.read_custom_montage.html
-[mne_data_chans]: https://mne.tools/stable/documentation/glossary.html#term-data-channels
-[mne_nondata_chans]: https://mne.tools/stable/documentation/glossary.html#term-non-data-channels
 [bids_chans]: https://bids-specification.readthedocs.io/en/stable/glossary.html#objects.columns.type__channels
