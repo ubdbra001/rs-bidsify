@@ -8,12 +8,12 @@ from rs_bidsify.validation.description import (
     AcceptableImpedance,
     AcquisitionSpecs,
     AuxChanSpec,
+    BIDSChanTypes,
     DatasetMetadata,
     EEGChanSpec,
     ExtraSpec,
     FilterSpec,
     FilterTypeOptions,
-    MNEChanTypes,
 )
 from rs_bidsify.validation.subject import SubjectMetadata
 
@@ -79,7 +79,7 @@ class TestMNEEnrichment:
         assert f"Successfully applied montage from source: {expected_source}" in caplog.text
 
     def test_set_aux_channel_types(self, mocker, mock_raw):
-        real_spec = AuxChanSpec.model_construct(mne_type=MNEChanTypes.ECG)
+        real_spec = AuxChanSpec.model_construct(bids_type=BIDSChanTypes.ECG)
 
         aux_chans = {"AUX1": real_spec}
 
@@ -94,9 +94,7 @@ class TestMNEEnrichment:
 
     def test_set_aux_channel_types_no_matches(self, mocker, mock_raw):
 
-        fake_spec = AuxChanSpec.model_construct(
-            mne_type=MNEChanTypes.EOG  # Use your actual Enum member here
-        )
+        fake_spec = AuxChanSpec.model_construct(bids_type=BIDSChanTypes.ECG)
 
         mocker.patch("rs_bidsify.enrichment.check_mapping_alignment", return_value={})
 
