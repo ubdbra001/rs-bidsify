@@ -359,7 +359,7 @@ class AuxChanSpec(BaseModel):
     bids_type: BIDSChanTypes
     description: str | None = None  # Optional
     units: str | None = None  # Optional
-    location: str | dict[str, str]  # Leaving the location dict relatively free-form here
+    location: str | dict[str, str] | None = None  # Leaving the location dict relatively free-form here
 
 
 class AcceptableImpedance(BaseModel):
