@@ -115,6 +115,25 @@ class BIDSChanTypes(StrEnum):
     VEOG = "VEOG"
 
 
+bids_to_mne_map = {
+    # Probably a few missing here
+    BIDSChanTypes.EEG: "eeg",
+    BIDSChanTypes.SEEG: "seeg",
+    BIDSChanTypes.ECOG: "ecog",
+    BIDSChanTypes.DBS: "dbs",
+    BIDSChanTypes.REF: "dbs",
+    BIDSChanTypes.VEOG: "eog",
+    BIDSChanTypes.HEOG: "eog",
+    BIDSChanTypes.ECG: "ecg",
+    BIDSChanTypes.EMG: "emg",
+    BIDSChanTypes.PPG: "misc",
+    BIDSChanTypes.GSR: "gsr",
+    BIDSChanTypes.TEMP: "temperature",
+    BIDSChanTypes.AUDIO: "misc",
+    BIDSChanTypes.TRIG: "stim",
+}
+
+
 class LineFreqOptions(IntEnum):
     """Supported power-line frequencies for MNE and BIDS metadata."""
 
@@ -339,9 +358,6 @@ class AuxChanSpec(BaseModel):
 
     Attributes
     ----------
-    mne_type : MNEChanTypes
-        The channel type designation used by MNE-Python
-        (e.g., 'ecg', 'emg', 'stim').
     bids_type : BIDSChanTypes
         The BIDS channel type (e.g., 'TRIG', 'MISC', 'EYE').
     description : str | None, optional
@@ -355,11 +371,15 @@ class AuxChanSpec(BaseModel):
         placements)
     """
 
-    mne_type: MNEChanTypes
     bids_type: BIDSChanTypes
     description: str | None = None  # Optional
     units: str | None = None  # Optional
     location: str | dict[str, str] | None = None  # Leaving the location dict relatively free-form here
+
+    @property
+    def mne_type(self) -> str:
+        """Gets the MNE channel type based in the BIDS channel type."""
+        return bids_to_mne_map[self.bids_type]
 
 
 class AcceptableImpedance(BaseModel):
