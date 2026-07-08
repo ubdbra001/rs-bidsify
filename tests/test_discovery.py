@@ -43,14 +43,14 @@ class TestFindFile:
 class TestDiscoveryMocks:
     def test_find_description_spec(self, mocker):
         mock_find = mocker.patch("rs_bidsify.discovery.find_file")
-        mock_read = mocker.patch("rs_bidsify.io.read_description_json")
+        mock_read = mocker.patch("rs_bidsify.io.read_description_file")
 
         mock_path = Path("/tmp/data.json")
         mock_find.return_value = mock_path
 
         discovery.find_description_spec(Path("/tmp"), "json")
 
-        mock_find.assert_called_once_with(Path("/tmp"), "json")
+        mock_find.assert_called_once_with(Path("/tmp"), ext="json", keyword="metadata")
         mock_read.assert_called_once_with(mock_path)
 
     def test_find_dataset_spreadsheets_success(self, mocker):

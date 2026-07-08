@@ -5,14 +5,14 @@ toc_depth: 3
 
 `RS-BIDSify` requires two metadata files as inputs:
 
-1. **Recording metadata**: A JSON file specifying key metadata about the EEG recording environment.
+1. **Recording metadata**: A file specifying key metadata about the EEG recording environment.
 2. **Participant metadata**: A spreadsheet containing participant-level metadata, and, optionally, phenotype metadata.
 
 These form the basis of the information that will be placed in the BIDS metadata files.
 
 ## Recording metadata
 
-This file can be broken down into four key sections, each describing a part of the recording environment.  
+This file can be in either [TOML][toml_spec], [YAML][yaml_spec] or [JSON][json_spec] format, and can be broken down into four key sections, each describing a part of the recording environment.  
 Not all sections are required, and not all items in a section are required.
 
 1. [Tasks](#tasks)
@@ -25,9 +25,22 @@ Not all sections are required, and not all items in a section are required.
 This is a array/list outlining the different tasks present in the data set.
 It can be omitted if there is only a single task (in which case the task name will default to "rest"), but it is required when task directories are present in the dataset file structure, and the values should correspond exactly.
 
-```json
-"tasks": ["rest", "video"]
-```
+=== "TOML"
+    ```toml
+    tasks: ["rest", "video"]
+    ```
+
+=== "YAML"
+    ```yaml
+    tasks:
+      - rest
+      - video
+    ```
+
+=== "JSON"
+    ```json
+    "tasks": ["rest", "video"]
+    ```
 
 | Field Name | Type           | Required | Description                         |
 | ---------- | -------------- | -------- | ----------------------------------- |
@@ -38,21 +51,51 @@ It can be omitted if there is only a single task (in which case the task name wi
 This structure contains information about dataset-level metadata (i.e. values that would not differ between participants).  
 The section itself is required as some fields are required.
 
-``` json
-"metadata": {
-    "population": "Healthy Adults",
-    "dataset_name": "Test dataset",
-    "authors": [
-        "Pavlov, Yuri"
-    ],
-    "funding": "n/a",
-    "ethics_approval": "Approved",
-    "references_links": "n/a",
-    "license": "n/a",
-    "institution_name": "n/a",
-    "institution_dept": "n/a"
-}
-```
+=== "TOML"
+    ```toml
+    [metadata]
+    population: "Healthy Adults"
+    dataset_name: "Test dataset"
+    authors: ["Pavlov, Yuri"]
+    funding: "n/a"
+    ethics_approval: "Approved"
+    references_links: "n/a"
+    license: "n/a"
+    institution_name: "n/a"
+    institution_dept: "n/a"
+    ```
+
+=== "YAML"
+    ```yaml
+    metadata:
+      population: "Healthy Adults"
+      dataset_name: "Test dataset"
+      authors:
+        - "Pavlov, Yuri"
+      funding: "n/a"
+      ethics_approval: "Approved"
+      references_links: "n/a"
+      license: "n/a"
+      institution_name: "n/a"
+      institution_dept: "n/a"
+    ```
+
+=== "JSON"
+    ``` json
+    "metadata": {
+        "population": "Healthy Adults",
+        "dataset_name": "Test dataset",
+        "authors": [
+            "Pavlov, Yuri"
+        ],
+        "funding": "n/a",
+        "ethics_approval": "Approved",
+        "references_links": "n/a",
+        "license": "n/a",
+        "institution_name": "n/a",
+        "institution_dept": "n/a"
+    }
+    ```
 
 | Field Name       | Type                             | Required | Default | Description                                                                                                      |
 | ---------------- | -------------------------------- | -------- | ------- | ---------------------------------------------------------------------------------------------------------------- |
@@ -71,67 +114,218 @@ The section itself is required as some fields are required.
 This structure contains information about the specifics of each recording.
 
 ??? info "Complete example"
-    ```json
-    "acquisition_spec": {
-        "software": "Brain Vision Recorder",
-        "amplifier_model": "Brain Products",
-        "power_line_freq": 50,
-        "acquisition_freq": 1000,
-        "file_format": ".set",
-        "eeg_channels": {
-            "number" : 63,
-            "montage": {
-                "mne_name": "standard_1005"
+
+    === "TOML"
+        ```toml
+        [acquisition_spec]
+        software: "Brain Vision Recorder"
+        amplifier_model: "Brain Products"
+        power_line_freq: 50
+        acquisition_freq: 1000
+        file_format: ".set"
+        
+        [acquisition_spec.eeg_channels]
+        number: 63
+        montage.mne_name: "standard_1005"
+        ground: "FPz"
+        reference: "VARIES"
+
+        [acquisition_spec.aux_channels.ECG]
+        mne_type: "ecg"
+        bids_type: "ECG"
+        location: {
+            "active": "right wrist"
+            "reference": "left wrist"
+            "ground": "left inner forearm 3 cm distal from the elbow"
+        }
+
+        [acquisition_spec.aux_channels.PPG]
+        mne_type: "misc"
+        bids_type: "PPG"
+        description: "photoplethysmography"
+        location: "placed on the left index finger",
+        units: "µV"
+
+        [acquisition_spec.aux_channels.audio]
+        mne_type: "misc",
+        bids_type: "AUDIO",
+        description: "Audio channel",
+        location: "n/a"
+        
+        [[acquisition_spec.filters]]
+        name: "Low-pass filter",
+        type: "Software",
+        info: {
+            "cut-off frequency (Hz)": 260
+        }
+        
+        [[acquisition_spec.filters]]
+        name: "Anti-aliasing filter"
+        type: "Software"
+        info: {
+            "half-amplitude cutoff (Hz)": 500
+            "Roll-off": "6dB/Octave"
+        }
+
+        [[acquisition_spec.filters]]
+        name: "ADC's decimation filter (hardware bandwidth limit)"
+        type: "Hardware",
+        info: {
+            "-3dB cutoff point (Hz)": 480
+            "Filter order sinc response": 5
+        }
+
+        [acquisition_spec.extras]
+        acceptable_impedance: {"value": 25, "units": "kOhm"},
+        electrode_type: "active",
+        conductive_medium: "gel",
+        faraday_cage: false,
+        sound_proof: false,
+        lighting_conditions: {
+            description: "380 lux ambient lighting",
+            measurement: "measured with a luxmeter around the head of the participant"
+        }
+        ```
+
+    === "YAML"
+        ```yaml
+        acquisition_spec:
+          software: "Brain Vision Recorder"
+          amplifier_model: "Brain Products"
+          power_line_freq: 50
+          acquisition_freq: 1000
+          file_format: ".set"
+          eeg_channels:
+            number: 63
+            montage:
+              mne_name: "standard_1005"
+            ground: "FPz"
+            reference: "VARIES"
+          aux_channels:
+            ECG:
+              mne_type: "ecg"
+              bids_type: "ECG"
+              location:
+                active: "right wrist"
+                reference: "left wrist",
+                ground: "left inner forearm 3 cm distal from the elbow"
+            PPG:
+              mne_type: "misc"
+              bids_type: "PPG"
+              description": "photoplethysmography"
+              location: "placed on the left index finger"
+              units: "µV"
+            audio:
+              mne_type: "misc"
+              bids_type: "AUDIO"
+              description: "Audio channel"
+              location: "n/a"
+          filters:
+            - name: "Low-pass filter"
+              type: "Software"
+              info:
+                "cut-off frequency (Hz)": 260
+            - name: "Anti-aliasing filter"
+              type: "Software"
+              info:
+                "half-amplitude cutoff (Hz)": 500
+                "Roll-off": "6dB/Octave"
+            - name: "ADC's decimation filter (hardware bandwidth limit)"
+              type: "Hardware"
+              info:
+                "-3dB cutoff point (Hz)": 480
+                "Filter order sinc response": 5
+          extras:
+            acceptable_impedance:
+              value: 25
+              units: "kOhm"
+            electrode_type: "active"
+            conductive_medium: "gel"
+            faraday_cage: false
+            sound_proof: false
+            lighting_conditions:
+              description: "380 lux ambient lighting"
+              measurement: "measured with a luxmeter around the head of the participant"
+        ```
+
+    === "JSON"
+        ```json
+        "acquisition_spec": {
+            "software": "Brain Vision Recorder",
+            "amplifier_model": "Brain Products",
+            "power_line_freq": 50,
+            "acquisition_freq": 1000,
+            "file_format": ".set",
+            "eeg_channels": {
+                "number" : 63,
+                "montage": {
+                    "mne_name": "standard_1005"
+                },
+                "ground": "FPz",
+                "reference": "VARIES"
             },
-            "ground": "FPz",
-            "reference": "VARIES"
-        },
-        "aux_channels": {
-            "ECG": {
-                "mne_type": "ecg",
-                "bids_type": "ECG",
-                "location": {
-                    "active": "right wrist",
-                    "reference": "left wrist",
-                    "ground": "left inner forearm 3 cm distal from the elbow"
+            "aux_channels": {
+                "ECG": {
+                    "mne_type": "ecg",
+                    "bids_type": "ECG",
+                    "location": {
+                        "active": "right wrist",
+                        "reference": "left wrist",
+                        "ground": "left inner forearm 3 cm distal from the elbow"
+                    }
+                },
+                "PPG": {
+                    "mne_type": "misc",
+                    "bids_type": "PPG",
+                    "description": "photoplethysmography",
+                    "location": "placed on the left index finger",
+                    "units": "µV"
+                },
+                "audio": {
+                    "mne_type": "misc",
+                    "bids_type": "AUDIO",
+                    "description": "Audio channel",
+                    "location": "n/a"
                 }
             },
-            "PPG": {
-                "mne_type": "misc",
-                "bids_type": "PPG",
-                "description": "photoplethysmography",
-                "location": "placed on the left index finger",
-                "units": "µV"
-            },
-            "audio": {
-                "mne_type": "misc",
-                "bids_type": "AUDIO",
-                "description": "Audio channel",
-                "location": "n/a"
-            }
-        },
-        "filters": [
-            {
-                "name": "Low-pass filter",
-                "type": "Software",
-                "info": {
-                    "cut-off frequency (Hz)": 260
+            "filters": [
+                {
+                    "name": "Low-pass filter",
+                    "type": "Software",
+                    "info": {
+                        "cut-off frequency (Hz)": 260
+                    }
+                },
+                {
+                  "name": "Anti-aliasing filter"
+                    "type": "Software"
+                    "info": {
+                    "half-amplitude cutoff (Hz)": 500,
+                        "Roll-off": "6dB/Octave"
+                    }
+                },
+                {
+                   "name": "ADC's decimation filter (hardware bandwidth limit)"
+                    "type": "Hardware"
+                    "info": {
+                        "-3dB cutoff point (Hz)": 480
+                        "Filter order sinc response": 5
+                    }
                 }
-            }
-        ],
-        "extras": {
-            "acceptable_impedance": {"value": 25, "units": "kOhm"},
-            "electrode_type": "active",
-            "conductive_medium": "gel",
-            "faraday_cage": false,
-            "sound_proof": false,
-            "lighting_conditions": {
-                "description": "380 lux ambient lighting",
-                "measurement": "measured with a luxmeter around the head of the participant"
+            ],
+            "extras": {
+                "acceptable_impedance": {"value": 25, "units": "kOhm"},
+                "electrode_type": "active",
+                "conductive_medium": "gel",
+                "faraday_cage": false,
+                "sound_proof": false,
+                "lighting_conditions": {
+                    "description": "380 lux ambient lighting",
+                    "measurement": "measured with a luxmeter around the head of the participant"
+                }
             }
         }
-    }
-    ```
+        ```
 
 It can be broken down into several sections:
 
@@ -139,13 +333,32 @@ It can be broken down into several sections:
 
 This is the basic information about the recording, e.g. sampling frequency, power line frequency, input file format, etc.
 
-``` json
-"software": "Brain Vision Recorder",
-"acquisition_freq": 1000,
-"file_format": ".set",
-"amplifier_model": "Brain Products",
-"power_line_freq": 50,
-```
+=== "TOML"
+    ```toml
+    software: "Brain Vision Recorder"
+    acquisition_freq: 1000
+    file_format: ".set"
+    amplifier_model: "Brain Products"
+    power_line_freq: 50
+    ```
+
+=== "YAML"
+    ```yaml
+    software: "Brain Vision Recorder"
+    acquisition_freq: 1000
+    file_format: ".set"
+    amplifier_model: "Brain Products"
+    power_line_freq: 50
+    ```
+
+=== "JSON"
+    ```json
+    "software": "Brain Vision Recorder",
+    "acquisition_freq": 1000,
+    "file_format": ".set",
+    "amplifier_model": "Brain Products",
+    "power_line_freq": 50,
+    ```
 
 | Field Name       | Type             | Required | Default | Description                                                                                            |
 | ---------------- | ---------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------ |
@@ -159,16 +372,36 @@ This is the basic information about the recording, e.g. sampling frequency, powe
 
 This structure contains information about the EEG channels present in the recording.  
 
-``` json
-"eeg_channels": {
-    "number" : 63,
-    "montage": {
-        "mne_name": "standard_1005" 
-    },
-    "ground": "FPz",
-    "reference": "Cz"
-}
-```
+=== "TOML"
+    ```toml
+    [acquisition_spec.eeg_channels]
+    number: 63
+    montage.mne_name: "standard_1005"
+    ground: "FPz"
+    reference: "VARIES"
+    ```
+
+=== "YAML"
+    ```yaml
+    eeg_channels:
+      number: 63
+      montage:
+        mne_name: "standard_1005"
+      ground: "FPz"
+      reference: "VARIES"
+    ```
+
+=== "JSON"
+    ```json
+    "eeg_channels": {
+        "number" : 63,
+        "montage": {
+            "mne_name": "standard_1005"
+        },
+        "ground": "FPz",
+        "reference": "Cz"
+    }
+    ```
 
 | Field Name | Type             | Required | Default | Description                                                                                                              |
 | ---------- | ---------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------------ |
@@ -184,50 +417,118 @@ The named montage must be one of the named montages available from the list of [
 The custom montage file can be any that [MNE can read][read_custom_montage].  
 
 === "Named montage"
-    ``` json
-    "montage": {
-        "mne_name": "standard_1005"
-    }
-    ```
+
+    === "TOML"
+        ``` toml
+        montage.mne_name: "standard_1005"
+        ```
+    === "YAML"
+        ```yaml
+        montage:
+          mne_name: "standard_1005"
+        ```
+    === "JSON"
+        ``` json
+        "montage": {
+            "mne_name": "standard_1005"
+        }
+        ```
 
 === "Custom Montage"
-    ``` json
-    "montage": {
-        "path": "path/to/custom/montage.loc"
-    }
-    ```
+    === "TOML"
+        ``` toml
+        montage.path: "path/to/custom/montage.loc"
+        ```
+    === "YAML"
+        ```yaml
+        montage:
+          path: "path/to/custom/montage.loc"
+        ```
+    === "JSON"
+        ``` json
+        "montage": {
+            "path": "path/to/custom/montage.loc"
+        }
+        ```
 
 #### Auxiliary channel information
 
 This structure outlines the details of all the non-EEG channels present in the recordings.  
 It consists of a dictionary with an entry for each auxiliary channel in the recording. The key for a channel should be the name of the channel as it appears in the recording, and the value should be a dictionary containing further information about that channel, [see below](#auxiliary-channel-description) for more details.  
 
-``` json
-"aux_channels": {
-    "ECG": {
-        "mne_type": "ecg",
-        "bids_type": "ECG",
-        "location": {
-            "active": "right wrist",
-            "reference": "left wrist",
-            "ground": "left inner forearm 3 cm distal from the elbow"
-        }
-    },
-    "PPG": {
-        "mne_type": "misc",
-        "bids_type": "PPG",
-        "description": "photoplethysmography",
-        "location": "placed on the left index finger",
-        "units": "µV"
-    },
-    "audio": {
-        "mne_type": "misc",
-        "bids_type": "AUDIO",
-        "description": "Audio channel",
-        "location": "n/a"
+=== "TOML"
+    ``` toml
+    [acquisition_spec.aux_channels.ECG]
+    mne_type: "ecg"
+    bids_type: "ECG"
+    location: {
+        "active": "right wrist"
+        "reference": "left wrist"
+        "ground": "left inner forearm 3 cm distal from the elbow"
     }
-}
-```
+
+    [acquisition_spec.aux_channels.PPG]
+    mne_type: "misc"
+    bids_type: "PPG"
+    description: "photoplethysmography"
+    location: "placed on the left index finger"
+    units: "µV"
+
+    [acquisition_spec.aux_channels.audio]
+    mne_type: "misc"
+    bids_type: "AUDIO"
+    description: "Audio channel"
+    location: "n/a"
+    ```
+=== "YAML"
+    ``` yaml
+    aux_channels:
+      ECG:
+        mne_type: "ecg"
+        bids_type: "ECG"
+        location:
+          active: "right wrist"
+          reference: "left wrist",
+          ground: "left inner forearm 3 cm distal from the elbow"
+      PPG:
+        mne_type: "misc"
+        bids_type: "PPG"
+        description": "photoplethysmography"
+        location: "placed on the left index finger"
+        units: "µV"
+      audio:
+        mne_type: "misc"
+        bids_type: "AUDIO"
+        description: "Audio channel"
+        location: "n/a"
+    ```
+=== "JSON"
+    ``` json
+    "aux_channels": {
+        "ECG": {
+            "mne_type": "ecg",
+            "bids_type": "ECG",
+            "location": {
+                "active": "right wrist",
+                "reference": "left wrist",
+                "ground": "left inner forearm 3 cm distal from the elbow"
+            }
+        },
+        "PPG": {
+            "mne_type": "misc",
+            "bids_type": "PPG",
+            "description": "photoplethysmography",
+            "location": "placed on the left index finger",
+            "units": "µV"
+        },
+        "audio": {
+            "mne_type": "misc",
+            "bids_type": "AUDIO",
+            "description": "Audio channel",
+            "location": "n/a"
+        }
+    }
+    ```
 
 ##### Auxiliary channel description
 
@@ -247,37 +548,124 @@ This section consists of a list of all the hardware and software filters specifi
 Each filter should consist of an dictionary with a name, a type (Hardware or Software), and information about the filter properties. As shown below there can be multiple filters of the same type, but they much have unique names.  
 Filter information should be represented in an object with key-value pairs. Each key is a property of the filter and each value is the value of that property. This information is translated directly to the BIDS recording sidecar file.
 
-``` json
-"filters": [
-    {
-        "name": "Low-pass filter",
-        "type": "Software",
-        "info": {
-            "cut-off frequency (Hz)": 260
-        }
+=== "TOML"
+    ``` toml
+    [[acquisition_spec.filters]]
+    name: "Low-pass filter"
+    type: "Software"
+    info: {
+        "cut-off frequency (Hz)": 260
     }
-],
 
-```
+    [[acquisition_spec.filters]]
+    name: "Anti-aliasing filter"
+    type: "Software"
+    info: {
+        "half-amplitude cutoff (Hz)": 500
+        "Roll-off": "6dB/Octave"
+    }
+
+    [[acquisition_spec.filters]]
+    name: "ADC's decimation filter (hardware bandwidth limit)"
+    type: "Hardware",
+    info: {
+        "-3dB cutoff point (Hz)": 480
+        "Filter order sinc response": 5
+    }
+    ```
+=== "YAML"
+    ``` yaml
+    filters:
+      - name: "Low-pass filter"
+        type: "Software"
+        info:
+          "cut-off frequency (Hz)": 260
+      - name: "Anti-aliasing filter"
+        type: "Software"
+        info:
+          "half-amplitude cutoff (Hz)": 500
+          "Roll-off": "6dB/Octave"
+      - name: "ADC's decimation filter (hardware bandwidth limit)"
+        type: "Hardware"
+        info:
+          "-3dB cutoff point (Hz)": 480
+          "Filter order sinc response": 5
+    ```
+=== "JSON"
+    ``` json
+    "filters": [
+        {
+            "name": "Low-pass filter",
+            "type": "Software",
+            "info": {
+                "cut-off frequency (Hz)": 260
+            }
+        },
+        {
+            "name": "Anti-aliasing filter"
+            "type": "Software"
+            "info": {
+              "half-amplitude cutoff (Hz)": 500,
+                "Roll-off": "6dB/Octave"
+            }
+        },
+        {
+            "name": "ADC's decimation filter (hardware bandwidth limit)"
+            "type": "Hardware"
+            "info": {
+                "-3dB cutoff point (Hz)": 480
+                "Filter order sinc response": 5
+            }
+        }
+    ],
+    ```
 
 #### Extra information
 
 This structure specifies extra metadata that may be recorded but does not have a formal place in BIDS, and so may optionally be included in the final BIDS-compliant dataset.
 This section is entirely optional, as are each of the fields contained within.
 
-``` json
-"extras": {
-    "acceptable_impedance": {"value": 25, "units": "kOhm"},
-    "electrode_type": "active",
-    "conductive_medium": "gel",
-    "faraday_cage": false,
-    "sound_proof": false,
-    "lighting_conditions": {
-        "description": "380 lux ambient lighting",
-        "measurement": "measured with a luxmeter around the head of the participant"
+=== "TOML"
+    ``` toml
+    [acquisition_spec.extras]
+    acceptable_impedance: {"value": 25, "units": "kOhm"}
+    electrode_type: "active"
+    conductive_medium: "gel"
+    faraday_cage: false
+    sound_proof: false
+    lighting_conditions: {
+        description: "380 lux ambient lighting",
+        measurement: "measured with a luxmeter around the head of the participant"
     }
-}
-```
+    ```
+=== "YAML"
+    ``` yaml
+    extras:
+      acceptable_impedance:
+        value: 25
+        units: "kOhm"
+      electrode_type: "active"
+      conductive_medium: "gel"
+      faraday_cage: false
+      sound_proof: false
+      lighting_conditions:
+        description: "380 lux ambient lighting"
+        measurement: "measured with a luxmeter around the head of the participant"
+    ```
+=== "JSON"
+    ``` json
+    "extras": {
+        "acceptable_impedance": {"value": 25, "units": "kOhm"},
+        "electrode_type": "active",
+        "conductive_medium": "gel",
+        "faraday_cage": false,
+        "sound_proof": false,
+        "lighting_conditions": {
+            "description": "380 lux ambient lighting",
+            "measurement": "measured with a luxmeter around the head of the participant"
+        }
+    }
+    ```
 
 | Field Name           | Type       | Description                                                                                                                                            |
 | -------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -294,33 +682,81 @@ This section contains details for the resting state tasks undertaken during the 
 In includes information about the instructions issued to the participants, the duration of the eyes-open and eyes-closed tasks, the stimuli used during these tasks, any other tasks recorded, and the details of the event markers captured during the recording.  
 
 ??? info "Complete example"
-    ``` json
-    "resting_state": {
-        "instructions": "A prerecorded voice gave commands to open and close the eyes every minute. The stimuli were presented in PsychoPy.",
-        "eyes_closed": {
-            "duration_secs": 240
-        },
-        "eyes_open": {
-            "duration_secs": 240,
-            "stimulus_description": "white fixation cross on a grey background"
-        },
-        "other_task": [
-            {
-                "task_name": "video watching",
-                "duration_secs": 231,
-                "stimulus_description": "a short animated movie 'The man who was afraid of falling' (https://osf.io/x9jpz)"
-            }
-        ],
-        "events": {
-            "S 20": "Eyes open",
-            "S 21": "Eyes closed",
-            "S 22": "Movie start",
-            "S 23": "Movie end",
-            "S254": "Start of Resting State Recording",
+
+    === "TOML"
+        ``` toml
+        [resting_state]
+        instructions: "A prerecorded voice gave commands to open and close the eyes every minute. The stimuli were presented in PsychoPy."
+        
+        [resting_state.eyes_closed]
+        duration_secs: 240
+
+        [resting_state.eyes_open]
+        duration_secs: 240
+        stimulus_description: "white fixation cross on a grey background"
+
+        [[resting_state.other_task]]
+        task_name: "video watching"
+        duration_secs: 231
+        stimulus_description: "a short animated movie 'The man who was afraid of falling' (https://osf.io/x9jpz)"
+
+        [resting_state.events]
+        "S 20": "Eyes open"
+        "S 21": "Eyes closed"
+        "S 22": "Movie start"
+        "S 23": "Movie end"
+        "S254": "Start of Resting State Recording"
+        "S252": "End of Resting State Recording"
+        ```
+    === "YAML"
+        ``` yaml
+        resting_state:
+          instructions: "A prerecorded voice gave commands to open and close the eyes every minute. The stimuli were presented in PsychoPy."
+          eyes_closed:
+            duration_secs: 240
+          eyes_open:
+            duration_secs: 240
+            stimulus_description: "white fixation cross on a grey background"
+          other_task:
+            - task_name: "video watching"
+              duration_secs: 231
+              stimulus_description: "a short animated movie 'The man who was afraid of falling' (https://osf.io/x9jpz)"
+          events:
+            "S 20": "Eyes open"
+            "S 21": "Eyes closed"
+            "S 22": "Movie start"
+            "S 23": "Movie end"
+            "S254": "Start of Resting State Recording"
             "S252": "End of Resting State Recording"
+        ```
+    === "JSON"
+        ``` json
+        "resting_state": {
+            "instructions": "A prerecorded voice gave commands to open and close the eyes every minute. The stimuli were presented in PsychoPy.",
+            "eyes_closed": {
+                "duration_secs": 240
+            },
+            "eyes_open": {
+                "duration_secs": 240,
+                "stimulus_description": "white fixation cross on a grey background"
+            },
+            "other_task": [
+                {
+                    "task_name": "video watching",
+                    "duration_secs": 231,
+                    "stimulus_description": "a short animated movie 'The man who was afraid of falling' (https://osf.io/x9jpz)"
+                }
+            ],
+            "events": {
+                "S 20": "Eyes open",
+                "S 21": "Eyes closed",
+                "S 22": "Movie start",
+                "S 23": "Movie end",
+                "S254": "Start of Resting State Recording",
+                "S252": "End of Resting State Recording"
+            }
         }
-    }
-    ```
+        ```
 
 | Field Name   | Type                  | Required | Description                                                                                                                                           |
 | ------------ | --------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -339,30 +775,63 @@ When present, both conditions should have the 'condition duration in seconds' (`
 Optionally, either of these conditions can have a description of the stimulus presented in the condition (`stimulus_description`).  
 e.g.:
 
-```json
-"eyes_closed": {
-    "duration_secs": 240
-},
-"eyes_open": {
-    "duration_secs": 240,
-    "stimulus_description": "white fixation cross on a grey background"
-}
-```
+=== "TOML"
+    ```toml
+    [resting_state.eyes_closed]
+    duration_secs: 240
+
+    [resting_state.eyes_open]
+    duration_secs: 240
+    stimulus_description: "white fixation cross on a grey background"
+    ```
+=== "YAML"
+    ```yaml
+    eyes_closed:
+      duration_secs: 240
+    eyes_open:
+      duration_secs: 240
+      stimulus_description: "white fixation cross on a grey background"
+    ```
+=== "JSON"
+    ```json
+    "eyes_closed": {
+        "duration_secs": 240
+    },
+    "eyes_open": {
+        "duration_secs": 240,
+        "stimulus_description": "white fixation cross on a grey background"
+    }
+    ```
 
 #### Other task
 
 All other resting-state tasks recorded should be included under the `other_task` field. This is a list of dictionaries, with each dictionary describing a specific condition.  
 When a task is included all of the fields in the dictionary describing it are required.
 
-```json
-"other_task": [
-    {
-        "task_name": "video watching",
-        "duration_secs": 231,
-        "stimulus_description": "a short animated movie 'The man who was afraid of falling' (https://osf.io/x9jpz)"
-    }
-]
-```
+=== "TOML"
+    ```toml
+    [[resting_state.other_task]]
+    task_name: "video watching"
+    duration_secs: 231
+    stimulus_description: "a short animated movie 'The man who was afraid of falling' (https://osf.io/x9jpz)"
+    ```
+=== "YAML"
+    ```yaml
+    other_task:
+    - task_name: "video watching"
+      duration_secs: 231
+      stimulus_description: "a short animated movie 'The man who was afraid of falling' (https://osf.io/x9jpz)"
+    ```
+=== "JSON"
+    ```json
+    "other_task": [
+        {
+            "task_name": "video watching",
+            "duration_secs": 231,
+            "stimulus_description": "a short animated movie 'The man who was afraid of falling' (https://osf.io/x9jpz)"
+        }
+    ]
+    ```
 
 | Field Name           | Type             | Description                                              |
 | -------------------- | ---------------- | -------------------------------------------------------- |
@@ -375,16 +844,37 @@ When a task is included all of the fields in the dictionary describing it are re
 THis field contains a dictionary mapping the event markers in the recording with a human-readable tag describing what the event represents.  
 The dictionary should use strings for both the keys (the event markers) and the values (the human-readable tags). e.g.:
 
-```json
-"events": {
-    "S 20": "Eyes open",
-    "S 21": "Eyes closed",
-    "S 22": "Movie start",
-    "S 23": "Movie end",
-    "S254": "Start of Resting State Recording",
+=== "TOML"
+    ```toml
+    [resting_state.events]
+    "S 20": "Eyes open"
+    "S 21": "Eyes closed"
+    "S 22": "Movie start"
+    "S 23": "Movie end"
+    "S254": "Start of Resting State Recording"
     "S252": "End of Resting State Recording"
-}
-```
+    ```
+=== "YAML"
+    ```yaml
+    events:
+      "S 20": "Eyes open"
+      "S 21": "Eyes closed"
+      "S 22": "Movie start"
+      "S 23": "Movie end"
+      "S254": "Start of Resting State Recording"
+      "S252": "End of Resting State Recording"
+    ```
+=== "JSON"
+    ```json
+    "events": {
+        "S 20": "Eyes open",
+        "S 21": "Eyes closed",
+        "S 22": "Movie start",
+        "S 23": "Movie end",
+        "S254": "Start of Resting State Recording",
+        "S252": "End of Resting State Recording"
+    }
+    ```
 
 ## Participant metadata
 
@@ -445,6 +935,9 @@ As with the participant data the phenotype codebook should contain `Variable` an
 | IQ                 | participant IQ as measured by the WAIS-5-UK |
 | ...                | ...                                         |
 
+[toml_spec]: https://toml.io/en/v1.1.0
+[yaml_spec]: https://yaml.org/spec/1.2.2/
+[json_spec]: https://www.json.org/json-en.html
 [mne_read_raw]: https://mne.tools/stable/generated/mne.io.read_raw.html
 [built_in_montages]: https://mne.tools/stable/auto_tutorials/intro/40_sensor_locations.html#working-with-built-in-montages
 [read_custom_montage]: https://mne.tools/stable/generated/mne.channels.read_custom_montage.html

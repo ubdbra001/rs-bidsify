@@ -1,9 +1,12 @@
+import json
 import logging
 import shutil
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
+import tomlkit
+import yaml
 from mne.io import BaseRaw, read_raw
 from mne_bids import BIDSPath, update_sidecar_json
 
@@ -14,9 +17,9 @@ from rs_bidsify.validation.description import DescriptionSpec
 logger = logging.getLogger(__name__)
 
 
-def read_description_json(file_path: Path) -> DescriptionSpec:
+def read_description_file(file_path: Path) -> DescriptionSpec:
     """
-    Read and validate a dataset description JSON file.
+    Read and validate a dataset description file.
 
     Loads the raw text from the specified path and parses it into a
     validated Pydantic model. Logs a confirmation message upon
@@ -25,7 +28,7 @@ def read_description_json(file_path: Path) -> DescriptionSpec:
     Parameters
     ----------
     file_path : Path
-        The path to the description JSON file to be read.
+        The path to the description file to be read. Must be JSON, YAML, or TOML.
 
     Returns
     -------
@@ -34,14 +37,23 @@ def read_description_json(file_path: Path) -> DescriptionSpec:
 
     Notes
     -----
-    This function utilizes Pydantic's `model_validate_json` for schema
-    enforcement. If the JSON structure does not match `DescriptionSpec`,
+    This function utilises Pydantic's `model_validate` for schema enforcement.
+    If the metadata file structure does not match `DescriptionSpec`,
     a validation error will be raised.
     """
-    raw_description = Path(file_path).read_text()
-    validated_model = DescriptionSpec.model_validate_json(raw_description)
+    match extension := file_path.suffix[1:]:
+        case "json":
+            raw_description = json.loads(file_path.read_text())
+        case "yaml":
+            raw_description = yaml.safe_load(file_path.read_text())
+        case "toml":
+            raw_description = tomlkit.parse(file_path.read_text())
+        case _:
+            raise ValueError(f"Unknown metadata extension: {extension}")
 
-    logger.debug(f"Loaded and validated description JSON: {file_path}")
+    validated_model = DescriptionSpec.model_validate(raw_description)
+
+    logger.debug(f"Loaded and validated description {extension.upper()} file: {file_path}")
 
     return validated_model
 

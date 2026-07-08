@@ -60,14 +60,10 @@ spreadsheet_ext: "ods"
 
 ## Metadata extension
 
-!!! danger
-    Reading metadata from other file types (e.g. YAML, TOML, etc.) is not currently implemented.  
-    Do not change this option in custom configuration files.
-
 The file extension to search for when looking up the metadata file:
 
 ``` yaml
-metadata_ext: "json"
+metadata_ext: "toml"
 ```
 
 ## Output EEG format

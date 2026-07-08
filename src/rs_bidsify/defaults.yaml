@@ -31,7 +31,7 @@ sheet_info:
       index_col: "Variable"
 
 spreadsheet_ext: "ods"
-metadata_ext: "json"
+metadata_ext: "toml"
 
 output_EEG_format: "edf"
 include_extras: true
