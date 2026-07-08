@@ -1,6 +1,7 @@
 import logging
 import re
 from pathlib import Path
+from typing import Self
 
 from pydantic import (
     BaseModel,
@@ -128,11 +129,11 @@ class EEGDatasetCrawler(BaseModel):
     found_recordings: list[RecordingMetadata] = Field(default_factory=list, exclude=True)
 
     @model_validator(mode="after")
-    def verify_structure(self) -> "EEGDatasetCrawler":
+    def verify_structure(self) -> Self:
         """
         Validate the dataset structure and populate found_recordings.
 
-        Runs automatically after model initialization. It traverses the
+        Runs automatically after model initialisation. It traverses the
         directory tree, checking for the existence of participant and
         condition folders, and delegates file checking to `_check_leaf_node`.
 
