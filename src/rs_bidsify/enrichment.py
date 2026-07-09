@@ -4,7 +4,7 @@ from typing import Any
 
 from mne.io import BaseRaw
 from mne_bids import BIDSPath, make_dataset_description
-from pandas import DataFrame, isna
+from pandas import DataFrame
 
 from rs_bidsify import io
 from rs_bidsify.consistency import check_mapping_alignment
@@ -516,7 +516,7 @@ def set_channels_tsv(channels: dict[str, AuxChanSpec], channel_tsv: DataFrame):
             if info.description is not None:
                 channel_tsv.loc[chan, "description"] = info.description
 
-        if info.units is not None and isna(channel_tsv.loc[chan, "units"]):
+        if info.units is not None:
             channel_tsv.loc[chan, "units"] = info.units
             logger.debug(f"Updated units for {chan} to {info.units}")
 
