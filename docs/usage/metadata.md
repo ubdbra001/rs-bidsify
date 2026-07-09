@@ -27,7 +27,7 @@ It can be omitted if there is only a single task (in which case the task name wi
 
 === "TOML"
     ```toml
-    tasks: ["rest", "video"]
+    tasks = ["rest", "video"]
     ```
 
 === "YAML"
@@ -54,15 +54,15 @@ The section itself is required as some fields are required.
 === "TOML"
     ```toml
     [metadata]
-    population: "Healthy Adults"
-    dataset_name: "Test dataset"
-    authors: ["Pavlov, Yuri"]
-    funding: "n/a"
-    ethics_approval: "Approved"
-    references_links: "n/a"
-    license: "n/a"
-    institution_name: "n/a"
-    institution_dept: "n/a"
+    population = "Healthy Adults"
+    dataset_name = "Test dataset"
+    authors = ["Pavlov, Yuri"]
+    funding = "n/a"
+    ethics_approval = "Approved"
+    references_links = "n/a"
+    license = "n/a"
+    institution_name = "n/a"
+    institution_dept = "n/a"
     ```
 
 === "YAML"
@@ -118,69 +118,69 @@ This structure contains information about the specifics of each recording.
     === "TOML"
         ```toml
         [acquisition_spec]
-        software: "Brain Vision Recorder"
-        amplifier_model: "Brain Products"
-        power_line_freq: 50
-        acquisition_freq: 1000
-        file_format: ".set"
+        software = "Brain Vision Recorder"
+        amplifier_model = "Brain Products"
+        power_line_freq = 50
+        acquisition_freq = 1000
+        file_format = ".set"
         
         [acquisition_spec.eeg_channels]
-        number: 63
-        montage.mne_name: "standard_1005"
-        ground: "FPz"
-        reference: "VARIES"
+        number = 63
+        montage.mne_name = "standard_1005"
+        ground = "FPz"
+        reference = "VARIES"
 
         [acquisition_spec.aux_channels.ECG]
-        bids_type: "ECG"
-        location: {
-            "active": "right wrist"
-            "reference": "left wrist"
-            "ground": "left inner forearm 3 cm distal from the elbow"
+        bids_type = "ECG"
+        location = {
+            "active" = "right wrist",
+            "reference" = "left wrist",
+            "ground" = "left inner forearm 3 cm distal from the elbow"
         }
 
         [acquisition_spec.aux_channels.PPG]
-        bids_type: "PPG"
-        description: "photoplethysmography"
-        location: "placed on the left index finger",
-        units: "µV"
+        bids_type = "PPG"
+        description = "photoplethysmography"
+        location = "placed on the left index finger",
+        units = "µV"
 
         [acquisition_spec.aux_channels.audio]
-        bids_type: "AUDIO",
-        description: "Audio channel",
-        location: "n/a"
+        bids_type = "AUDIO",
+        description = "Audio channel",
+        location = "n/a"
         
         [[acquisition_spec.filters]]
-        name: "Low-pass filter",
-        type: "Software",
-        info: {
-            "cut-off frequency (Hz)": 260
+        name = "Low-pass filter",
+        type = "Software",
+        info = {
+            "cut-off frequency (Hz)" = 260
         }
         
         [[acquisition_spec.filters]]
-        name: "Anti-aliasing filter"
-        type: "Software"
-        info: {
-            "half-amplitude cutoff (Hz)": 500
-            "Roll-off": "6dB/Octave"
+        name = "Anti-aliasing filter"
+        type = "Software"
+        info = {
+            "half-amplitude cutoff (Hz)" = 500,
+            "Roll-off" = "6dB/Octave"
         }
 
         [[acquisition_spec.filters]]
-        name: "ADC's decimation filter (hardware bandwidth limit)"
-        type: "Hardware",
-        info: {
-            "-3dB cutoff point (Hz)": 480
-            "Filter order sinc response": 5
+        name = "ADC's decimation filter (hardware bandwidth limit)"
+        type = "Hardware",
+        info = {
+            "-3dB cutoff point (Hz)" = 480,
+            "Filter order sinc response" = 5
         }
 
         [acquisition_spec.extras]
-        acceptable_impedance: {"value": 25, "units": "kOhm"},
-        electrode_type: "active",
-        conductive_medium: "gel",
-        faraday_cage: false,
-        sound_proof: false,
-        lighting_conditions: {
-            description: "380 lux ambient lighting",
-            measurement: "measured with a luxmeter around the head of the participant"
+        acceptable_impedance = {"value" = 25, "units" = "kOhm"},
+        electrode_type = "active",
+        conductive_medium = "gel",
+        faraday_cage = false,
+        sound_proof = false,
+        lighting_conditions = {
+            description = "380 lux ambient lighting",
+            measurement = "measured with a luxmeter around the head of the participant"
         }
         ```
 
@@ -326,11 +326,11 @@ This is the basic information about the recording, e.g. sampling frequency, powe
 
 === "TOML"
     ```toml
-    software: "Brain Vision Recorder"
-    acquisition_freq: 1000
-    file_format: ".set"
-    amplifier_model: "Brain Products"
-    power_line_freq: 50
+    software = "Brain Vision Recorder"
+    acquisition_freq = 1000
+    file_format = ".set"
+    amplifier_model = "Brain Products"
+    power_line_freq = 50
     ```
 
 === "YAML"
@@ -366,10 +366,10 @@ This structure contains information about the EEG channels present in the record
 === "TOML"
     ```toml
     [acquisition_spec.eeg_channels]
-    number: 63
-    montage.mne_name: "standard_1005"
-    ground: "FPz"
-    reference: "VARIES"
+    number = 63
+    montage.mne_name = "standard_1005"
+    ground = "FPz"
+    reference = "Cz"
     ```
 
 === "YAML"
@@ -379,7 +379,7 @@ This structure contains information about the EEG channels present in the record
       montage:
         mne_name: "standard_1005"
       ground: "FPz"
-      reference: "VARIES"
+      reference: "Cz"
     ```
 
 === "JSON"
@@ -411,7 +411,7 @@ The custom montage file can be any that [MNE can read][read_custom_montage].
 
     === "TOML"
         ``` toml
-        montage.mne_name: "standard_1005"
+        montage.mne_name = "standard_1005"
         ```
     === "YAML"
         ```yaml
@@ -428,7 +428,7 @@ The custom montage file can be any that [MNE can read][read_custom_montage].
 === "Custom Montage"
     === "TOML"
         ``` toml
-        montage.path: "path/to/custom/montage.loc"
+        montage.path = "path/to/custom/montage.loc"
         ```
     === "YAML"
         ```yaml
@@ -450,11 +450,11 @@ It consists of a dictionary with an entry for each auxiliary channel in the reco
 === "TOML"
     ``` toml
     [acquisition_spec.aux_channels.ECG]
-    bids_type: "ECG"
-    location: {
-        "active": "right wrist"
-        "reference": "left wrist"
-        "ground": "left inner forearm 3 cm distal from the elbow"
+    bids_type = "ECG"
+    location = {
+        "active" = "right wrist",
+        "reference" = "left wrist",
+        "ground" = "left inner forearm 3 cm distal from the elbow"
     }
 
     [acquisition_spec.aux_channels.PPG]
@@ -532,26 +532,26 @@ Filter information should be represented in an object with key-value pairs. Each
 === "TOML"
     ``` toml
     [[acquisition_spec.filters]]
-    name: "Low-pass filter"
-    type: "Software"
-    info: {
-        "cut-off frequency (Hz)": 260
+    name = "Low-pass filter"
+    type = "Software"
+    info = {
+        "cut-off frequency (Hz)" = 260
     }
 
     [[acquisition_spec.filters]]
-    name: "Anti-aliasing filter"
-    type: "Software"
-    info: {
-        "half-amplitude cutoff (Hz)": 500
-        "Roll-off": "6dB/Octave"
+    name = "Anti-aliasing filter"
+    type = "Software"
+    info = {
+        "half-amplitude cutoff (Hz)" = 500,
+        "Roll-off" = "6dB/Octave"
     }
 
     [[acquisition_spec.filters]]
-    name: "ADC's decimation filter (hardware bandwidth limit)"
-    type: "Hardware",
-    info: {
-        "-3dB cutoff point (Hz)": 480
-        "Filter order sinc response": 5
+    name = "ADC's decimation filter (hardware bandwidth limit)"
+    type = "Hardware",
+    info = {
+        "-3dB cutoff point (Hz)" = 480,
+        "Filter order sinc response" = 5
     }
     ```
 === "YAML"
@@ -609,14 +609,14 @@ This section is entirely optional, as are each of the fields contained within.
 === "TOML"
     ``` toml
     [acquisition_spec.extras]
-    acceptable_impedance: {"value": 25, "units": "kOhm"}
-    electrode_type: "active"
-    conductive_medium: "gel"
-    faraday_cage: false
-    sound_proof: false
-    lighting_conditions: {
-        description: "380 lux ambient lighting",
-        measurement: "measured with a luxmeter around the head of the participant"
+    acceptable_impedance = {"value" = 25, "units" = "kOhm"}
+    electrode_type = "active"
+    conductive_medium = "gel"
+    faraday_cage = false
+    sound_proof = false
+    lighting_conditions = {
+        description = "380 lux ambient lighting",
+        measurement = "measured with a luxmeter around the head of the participant"
     }
     ```
 === "YAML"
@@ -667,27 +667,27 @@ In includes information about the instructions issued to the participants, the d
     === "TOML"
         ``` toml
         [resting_state]
-        instructions: "A prerecorded voice gave commands to open and close the eyes every minute. The stimuli were presented in PsychoPy."
+        instructions = "A prerecorded voice gave commands to open and close the eyes every minute. The stimuli were presented in PsychoPy."
         
         [resting_state.eyes_closed]
-        duration_secs: 240
+        duration_secs = 240
 
         [resting_state.eyes_open]
-        duration_secs: 240
-        stimulus_description: "white fixation cross on a grey background"
+        duration_secs = 240
+        stimulus_description = "white fixation cross on a grey background"
 
         [[resting_state.other_task]]
-        task_name: "video watching"
-        duration_secs: 231
-        stimulus_description: "a short animated movie 'The man who was afraid of falling' (https://osf.io/x9jpz)"
+        task_name = "video watching"
+        duration_secs = 231
+        stimulus_description = "a short animated movie 'The man who was afraid of falling' (https://osf.io/x9jpz)"
 
         [resting_state.events]
-        "S 20": "Eyes open"
-        "S 21": "Eyes closed"
-        "S 22": "Movie start"
-        "S 23": "Movie end"
-        "S254": "Start of Resting State Recording"
-        "S252": "End of Resting State Recording"
+        "S 20" = "Eyes open"
+        "S 21" = "Eyes closed"
+        "S 22" = "Movie start"
+        "S 23" = "Movie end"
+        "S254" = "Start of Resting State Recording"
+        "S252" = "End of Resting State Recording"
         ```
     === "YAML"
         ``` yaml
@@ -759,11 +759,11 @@ e.g.:
 === "TOML"
     ```toml
     [resting_state.eyes_closed]
-    duration_secs: 240
+    duration_secs = 240
 
     [resting_state.eyes_open]
-    duration_secs: 240
-    stimulus_description: "white fixation cross on a grey background"
+    duration_secs = 240
+    stimulus_description = "white fixation cross on a grey background"
     ```
 === "YAML"
     ```yaml
@@ -792,9 +792,9 @@ When a task is included all of the fields in the dictionary describing it are re
 === "TOML"
     ```toml
     [[resting_state.other_task]]
-    task_name: "video watching"
-    duration_secs: 231
-    stimulus_description: "a short animated movie 'The man who was afraid of falling' (https://osf.io/x9jpz)"
+    task_name = "video watching"
+    duration_secs = 231
+    stimulus_description = "a short animated movie 'The man who was afraid of falling' (https://osf.io/x9jpz)"
     ```
 === "YAML"
     ```yaml
@@ -828,12 +828,12 @@ The dictionary should use strings for both the keys (the event markers) and the 
 === "TOML"
     ```toml
     [resting_state.events]
-    "S 20": "Eyes open"
-    "S 21": "Eyes closed"
-    "S 22": "Movie start"
-    "S 23": "Movie end"
-    "S254": "Start of Resting State Recording"
-    "S252": "End of Resting State Recording"
+    "S 20" = "Eyes open"
+    "S 21" = "Eyes closed"
+    "S 22" = "Movie start"
+    "S 23" = "Movie end"
+    "S254" = "Start of Resting State Recording"
+    "S252" = "End of Resting State Recording"
     ```
 === "YAML"
     ```yaml
