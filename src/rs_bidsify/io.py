@@ -137,12 +137,30 @@ def read_bids_tsv(tsv_path: Path) -> pd.DataFrame:
     pd.DataFrame
         The loaded data contained in the TSV file.
 
+    Raises
+    ------
+    ValueError
+        If the parsed DataFrame contains zero data columns, indicating either
+        an invalid delimiter (e.g., commas or spaces instead of tabs) or a file
+        missing required metadata properties.
+
     Notes
     -----
     This function assumes a standard BIDS structure where files are
-    tab-separated and contain a leading index/header column.
+    tab-separated and contain a leading index column alongside at least
+    one accompanying data/metadata column.
     """
-    return pd.read_csv(tsv_path, sep="\t", index_col=0)
+    df = pd.read_csv(tsv_path, sep="\t", index_col=0)
+
+    if df.shape[1] == 0:
+        raise ValueError(
+            f"The TSV file at '{tsv_path.name}' contains no data columns after parsing. "
+            f"This typically indicates one of two issues:\n"
+            f"1) The file uses an incorrect delimiter (BIDS strictly requires tabs '\\t', not commas or spaces).\n"
+            f"2) The file genuinely contains only a single column (the index) with no accompanying metadata fields."
+        )
+
+    return df
 
 
 def write_enriched_sidecar(bids_path: BIDSPath, updates: dict[str, Any]):
