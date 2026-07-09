@@ -1,5 +1,6 @@
 import logging
 
+import pandas as pd
 import pytest
 from pydantic import BaseModel
 
@@ -486,3 +487,53 @@ class TestEnrichmentOrchestration:
         mock_worker.assert_called_once_with(mock_info, mock_existing_data)
 
         mock_write.assert_called_once_with(mocker.ANY, mock_existing_data)
+
+
+@pytest.fixture
+def synthetic_channels() -> pd.DataFrame:
+
+    chans = {
+        "name": ["Chan1", "Chan2", "Chan3"],
+        "type": ["EEG", "ECG", "MISC"],
+        "units": ["µV", "µV", "n/a"],
+        "description": ["ElectroEncephaloGram", "ElectroCardioGram", "Miscellaneous"],
+    }
+
+    return pd.DataFrame(chans).set_index("name")
+
+
+class TestSetChannelsTsv:
+    @pytest.mark.parametrize(
+        ("bids_type", "description", "units"),
+        [
+            (BIDSChanTypes.PPG, "photoplethysmography", None),
+            (BIDSChanTypes.PPG, None, "V"),
+            (BIDSChanTypes.PPG, None, None),
+        ],
+    )
+    def test_set_channels_tsv_chan_present(self, synthetic_channels, bids_type, description, units):
+        original_df = synthetic_channels.copy()
+
+        chan_info = {"bids_type": bids_type, "description": description, "units": units}
+
+        channels = {"Chan3": AuxChanSpec.model_validate(chan_info)}
+
+        enrichment.set_channels_tsv(channels, synthetic_channels)
+
+        expected_description = description if description else original_df.loc["Chan3", "description"]
+        expected_units = units if units else original_df.loc["Chan3", "units"]
+
+        assert synthetic_channels.loc["Chan3", "type"] == bids_type
+        assert synthetic_channels.loc["Chan3", "description"] == expected_description
+        assert synthetic_channels.loc["Chan3", "units"] == expected_units
+
+    def test_set_channels_tsv_chan_absent(self, synthetic_channels):
+        expected_result = synthetic_channels.copy()
+
+        chan_info = {"bids_type": BIDSChanTypes.PPG, "description": "photoplethysmography"}
+
+        channels = {"Chan4": AuxChanSpec.model_validate(chan_info)}
+
+        enrichment.set_channels_tsv(channels, synthetic_channels)
+
+        pd.testing.assert_frame_equal(expected_result, synthetic_channels)
