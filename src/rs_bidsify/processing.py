@@ -1,6 +1,7 @@
 import logging
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 from mne_bids import BIDSPath, write_raw_bids
 
@@ -34,7 +35,27 @@ class DatasetPlan:
     recording_plans: list[RecordingPlan]
 
 
-def check_dataset(raw_path: Path, config_override: dict | None = None):
+def check_dataset(raw_path: Path, config_override: dict | None = None) -> None:
+    """
+    Validate the raw dataset structure and metadata compliance.
+
+    This function resolves the active runtime configuration and executes the initial
+    metadata and structural verification routines. It evaluates dataset readiness,
+    identifying formatting anomalies or missing fields without writing any BIDS output files.
+
+    Parameters
+    ----------
+    raw_path : Path
+        The input root directory containing raw source data and metadata.
+    config_override : dict, optional
+        User-defined configuration adjustments to override application defaults.
+
+    Returns
+    -------
+    None
+        Validation findings, structural errors, and compliance issues are printed
+        directly to the terminal.
+    """
     config = load_config(config_override)
     process_metadata(raw_path, config)
 
@@ -45,7 +66,33 @@ def convert_dataset(
     config_override: dict | None = None,
     force_flag: bool = False,
     strict_flag: bool = False,
-):
+) -> list[dict[Any, Any]]:
+    """
+    Orchestrate the raw EEG to BIDS conversion pipeline.
+
+    This function resolves the active runtime configuration, parses source metadata
+    to build a structural conversion plan, and executes the physical data
+    transformations and file-writing routines. It serves as the core operational
+    engine beneath the command-line interface.
+
+    Parameters
+    ----------
+    raw_path : Path
+        The input root directory containing raw source data and metadata.
+    out_root_path : Path
+        The target directory where the validated BIDS structure will be generated.
+    config_override : dict, optional
+        User-defined configuration adjustments to override application defaults.
+    force_flag : bool, optional
+        If True, forces the overwriting of existing data in the output directory.
+    strict_flag : bool, optional
+        If True, immediately halts execution upon encountering a processing error.
+
+    Returns
+    -------
+    list[dict]
+        The dataset processing results, tracking subject-level execution statuses and errors.
+    """
     config = load_config(config_override)
     dataset_plan = process_metadata(raw_path, config)
     processing_result = process_dataset(dataset_plan, out_root_path, config, force_flag, strict_flag)
@@ -57,7 +104,28 @@ def process_metadata(
     raw_path: Path,
     config: dict,
 ) -> DatasetPlan:
-    """Process metadata and return processing plan for dataset."""
+    """
+    Parse raw directory metadata and spreadsheets to construct a dataset execution plan.
+
+    This function discovers the dataset description specifications, extracts participant and
+    phenotype registries, and crawls the raw directory structure for matching EEG recordings.
+    It maps individual subject demographics and bundles these components into a structured
+    blueprint that dictates how downstream tasks process each file.
+
+    Parameters
+    ----------
+    raw_path : Path
+        The root directory containing the raw source data, metadata specs, and spreadsheets.
+    config : dict
+        The active configuration settings defining metadata extensions, sheet structures,
+        and demographic mappings.
+
+    Returns
+    -------
+    DatasetPlan
+        A structured blueprint compiling the dataset specifications, participant registries,
+        and individual recording execution plans.
+    """
     dataset_spec = discovery.find_description_spec(raw_path, extension=config["metadata_ext"])
 
     participant_data, phenotype_data = discovery.find_dataset_spreadsheets(
