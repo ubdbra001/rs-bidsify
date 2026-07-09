@@ -5,6 +5,8 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
+import tomlkit
+import yaml
 from mne_bids import BIDSPath
 
 from rs_bidsify import io
@@ -149,21 +151,27 @@ class TestWriteEnrichedSidecar:
         assert updated_content["PowerLineFrequency"] == 50
 
 
-class TestReadDescriptionJson:
-    def test_read_description_json_load_success(self, fs, mocker):
-        json_path = Path("/mock/dataset_description.json")
-        raw_json_content = '{"Name": "Test Dataset", "BIDSVersion": "1.8.0"}'
+class TestReadDescriptionFile:
+    @pytest.mark.parametrize(
+        ("input_file", "write_function"),
+        [
+            ("dataset_description.json", json.dumps),
+            ("dataset_description.yaml", yaml.dump),
+            ("dataset_description.toml", tomlkit.dumps),
+        ],
+    )
+    def test_read_description_file_load_success(self, fs, mocker, input_file, write_function):
+        file_path = Path("/mock") / input_file
+        raw_file_content = {"Name": "Test Dataset", "BIDSVersion": "1.8.0"}
 
-        fs.create_file(json_path, contents=raw_json_content)
+        fs.create_file(file_path, contents=write_function(raw_file_content))
 
         mock_validated_model = mocker.MagicMock(spec=DescriptionSpec)
-        mock_validate = mocker.patch(
-            "rs_bidsify.io.DescriptionSpec.model_validate_json", return_value=mock_validated_model
-        )
+        mock_validate = mocker.patch("rs_bidsify.io.DescriptionSpec.model_validate", return_value=mock_validated_model)
 
-        result = io.read_description_json(json_path)
+        result = io.read_description_file(file_path)
 
-        mock_validate.assert_called_once_with(raw_json_content)
+        mock_validate.assert_called_once_with(raw_file_content)
         assert result == mock_validated_model
 
 
