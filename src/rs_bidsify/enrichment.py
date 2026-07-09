@@ -51,7 +51,7 @@ def set_events(eeg_data: BaseRaw, event_info: dict[str, str]):
     """
     Map raw EEG trigger descriptions to BIDS-compliant event labels.
 
-    Synchronizes recording annotations with user metadata. Only triggers
+    Synchronises recording annotations with user metadata. Only triggers
     found in both the file and the metadata are renamed.
 
     Parameters
@@ -487,8 +487,8 @@ def set_channels_tsv(channels: dict[str, AuxChanSpec], channel_tsv: DataFrame):
     """
     Update the channel metadata table with BIDS-specific details.
 
-    Synchronizes the tabular channel data with provided specifications. It
-    prioritizes updating 'MISC' types to specific BIDS types, adding
+    Synchronises the tabular channel data with provided specifications. It
+    prioritises updating 'MISC' types to specific BIDS types, adding
     channel descriptions, and filling in missing unit information.
 
     Parameters
