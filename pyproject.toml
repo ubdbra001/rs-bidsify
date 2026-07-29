@@ -27,7 +27,7 @@ docs = [
     "zensical>=0.0.50",
 ]
 lint = [
-    "ruff>=0.15.20",
+    "ruff>=0.16.0",
 ]
 nox = [
     "nox-uv>=0.8.0",
