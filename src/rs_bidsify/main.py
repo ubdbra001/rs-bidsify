@@ -10,7 +10,7 @@ from rich.text import Text
 
 from rs_bidsify import __version__
 from rs_bidsify.app_logging import setup_logging
-from rs_bidsify.processing import process_dataset
+from rs_bidsify.processing import check_dataset, convert_dataset
 
 logger = logging.getLogger(__name__)
 
@@ -98,9 +98,9 @@ def convert(
 
     This command orchestrates the entire structural data transformation. It
     validates input source files, parses demographic indices, maps string
-    variables to standardized formats, reads and modifies recording-level MNE
-    objects, and writes the standardized BIDS file hierarchy to disk.
-    Additionally, it runs post-conversion synchronization routines to prune
+    variables to standardised formats, reads and modifies recording-level MNE
+    objects, and writes the standardised BIDS file hierarchy to disk.
+    Additionally, it runs post-conversion synchronisation routines to prune
     failed subjects from the participant index and phenotype data files.
 
     Parameters
@@ -142,11 +142,61 @@ def convert(
         logger.warning(f"Creating output directory: {bids_data_path}")
         bids_data_path.mkdir(parents=True)
 
-    results = process_dataset(raw_data_path, bids_data_path, user_overrides, force, strict)
+    results = convert_dataset(raw_data_path, bids_data_path, user_overrides, force, strict)
 
     logger.info(f"Successfully BIDSified data from {raw_data_path}, written to {bids_data_path}")
 
     show_results_summary(results)
+
+
+@app.command(no_args_is_help=True)
+def check(
+    raw_data_path: Annotated[
+        Path,
+        typer.Argument(
+            help="Path to the input directory containing raw source data",
+            exists=True,
+            file_okay=False,
+            dir_okay=True,
+            readable=True,
+        ),
+    ],
+    config_file: Annotated[
+        typer.FileText | None,
+        typer.Option("--config", help="User YAML configuration file"),
+    ] = None,
+):
+    """
+    Execute the dry-run validation phase of the raw EEG to BIDS conversion pipeline.
+
+    This command runs the isolated verification routines of the pipeline without
+    performing any data transformation or writing BIDS hierarchies to disk. It
+    sequentially loads and validates dataset metadata, parses participant
+    demographic information, and assesses the overall raw directory structure.
+    If any anomalies, missing fields, or structural inconsistencies are
+    encountered, detailed feedback is provided to ensure conversion readiness.
+
+    Parameters
+    ----------
+    raw_data_path : Path
+        The source directory containing raw data to be validated. Checked for
+        readability and structural validity.
+    config_file : FileText, optional
+        A user-provided text stream pointing to a YAML file containing
+        configuration overrides used during validation.
+
+    Returns
+    -------
+    None
+        Outputs validation findings, structural issues, and metadata anomalies
+        directly to the terminal.
+    """
+    user_overrides = {}
+
+    if config_file:
+        user_overrides = yaml.safe_load(config_file)
+
+    check_dataset(raw_data_path, user_overrides)
 
 
 @app.callback()
@@ -166,7 +216,7 @@ def main(
 
 def show_results_summary(results: list[dict]):
     """
-    Render a stylized terminal summary table of the pipeline's execution results.
+    Render a stylised terminal summary table of the pipeline's execution results.
 
     Parses the compilation status of each processed recording and displays them
     in a structured, color-coded table using the 'rich' library. Successes,

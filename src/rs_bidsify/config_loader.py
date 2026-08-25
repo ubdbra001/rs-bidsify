@@ -3,6 +3,34 @@ from importlib import resources
 import yaml
 
 
+def load_config(config_override: dict | None = None) -> dict:
+    """
+    Combine default configuration settings with user-provided overrides.
+
+    This function retrieves the base configuration using `get_default_config`
+    and applies a deep merge with any user-supplied overrides. The values
+    within the override dictionary take precedence over the defaults, allowing
+    granular customization of the BIDS conversion pipeline.
+
+    Parameters
+    ----------
+    config_override : dict, optional
+        A dictionary containing user-defined configuration keys and values.
+        Defaults to None, in which case only the base configuration is returned.
+
+    Returns
+    -------
+    dict
+        The fully resolved and merged configuration dictionary.
+    """
+    config = get_default_config()
+
+    if config_override:
+        config = deep_merge(config, config_override)
+
+    return config
+
+
 def get_default_config() -> dict:
     """
     Load the default configuration settings from the package resources.

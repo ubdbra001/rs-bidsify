@@ -1,10 +1,12 @@
 import logging
+from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 from mne_bids import BIDSPath, write_raw_bids
 
 from rs_bidsify import discovery, enrichment, io
-from rs_bidsify.config_loader import deep_merge, get_default_config
+from rs_bidsify.config_loader import load_config
 from rs_bidsify.utils import locate_dynamic_fields
 from rs_bidsify.validation.dataset import EEGDatasetCrawler, RecordingMetadata
 from rs_bidsify.validation.description import DescriptionSpec
@@ -13,10 +15,161 @@ from rs_bidsify.validation.subject import SubjectMetadata
 logger = logging.getLogger(__name__)
 
 
-def process_dataset(
+@dataclass
+class RecordingPlan:
+    """Holds a single recording paired with its pre-calculated subject specs."""
+
+    recording: RecordingMetadata
+    subject_info: SubjectMetadata
+    subject_spec: DescriptionSpec
+
+
+@dataclass
+class DatasetPlan:
+    """Holds the validated state and pre-calculated plans for the entire dataset."""
+
+    dataset_spec: DescriptionSpec
+    participant_data: dict
+    phenotype_data: dict | None
+    expected_participants: list
+    recording_plans: list[RecordingPlan]
+
+
+def check_dataset(raw_path: Path, config_override: dict | None = None) -> None:
+    """
+    Validate the raw dataset structure and metadata compliance.
+
+    This function resolves the active runtime configuration and executes the initial
+    metadata and structural verification routines. It evaluates dataset readiness,
+    identifying formatting anomalies or missing fields without writing any BIDS output files.
+
+    Parameters
+    ----------
+    raw_path : Path
+        The input root directory containing raw source data and metadata.
+    config_override : dict, optional
+        User-defined configuration adjustments to override application defaults.
+
+    Returns
+    -------
+    None
+        Validation findings, structural errors, and compliance issues are printed
+        directly to the terminal.
+    """
+    config = load_config(config_override)
+    process_metadata(raw_path, config)
+
+
+def convert_dataset(
     raw_path: Path,
     out_root_path: Path,
     config_override: dict | None = None,
+    force_flag: bool = False,
+    strict_flag: bool = False,
+) -> list[dict[Any, Any]]:
+    """
+    Orchestrate the raw EEG to BIDS conversion pipeline.
+
+    This function resolves the active runtime configuration, parses source metadata
+    to build a structural conversion plan, and executes the physical data
+    transformations and file-writing routines. It serves as the core operational
+    engine beneath the command-line interface.
+
+    Parameters
+    ----------
+    raw_path : Path
+        The input root directory containing raw source data and metadata.
+    out_root_path : Path
+        The target directory where the validated BIDS structure will be generated.
+    config_override : dict, optional
+        User-defined configuration adjustments to override application defaults.
+    force_flag : bool, optional
+        If True, forces the overwriting of existing data in the output directory.
+    strict_flag : bool, optional
+        If True, immediately halts execution upon encountering a processing error.
+
+    Returns
+    -------
+    list[dict]
+        The dataset processing results, tracking subject-level execution statuses and errors.
+    """
+    config = load_config(config_override)
+    dataset_plan = process_metadata(raw_path, config)
+    processing_result = process_dataset(dataset_plan, out_root_path, config, force_flag, strict_flag)
+
+    return processing_result
+
+
+def process_metadata(
+    raw_path: Path,
+    config: dict,
+) -> DatasetPlan:
+    """
+    Parse raw directory metadata and spreadsheets to construct a dataset execution plan.
+
+    This function discovers the dataset description specifications, extracts participant and
+    phenotype registries, and crawls the raw directory structure for matching EEG recordings.
+    It maps individual subject demographics and bundles these components into a structured
+    blueprint that dictates how downstream tasks process each file.
+
+    Parameters
+    ----------
+    raw_path : Path
+        The root directory containing the raw source data, metadata specs, and spreadsheets.
+    config : dict
+        The active configuration settings defining metadata extensions, sheet structures,
+        and demographic mappings.
+
+    Returns
+    -------
+    DatasetPlan
+        A structured blueprint compiling the dataset specifications, participant registries,
+        and individual recording execution plans.
+    """
+    dataset_spec = discovery.find_description_spec(raw_path, extension=config["metadata_ext"])
+
+    participant_data, phenotype_data = discovery.find_dataset_spreadsheets(
+        raw_path, sheet_info=config["sheet_info"], extension=config["spreadsheet_ext"]
+    )
+
+    expected_participants = participant_data["dataset"].index.to_list()
+
+    crawler = EEGDatasetCrawler(
+        root_path=raw_path,
+        expected_participants=expected_participants,
+        **dataset_spec.crawler_info,
+    )
+
+    dynamic_paths = locate_dynamic_fields(dataset_spec.model_dump())
+
+    recording_plans = []
+
+    for recording in crawler.found_recordings:
+        subject_info = SubjectMetadata.from_dataframe(
+            recording,
+            participant_data["dataset"],
+            mapping=config["demographic_mappings"],
+        )
+
+        subject_spec = (
+            DescriptionSpec.from_template(dataset_spec, dynamic_paths, subject_info) if dynamic_paths else dataset_spec
+        )
+
+        recording_plans.append(RecordingPlan(recording=recording, subject_info=subject_info, subject_spec=subject_spec))
+
+    return DatasetPlan(
+        dataset_spec=dataset_spec,
+        participant_data=participant_data,
+        phenotype_data=phenotype_data,
+        expected_participants=expected_participants,
+        recording_plans=recording_plans,
+    )
+
+
+def process_dataset(
+    plan: DatasetPlan,
+    out_root_path: Path,
+    config: dict,
     force_flag: bool = False,
     strict_flag: bool = False,
 ) -> list[dict]:
@@ -44,32 +197,13 @@ def process_dataset(
     None
         Executes the conversion pipeline and writes the output to disk.
     """
-    config = get_default_config()
-
-    if config_override:
-        config = deep_merge(config, config_override)
-
-    dataset_spec = discovery.find_description_spec(raw_path, extension=config["metadata_ext"])
-
-    participant_data, phenotype_data = discovery.find_dataset_spreadsheets(
-        raw_path, sheet_info=config["sheet_info"], extension=config["spreadsheet_ext"]
-    )
-
-    dynamic_paths = locate_dynamic_fields(dataset_spec.model_dump())
-
-    expected_participants = participant_data["dataset"].index.to_list()
-
-    crawler = EEGDatasetCrawler(
-        root_path=raw_path,
-        expected_participants=expected_participants,
-        **dataset_spec.crawler_info,
-    )
-
     rec_config = {k: config[k] for k in ("output_EEG_format", "include_extras")}
 
     results = []
 
-    for recording in crawler.found_recordings:
+    for plan_item in plan.recording_plans:
+        recording = plan_item.recording
+
         bids_path = BIDSPath(
             subject=recording.subject,
             task=recording.task,
@@ -81,25 +215,13 @@ def process_dataset(
             results.append({"recording": recording, "status": "Skipped", "error": ""})
             continue
 
-        subject_info = SubjectMetadata.from_dataframe(
-            recording,
-            participant_data["dataset"],
-            mapping=config["demographic_mappings"],
-        )
-
         try:
-            subject_spec = (
-                DescriptionSpec.from_template(dataset_spec, dynamic_paths, subject_info)
-                if dynamic_paths
-                else dataset_spec
-            )
-
             # Process recording
             process_recording(
                 bids_path,
                 recording,
-                subject_spec,
-                subject_info,
+                plan_item.subject_spec,
+                plan_item.subject_info,
                 rec_config,
             )
 
@@ -110,8 +232,6 @@ def process_dataset(
             io.rollback_recording_files(bids_path.directory, recording)
 
             if strict_flag:
-                # Initial attempt
-                # Remove "ghost" participants after strict crash
                 if not bids_path.directory.exists():
                     io.cleanup_participants_tsv([recording.subject], out_root_path)
                 raise
@@ -119,12 +239,12 @@ def process_dataset(
             results.append({"recording": recording, "status": "Failed", "error": str(e)})
             continue
 
-    missing_subjects = discovery.find_missing_subjects(expected_participants, out_root_path)
+    missing_subjects = discovery.find_missing_subjects(plan.expected_participants, out_root_path)
     io.cleanup_participants_tsv(missing_subjects, out_root_path)
-    enrichment.enrich_dataset_description(dataset_spec.metadata, out_root_path)
+    enrichment.enrich_dataset_description(plan.dataset_spec.metadata, out_root_path)
 
-    if phenotype_data:
-        io.write_phenotype_data(phenotype_data, out_root_path, missing_subjects)
+    if plan.phenotype_data:
+        io.write_phenotype_data(plan.phenotype_data, out_root_path, missing_subjects)
 
     logger.info("Enriched BIDS-compliant dataset")
 
